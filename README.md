@@ -3,6 +3,24 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-oncha
 
 ## Getting Started
 
+### Environment Setup
+
+Create a `.env.local` file in the root directory with the following variables:
+
+```bash
+# OnchainKit Configuration
+# Get these from https://portal.cdp.coinbase.com/products/onchainkit
+NEXT_PUBLIC_ONCHAINKIT_API_KEY=your_api_key_here
+NEXT_PUBLIC_ONCHAINKIT_PROJECT_ID=your_project_id_here
+
+# Server-side API key (for server actions)
+ONCHAINKIT_API_KEY=your_api_key_here
+```
+
+**Important:** Both `apiKey` and `projectId` are required for portfolio functionality to work properly.
+
+### Install Dependencies
+
 First, install dependencies:
 
 ```bash

@@ -1,14 +1,17 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 import styles from "./page.module.css";
 import { Wallet } from "@coinbase/onchainkit/wallet";
 import { WalletBalance } from "./components/WalletBalance";
+import { FloatingWallet } from "./components/FloatingWallet";
 
 export default function Home() {
   return (
     <div className={styles.container}>
       <header className={styles.headerWrapper}>
         <Wallet />
+        <FloatingWallet />
       </header>
 
       <div className={styles.content}>
@@ -23,6 +26,19 @@ export default function Home() {
 
         <div className={styles.portfolioSection}>
           <WalletBalance />
+          <div style={{ marginTop: '20px' }}>
+            <Link href="/portfolio" style={{ 
+              display: 'inline-block', 
+              padding: '12px 24px', 
+              backgroundColor: '#0070f3', 
+              color: 'white', 
+              textDecoration: 'none', 
+              borderRadius: '8px',
+              fontWeight: '500'
+            }}>
+              View Full Portfolio →
+            </Link>
+          </div>
         </div>
 
         <div className={styles.portfolioStats}>

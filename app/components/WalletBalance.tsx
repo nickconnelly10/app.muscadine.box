@@ -1,12 +1,28 @@
 "use client";
-import { useAccount, useBalance } from "wagmi";
-import { formatEther } from "viem";
+import { useAccount } from "wagmi";
+import { useEffect, useState } from "react";
+import type { UiPortfolio } from "../portfolio/_lib/getPortfolio";
+import { fetchPortfolio } from "../portfolio/_lib/getPortfolio";
 
 export function WalletBalance() {
   const { address, isConnected } = useAccount();
-  const { data: balance, isLoading, error } = useBalance({
-    address: address,
-  });
+  const [portfolio, setPortfolio] = useState<UiPortfolio | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let ignore = false;
+    (async () => {
+      if (!address) return;
+      setLoading(true);
+      try {
+        const res = await fetchPortfolio(address as `0x${string}`);
+        if (!ignore) setPortfolio(res);
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    })();
+    return () => { ignore = true; };
+  }, [address]);
 
   if (!isConnected) {
     return (
@@ -17,7 +33,7 @@ export function WalletBalance() {
     );
   }
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="wallet-balance">
         <h3>Wallet Balance</h3>
@@ -26,25 +42,22 @@ export function WalletBalance() {
     );
   }
 
-  if (error) {
+  if (!portfolio) {
     return (
       <div className="wallet-balance">
         <h3>Wallet Balance</h3>
-        <p>Error loading balance</p>
+        <p>Unable to load portfolio data</p>
       </div>
     );
   }
 
-  const balanceInEth = balance ? parseFloat(formatEther(balance.value)) : 0;
-  const balanceInUsd = balanceInEth * 3000; // Approximate ETH to USD conversion
-
   return (
     <div className="wallet-balance">
-      <h3>Wallet Balance</h3>
+      <h3>Portfolio Value</h3>
       <div className="balance-display">
         <div className="balance-amount">
-          <span className="eth-amount">{balanceInEth.toFixed(4)} ETH</span>
-          <span className="usd-amount">${balanceInUsd.toFixed(2)} USD</span>
+          <span className="usd-amount">${portfolio.totalUsd.toLocaleString()}</span>
+          <span className="token-count">{portfolio.tokens.length} assets</span>
         </div>
         <div className="balance-details">
           <p>Address: {address?.slice(0, 6)}...{address?.slice(-4)}</p>
