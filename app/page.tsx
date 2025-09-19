@@ -2,6 +2,7 @@
 import Image from "next/image";
 import styles from "./page.module.css";
 import { Wallet } from "@coinbase/onchainkit/wallet";
+import { WalletBalance } from "./components/WalletBalance";
 
 export default function Home() {
   return (
@@ -18,44 +19,29 @@ export default function Home() {
           width={200}
           height={200}
         />
-        <h1 className={styles.title}>OnchainKit</h1>
+        <h1 className={styles.title}>Portfolio Dashboard</h1>
 
-        <p>
-          Get started by editing <code>app/page.tsx</code>
-        </p>
+        <div className={styles.portfolioSection}>
+          <WalletBalance />
+        </div>
 
-        <h2 className={styles.componentsTitle}>Explore Components</h2>
-
-        <ul className={styles.components}>
-          {[
-            {
-              name: "Transaction",
-              url: "https://docs.base.org/onchainkit/transaction/transaction",
-            },
-            {
-              name: "Swap",
-              url: "https://docs.base.org/onchainkit/swap/swap",
-            },
-            {
-              name: "Checkout",
-              url: "https://docs.base.org/onchainkit/checkout/checkout",
-            },
-            {
-              name: "Wallet",
-              url: "https://docs.base.org/onchainkit/wallet/wallet",
-            },
-            {
-              name: "Identity",
-              url: "https://docs.base.org/onchainkit/identity/identity",
-            },
-          ].map((component) => (
-            <li key={component.name}>
-              <a target="_blank" rel="noreferrer" href={component.url}>
-                {component.name}
-              </a>
-            </li>
-          ))}
-        </ul>
+        <div className={styles.portfolioStats}>
+          <h2>Portfolio Overview</h2>
+          <div className={styles.statsGrid}>
+            <div className={styles.statCard}>
+              <h3>Total Value</h3>
+              <p>Connect wallet to view</p>
+            </div>
+            <div className={styles.statCard}>
+              <h3>Assets</h3>
+              <p>0 tokens</p>
+            </div>
+            <div className={styles.statCard}>
+              <h3>Networks</h3>
+              <p>Base</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
