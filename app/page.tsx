@@ -1,35 +1,30 @@
 "use client";
-import { useEffect, useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useBalance } from 'wagmi';
 import Image from 'next/image';
 import { Wallet } from "@coinbase/onchainkit/wallet";
 import { FloatingWallet } from "./components/FloatingWallet";
-import type { UiPortfolio } from './portfolio/_lib/getPortfolio';
-import { fetchPortfolio } from './portfolio/_lib/getPortfolio';
+import { formatEther } from 'viem';
 
 export default function Home() {
   const { address, isConnected } = useAccount();
-  const [data, setData] = useState<UiPortfolio | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { data: balance, isLoading: balanceLoading, error: balanceError } = useBalance({
+    address: address,
+  });
 
-  useEffect(() => {
-    let ignore = false;
-    (async () => {
-      if (!address) return;
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetchPortfolio(address as `0x${string}`);
-        if (!ignore) setData(res);
-      } catch (err) {
-        if (!ignore) setError(err instanceof Error ? err.message : 'Failed to fetch portfolio');
-      } finally {
-        if (!ignore) setLoading(false);
-      }
-    })();
-    return () => { ignore = true; };
-  }, [address]);
+  // Simple portfolio data structure
+  const portfolioData = {
+    totalUsd: balance ? parseFloat(formatEther(balance.value)) * 3000 : 0, // Approximate ETH price
+    tokens: balance ? [{
+      address: '0x0000000000000000000000000000000000000000' as `0x${string}`,
+      symbol: 'ETH',
+      name: 'Ethereum',
+      image: undefined,
+      decimals: 18,
+      chainId: 8453,
+      cryptoBalance: formatEther(balance.value),
+      fiatBalance: parseFloat(formatEther(balance.value)) * 3000,
+    }] : []
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -54,18 +49,18 @@ export default function Home() {
               <Wallet />
             </div>
           </div>
-        ) : loading ? (
+        ) : balanceLoading ? (
           <div className="text-center py-12">
             <div className="bg-white rounded-lg shadow p-8">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
               <p className="text-gray-600">Loading portfolio...</p>
             </div>
           </div>
-        ) : error ? (
+        ) : balanceError ? (
           <div className="text-center py-12">
             <div className="bg-white rounded-lg shadow p-8">
               <h2 className="text-2xl font-semibold text-red-600 mb-4">Error Loading Portfolio</h2>
-              <p className="text-gray-600 mb-4">{error}</p>
+              <p className="text-gray-600 mb-4">Failed to load wallet balance</p>
               <button 
                 onClick={() => window.location.reload()} 
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
@@ -74,23 +69,23 @@ export default function Home() {
               </button>
             </div>
           </div>
-        ) : data ? (
+        ) : portfolioData ? (
           <div className="space-y-8">
             {/* Portfolio Summary */}
             <div className="bg-white rounded-lg shadow p-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">Portfolio Value</h2>
               <div className="text-4xl font-bold text-gray-900 mb-2">
-                ${data.totalUsd.toLocaleString()}
+                ${portfolioData.totalUsd.toLocaleString()}
               </div>
-              <p className="text-gray-600">{data.tokens.length} assets</p>
+              <p className="text-gray-600">{portfolioData.tokens.length} assets</p>
             </div>
 
             {/* Token Holdings */}
             <div className="bg-white rounded-lg shadow p-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-6">Your Assets</h2>
-              {data.tokens.length > 0 ? (
+              {portfolioData.tokens.length > 0 ? (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {data.tokens.map(t => (
+                  {portfolioData.tokens.map(t => (
                     <div key={t.address} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                       <div className="flex items-center gap-3">
                         {t.image ? (
