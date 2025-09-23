@@ -1,0 +1,7 @@
+{
+  "accountAssociation": { ... },
+  "miniapp": { ... },
+  "baseBuilder": {
+    "allowedAddresses": ["0x5332b9458D975Cd155C67EdC54C1AD0262336f3f"]
+  }
+}
