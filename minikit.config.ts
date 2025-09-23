@@ -1,4 +1,4 @@
-const ROOT_URL = process.env.NEXT_PUBLIC_URL || process.env.VERCEL_URL;
+const ROOT_URL = process.env.NEXT_PUBLIC_URL || process.env.VERCEL_URL || "https://app.muscadine.box";
 
 /**
  * MiniApp configuration object. Must follow the Farcaster MiniApp specification.
