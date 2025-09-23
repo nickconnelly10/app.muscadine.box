@@ -43,7 +43,7 @@ export async function GET() {
       tags: minikitConfig.frame.tags
     },
     baseBuilder: {
-      allowedAddresses: minikitConfig.baseBuilder.allowedAddresses,
+      allowedAddresses: ["0x5332b9458D975Cd155C67EdC54C1AD0262336f3f"]
     }
   };
 

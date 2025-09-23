@@ -1,48 +1,106 @@
-# App Muscadine
+# Muscadine Box
 
-This is a [Next.js](https://nextjs.org) project built with [OnchainKit](https://docs.base.org/onchainkit) and Mini App functionality, bootstrapped with [`create-onchain`](https://www.npmjs.com/package/create-onchain).
+A DeFi lending platform built as a Farcaster Mini App using Next.js, OnchainKit, and MiniKit. Earn interest on your crypto with Morpho vaults on Base network.
 
 **Live URL**: [app.muscadine.box](https://app.muscadine.box)
 
 ## About
 
-This application is built as a Mini App using OnchainKit, providing blockchain functionality and seamless integration with modern web3 features. The app leverages Next.js for optimal performance and developer experience.
+Muscadine Box is a Farcaster Mini App that enables users to lend their crypto assets and earn interest through Morpho vaults on the Base network. Built with OnchainKit and MiniKit technologies, it provides a seamless DeFi experience within the Farcaster ecosystem.
+
+### Features
+
+- **Lending**: Earn interest on your crypto with Morpho vaults
+- **Wallet Integration**: Connect and manage your crypto wallets
+- **Mini App**: Native Farcaster Mini App experience
+- **Base Network**: Built for Base blockchain
+- **Secure**: Powered by proven DeFi protocols
+
+## Tech Stack
+
+- Next.js 15.3.4
+- Base Network (Ethereum L2)
+- Morpho Labs
+- OnchainKit
+- Farcaster MiniKit
+- Farcaster Quick Auth
+- TypeScript
 
 ## Getting Started
 
-First, install dependencies:
+### Prerequisites
+
+- Node.js 18+
+- npm, yarn, pnpm, or bun
+
+### Installation
 
 ```bash
+# Clone and install
+git clone <repository-url>
+cd app.muscadine.box
 npm install
-# or
-yarn install
-# or
-pnpm install
-# or
-bun install
+
+# Set up environment
+cp .env.example .env.local
+# Edit .env.local with your values
+
+# Run development server
+npm run dev
 ```
 
-Next, run the development server:
+Open [http://localhost:3000](http://localhost:3000) to see the app.
+
+## Project Structure
+
+```
+app/
+├── .well-known/farcaster.json/  # Farcaster Mini App manifest
+├── api/
+│   ├── auth/                    # Authentication endpoint
+│   └── webhook/                 # Webhook handler
+├── components/
+│   ├── HomePage.tsx             # Home dashboard
+│   └── LendingPage.tsx          # Lending interface
+├── layout.tsx                   # Root layout
+├── page.tsx                     # Main page
+└── rootProvider.tsx             # OnchainKit provider
+```
+
+## Configuration
+
+The app includes a Farcaster manifest at `/.well-known/farcaster.json` with complete frame metadata, required capabilities, and Base Builder integration.
+
+### Environment Variables
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+NEXT_PUBLIC_URL=https://your-domain.com
+NEXT_PUBLIC_ONCHAINKIT_API_KEY=your_onchainkit_api_key
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deployment
 
-The app is also available at [app.muscadine.box](https://app.muscadine.box) in production.
+```bash
+npm run build
+npm start
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Ready for deployment on Vercel, Netlify, or any Next.js-compatible platform.
 
+## API Endpoints
+
+- `GET /.well-known/farcaster.json` - Farcaster manifest
+- `GET /api/auth` - Authentication verification
+- `POST /api/webhook` - Webhook event handler
 
 ## Learn More
 
-To learn more about OnchainKit, see our [documentation](https://docs.base.org/onchainkit).
+- [OnchainKit Documentation](https://docs.base.org/onchainkit)
+- [Farcaster Mini Apps](https://miniapps.farcaster.xyz)
+- [Base Network](https://base.org)
+- [Morpho Labs](https://morpho.org)
+- [Next.js Documentation](https://nextjs.org/docs)
 
-To learn more about Next.js, see the [Next.js documentation](https://nextjs.org/docs).
+## License
+
+This project is licensed under the MIT License.
