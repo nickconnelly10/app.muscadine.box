@@ -1,0 +1,7 @@
+{
+  "env": {
+    "NEXT_PUBLIC_URL": "https://app.muscadine.box",
+    "NEXT_PUBLIC_ONCHAINKIT_API_KEY": "W1swUqvWRRviu2JtPMcvZ7jkNxtFWTqK",
+    "NEXT_PUBLIC_PROJECT_NAME": "app.muscadine.box"
+  }
+}
