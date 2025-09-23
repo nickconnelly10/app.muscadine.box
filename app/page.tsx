@@ -3,7 +3,7 @@ import { Wallet } from "@coinbase/onchainkit/wallet";
 import { useState } from "react";
 import HomePage from "./components/HomePage";
 import LendingPage from "./components/LendingPage";
-import { useQuickAuth } from "@coinbase/onchainkit/minikit";
+import { useQuickAuth, useMiniKit } from "@coinbase/onchainkit/minikit";
 import styles from "./page.module.css";
 
 type TabType = "home" | "lending";
@@ -19,6 +19,10 @@ export default function Home() {
   const { data: _data, isLoading: _isLoading, error: _error } = useQuickAuth<{
     userFid: string;
   }>("/api/auth");
+  
+  // Get user context and MiniKit state
+  const miniKit = useMiniKit();
+  const user = miniKit?.context?.user;
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -35,6 +39,11 @@ export default function Home() {
     <div className={styles.container}>
       <header className={styles.headerWrapper}>
         <Wallet />
+        {user && (
+          <div className={styles.userInfo}>
+            <span>Welcome, {user.displayName || `User ${user.fid}`}</span>
+          </div>
+        )}
       </header>
 
       <div className={styles.mainContentBox}>

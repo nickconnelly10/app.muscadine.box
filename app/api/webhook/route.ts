@@ -7,8 +7,17 @@ export async function POST(request: NextRequest) {
     // Handle webhook events from Farcaster
     console.log("Webhook received:", body);
     
-    // Process the webhook event here
-    // This could include user actions, frame interactions, etc.
+    // Process different types of webhook events
+    if (body.type === "user_action") {
+      console.log("User action:", body.data);
+      // Handle user interactions
+    } else if (body.type === "notification") {
+      console.log("Notification event:", body.data);
+      // Handle notification events
+    } else if (body.type === "transaction_complete") {
+      console.log("Transaction completed:", body.data);
+      // Handle transaction completion
+    }
     
     return NextResponse.json({ success: true });
   } catch (error) {
