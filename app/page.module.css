@@ -1,0 +1,420 @@
+.container {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.headerWrapper {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem;
+  z-index: 10;
+}
+
+.mainContentBox {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  margin: 2rem auto;
+  max-width: 1200px;
+  width: 90%;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.tab {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 3px solid transparent;
+}
+
+.tab:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.activeTab {
+  color: #667eea;
+  background: white;
+  border-bottom-color: #667eea;
+}
+
+.tabPanel {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.tabContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 5vh;
+}
+
+.title {
+  font-size: clamp(2rem, 8vw, 80px);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+.componentsTitle {
+  font-weight: 600;
+  margin-top: 2rem;
+  color: #374151;
+}
+
+.components {
+  list-style-type: disc;
+  margin-top: 0.75rem;
+}
+
+.components a {
+  color: #667eea;
+  text-decoration: none;
+}
+
+.components a:hover {
+  text-decoration: underline;
+}
+
+/* Lending/Morpho Vault Styles */
+.subtitle {
+  color: #6b7280;
+  margin-bottom: 2rem;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.morphoVaultContainer {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.vaultHeader {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid #e2e8f0;
+}
+
+.vaultHeader h3 {
+  color: #1e293b;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.vaultActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.actionCard {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease;
+}
+
+.actionCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.actionCard h4 {
+  color: #374151;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* Borrowing Page Styles */
+.comingSoonContainer {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.comingSoonCard {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  text-align: center;
+  color: white;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.comingSoonCard h3 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.comingSoonCard p {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+.featuresList {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.featureIcon {
+  font-size: 1.5rem;
+}
+
+.featureItem span:last-child {
+  font-weight: 500;
+}
+
+/* Home Page Wallet and Transaction Styles */
+.walletSection {
+  width: 100%;
+  max-width: 600px;
+  margin: 2rem auto;
+  background: #f8fafc;
+  border-radius: 16px;
+  padding: 2rem;
+  border: 1px solid #e2e8f0;
+}
+
+.sectionTitle {
+  color: #1e293b;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.subsectionTitle {
+  color: #374151;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.walletIslandContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.topCoinsSection {
+  margin-top: 1.5rem;
+}
+
+.coinsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.coinRow {
+  background: white;
+  border-radius: 8px;
+  padding: 0.5rem;
+  border: 1px solid #e5e7eb;
+  transition: box-shadow 0.2s ease;
+}
+
+.coinRow:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.transactionsSection {
+  width: 100%;
+  max-width: 600px;
+  margin: 2rem auto;
+  background: #f8fafc;
+  border-radius: 16px;
+  padding: 2rem;
+  border: 1px solid #e2e8f0;
+}
+
+.transactionContainer {
+  display: flex;
+  justify-content: center;
+}
+
+/* Borrowing Page Additional Styles */
+.vaultDescription {
+  color: #6b7280;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.actionDescription {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.marketInfo {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+  border: 1px solid #e2e8f0;
+}
+
+.marketInfo h4 {
+  color: #374151;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.infoLabel {
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.infoValue {
+  color: #1f2937;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .mainContentBox {
+    margin: 1rem;
+    width: calc(100% - 2rem);
+  }
+  
+  .tab {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .tabPanel {
+    padding: 1.5rem;
+  }
+  
+  .vaultActions {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .vaultHeader {
+    padding: 1rem;
+  }
+  
+  .actionCard {
+    padding: 1rem;
+  }
+  
+  .featuresList {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .comingSoonCard {
+    padding: 2rem 1.5rem;
+  }
+  
+  .comingSoonCard h3 {
+    font-size: 1.5rem;
+  }
+  
+  .walletSection,
+  .transactionsSection {
+    margin: 1rem;
+    padding: 1.5rem;
+    max-width: calc(100% - 2rem);
+  }
+  
+  .sectionTitle {
+    font-size: 1.25rem;
+  }
+  
+  .subsectionTitle {
+    font-size: 1.1rem;
+  }
+  
+  .infoGrid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .vaultDescription {
+    font-size: 0.9rem;
+    padding: 0 1rem;
+  }
+  
+  .actionDescription {
+    font-size: 0.8rem;
+  }
+}
