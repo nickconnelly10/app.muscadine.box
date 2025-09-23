@@ -3,11 +3,10 @@ import { Wallet } from "@coinbase/onchainkit/wallet";
 import { useState } from "react";
 import HomePage from "./components/HomePage";
 import LendingPage from "./components/LendingPage";
-import BorrowingPage from "./components/BorrowingPage";
-// import { useQuickAuth } from "@coinbase/onchainkit/minikit";
+import { useQuickAuth } from "@coinbase/onchainkit/minikit";
 import styles from "./page.module.css";
 
-type TabType = "home" | "lending" | "borrowing";
+type TabType = "home" | "lending";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabType>("home");
@@ -17,9 +16,9 @@ export default function Home() {
   // this to meet your needs. See the /app/api/auth/route.ts file for more details.
   // Note: If you don't need to verify the user's identity, you can get their FID and other user data
   // via `useMiniKit().context?.user`.
-  // const { data, isLoading, error } = useQuickAuth<{
-  //   userFid: string;
-  // }>("/api/auth");
+  const { data: _data, isLoading: _isLoading, error: _error } = useQuickAuth<{
+    userFid: string;
+  }>("/api/auth");
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -27,8 +26,6 @@ export default function Home() {
         return <HomePage />;
       case "lending":
         return <LendingPage />;
-      case "borrowing":
-        return <BorrowingPage />;
       default:
         return null;
     }
@@ -53,12 +50,6 @@ export default function Home() {
             onClick={() => setActiveTab("lending")}
           >
             Lending
-          </button>
-          <button
-            className={`${styles.tab} ${activeTab === "borrowing" ? styles.activeTab : ""}`}
-            onClick={() => setActiveTab("borrowing")}
-          >
-            Borrowing
           </button>
         </div>
         
