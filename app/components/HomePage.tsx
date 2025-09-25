@@ -1,5 +1,4 @@
 "use client";
-import { TokenRow } from "@coinbase/onchainkit/token";
 import { WalletIsland } from "@coinbase/onchainkit/wallet";
 import { Transaction } from "@coinbase/onchainkit/transaction";
 import { useAccount, useBalance, useReadContract } from "wagmi";
@@ -14,7 +13,7 @@ export default function HomePage() {
   // Define tokens to track on Base network
   const tokensToTrack = useMemo(() => [
     {
-      name: 'Ethereum',
+      name: 'ETH',
       address: '0x0000000000000000000000000000000000000000' as const,
       symbol: 'ETH',
       decimals: 18,
@@ -22,7 +21,7 @@ export default function HomePage() {
       chainId: base.id,
     },
     {
-      name: 'USD Coin',
+      name: 'USDC',
       address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913' as const,
       symbol: 'USDC',
       decimals: 6,
@@ -30,23 +29,15 @@ export default function HomePage() {
       chainId: base.id,
     },
     {
-      name: 'Wrapped Bitcoin',
-      address: '0x4200000000000000000000000000000000000006' as const,
-      symbol: 'WBTC',
-      decimals: 8,
-      image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
-      chainId: base.id,
-    },
-    {
-      name: 'Coinbase Wrapped Staked ETH',
+      name: 'cBETH',
       address: '0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22' as const,
-      symbol: 'cBBTC',
-      decimals: 8,
+      symbol: 'cBETH',
+      decimals: 18,
       image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
       chainId: base.id,
     },
     {
-      name: 'Dai Stablecoin',
+      name: 'DAI',
       address: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb' as const,
       symbol: 'DAI',
       decimals: 18,
@@ -54,7 +45,7 @@ export default function HomePage() {
       chainId: base.id,
     },
     {
-      name: 'Aerodrome Finance',
+      name: 'AERO',
       address: '0x940181a94A35A4569E4529A3CDfB74e38FD98631' as const,
       symbol: 'AERO',
       decimals: 18,
@@ -75,9 +66,20 @@ export default function HomePage() {
     balance: string;
     formatted: string;
     value: number;
+    price: number;
+    totalValue: number;
   }>>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+
+  // Token prices (simplified - in production, use a price API)
+  const tokenPrices = useMemo(() => ({
+    ETH: 3500, // Example price
+    USDC: 1,
+    cBETH: 3500, // Similar to ETH
+    DAI: 1,
+    AERO: 0.5, // Example price
+  }), []);
 
   // Get token balances using useReadContract for each token
   const usdcBalance = useReadContract({
@@ -99,26 +101,8 @@ export default function HomePage() {
     },
   });
 
-  const wbtcBalance = useReadContract({
-    address: '0x4200000000000000000000000000000000000006' as const,
-    abi: [
-      {
-        name: 'balanceOf',
-        type: 'function',
-        stateMutability: 'view',
-        inputs: [{ name: 'account', type: 'address' }],
-        outputs: [{ name: '', type: 'uint256' }],
-      },
-    ],
-    functionName: 'balanceOf',
-    args: address ? [address] : undefined,
-    chainId: base.id,
-    query: {
-      enabled: !!address && isConnected,
-    },
-  });
 
-  const cbbtcBalance = useReadContract({
+  const cbethBalance = useReadContract({
     address: '0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22' as const,
     abi: [
       {
@@ -182,8 +166,8 @@ export default function HomePage() {
       return;
     }
 
-    setIsLoading(usdcBalance.isLoading || wbtcBalance.isLoading || cbbtcBalance.isLoading || daiBalance.isLoading || aeroBalance.isLoading);
-    setError(usdcBalance.error || wbtcBalance.error || cbbtcBalance.error || daiBalance.error || aeroBalance.error || null);
+    setIsLoading(usdcBalance.isLoading || cbethBalance.isLoading || daiBalance.isLoading || aeroBalance.isLoading);
+    setError(usdcBalance.error || cbethBalance.error || daiBalance.error || aeroBalance.error || null);
 
     try {
       const balances = [];
@@ -194,46 +178,37 @@ export default function HomePage() {
         if (usdcToken) {
           const formatted = formatUnits(usdcBalance.data, usdcToken.decimals);
           const value = parseFloat(formatted);
-          if (value > 0) {
+          const price = tokenPrices.USDC;
+          const totalValue = value * price;
+          if (totalValue >= 0.02) { // Filter out tokens worth less than $0.02
             balances.push({
               token: usdcToken,
               balance: usdcBalance.data.toString(),
               formatted: value.toFixed(6),
               value: value,
+              price: price,
+              totalValue: totalValue,
             });
           }
         }
       }
 
-      // WBTC balance
-      if (wbtcBalance.data) {
-        const wbtcToken = tokensToTrack.find(t => t.symbol === 'WBTC');
-        if (wbtcToken) {
-          const formatted = formatUnits(wbtcBalance.data, wbtcToken.decimals);
+      // cBETH balance
+      if (cbethBalance.data) {
+        const cbethToken = tokensToTrack.find(t => t.symbol === 'cBETH');
+        if (cbethToken) {
+          const formatted = formatUnits(cbethBalance.data, cbethToken.decimals);
           const value = parseFloat(formatted);
-          if (value > 0) {
+          const price = tokenPrices.cBETH;
+          const totalValue = value * price;
+          if (totalValue >= 0.02) { // Filter out tokens worth less than $0.02
             balances.push({
-              token: wbtcToken,
-              balance: wbtcBalance.data.toString(),
+              token: cbethToken,
+              balance: cbethBalance.data.toString(),
               formatted: value.toFixed(6),
               value: value,
-            });
-          }
-        }
-      }
-
-      // cBBTC balance
-      if (cbbtcBalance.data) {
-        const cbbtcToken = tokensToTrack.find(t => t.symbol === 'cBBTC');
-        if (cbbtcToken) {
-          const formatted = formatUnits(cbbtcBalance.data, cbbtcToken.decimals);
-          const value = parseFloat(formatted);
-          if (value > 0) {
-            balances.push({
-              token: cbbtcToken,
-              balance: cbbtcBalance.data.toString(),
-              formatted: value.toFixed(6),
-              value: value,
+              price: price,
+              totalValue: totalValue,
             });
           }
         }
@@ -245,12 +220,16 @@ export default function HomePage() {
         if (daiToken) {
           const formatted = formatUnits(daiBalance.data, daiToken.decimals);
           const value = parseFloat(formatted);
-          if (value > 0) {
+          const price = tokenPrices.DAI;
+          const totalValue = value * price;
+          if (totalValue >= 0.02) { // Filter out tokens worth less than $0.02
             balances.push({
               token: daiToken,
               balance: daiBalance.data.toString(),
               formatted: value.toFixed(6),
               value: value,
+              price: price,
+              totalValue: totalValue,
             });
           }
         }
@@ -262,12 +241,16 @@ export default function HomePage() {
         if (aeroToken) {
           const formatted = formatUnits(aeroBalance.data, aeroToken.decimals);
           const value = parseFloat(formatted);
-          if (value > 0) {
+          const price = tokenPrices.AERO;
+          const totalValue = value * price;
+          if (totalValue >= 0.02) { // Filter out tokens worth less than $0.02
             balances.push({
               token: aeroToken,
               balance: aeroBalance.data.toString(),
               formatted: value.toFixed(6),
               value: value,
+              price: price,
+              totalValue: totalValue,
             });
           }
         }
@@ -277,28 +260,40 @@ export default function HomePage() {
     } catch (err) {
       setError(err as Error);
     }
-  }, [address, isConnected, usdcBalance.data, wbtcBalance.data, cbbtcBalance.data, daiBalance.data, aeroBalance.data, usdcBalance.isLoading, wbtcBalance.isLoading, cbbtcBalance.isLoading, daiBalance.isLoading, aeroBalance.isLoading, usdcBalance.error, wbtcBalance.error, cbbtcBalance.error, daiBalance.error, aeroBalance.error, tokensToTrack]);
+  }, [address, isConnected, usdcBalance.data, cbethBalance.data, daiBalance.data, aeroBalance.data, usdcBalance.isLoading, cbethBalance.isLoading, daiBalance.isLoading, aeroBalance.isLoading, usdcBalance.error, cbethBalance.error, daiBalance.error, aeroBalance.error, tokensToTrack, tokenPrices]);
 
   // Add ETH to balances if it exists
   const allBalances = [
-    ...(ethBalance && parseFloat(ethBalance.formatted) > 0 ? [{
-      token: {
-        name: 'Ethereum',
-        address: '0x0000000000000000000000000000000000000000' as const,
-        symbol: 'ETH',
-        decimals: 18,
-        image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
-        chainId: base.id,
-      },
-      balance: ethBalance.value.toString(),
-      formatted: ethBalance.formatted,
-      value: parseFloat(ethBalance.formatted),
-    }] : []),
+    ...(ethBalance && parseFloat(ethBalance.formatted) > 0 ? (() => {
+      const ethValue = parseFloat(ethBalance.formatted);
+      const ethPrice = tokenPrices.ETH;
+      const ethTotalValue = ethValue * ethPrice;
+      
+      // Only include ETH if it's worth more than $0.02
+      if (ethTotalValue >= 0.02) {
+        return [{
+          token: {
+            name: 'ETH',
+            address: '0x0000000000000000000000000000000000000000' as const,
+            symbol: 'ETH',
+            decimals: 18,
+            image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
+            chainId: base.id,
+          },
+          balance: ethBalance.value.toString(),
+          formatted: ethValue.toFixed(6),
+          value: ethValue,
+          price: ethPrice,
+          totalValue: ethTotalValue,
+        }];
+      }
+      return [];
+    })() : []),
     ...tokenBalances,
   ];
 
   // Calculate total portfolio value including ETH
-  const totalValue = allBalances.reduce((sum, balance) => sum + balance.value, 0);
+  const totalValue = allBalances.reduce((sum, balance) => sum + balance.totalValue, 0);
 
   return (
     <div className={styles.tabContent}>
@@ -335,15 +330,23 @@ export default function HomePage() {
               </div>
             ) : allBalances && allBalances.length > 0 ? (
               allBalances
-                .filter(balance => parseFloat(balance.formatted) > 0) // Only show tokens with balance
-                .sort((a, b) => b.value - a.value) // Sort by value
+                .sort((a, b) => b.totalValue - a.totalValue) // Sort by total value
                 .map((balance) => (
                   <div key={balance.token.address} className={styles.coinRow}>
-                <TokenRow 
-                      token={balance.token} 
-                      amount={balance.formatted}
-                  onClick={(token) => console.log('Clicked token:', token)}
-                />
+                    <div className={styles.tokenCard}>
+                      <div className={styles.tokenInfo}>
+                        <div className={styles.tokenSymbol}>{balance.token.symbol}</div>
+                        <div className={styles.tokenAmount}>
+                          {balance.formatted} {balance.token.symbol}
+                        </div>
+                        <div className={styles.tokenPrice}>
+                          ${balance.price.toFixed(2)} per token
+                        </div>
+                        <div className={styles.tokenValue}>
+                          ${balance.totalValue.toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 ))
             ) : (
