@@ -1,6 +1,5 @@
 "use client";
 import { WalletIsland } from "@coinbase/onchainkit/wallet";
-import { Transaction } from "@coinbase/onchainkit/transaction";
 import { useAccount, useBalance, useReadContract } from "wagmi";
 import { base } from "wagmi/chains";
 import { formatUnits } from "viem";
@@ -37,6 +36,14 @@ export default function HomePage() {
       chainId: base.id,
     },
     {
+      name: 'WETH',
+      address: '0x4200000000000000000000000000000000000006' as const,
+      symbol: 'WETH',
+      decimals: 18,
+      image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
+      chainId: base.id,
+    },
+    {
       name: 'DAI',
       address: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb' as const,
       symbol: 'DAI',
@@ -49,6 +56,14 @@ export default function HomePage() {
       address: '0x940181a94A35A4569E4529A3CDfB74e38FD98631' as const,
       symbol: 'AERO',
       decimals: 18,
+      image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
+      chainId: base.id,
+    },
+    {
+      name: 'USDT',
+      address: '0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2' as const,
+      symbol: 'USDT',
+      decimals: 6,
       image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
       chainId: base.id,
     },
@@ -71,14 +86,22 @@ export default function HomePage() {
   }>>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  
+  // Swap state
+  const [swapFromToken, setSwapFromToken] = useState<string>('');
+  const [swapToToken, setSwapToToken] = useState<string>('');
+  const [swapAmount, setSwapAmount] = useState<string>('');
+  const [isSwapLoading, setIsSwapLoading] = useState(false);
 
   // Token prices (simplified - in production, use a price API)
   const tokenPrices = useMemo(() => ({
     ETH: 3500, // Example price
     USDC: 1,
     cBETH: 3500, // Similar to ETH
+    WETH: 3500, // Same as ETH
     DAI: 1,
     AERO: 0.5, // Example price
+    USDT: 1,
   }), []);
 
   // Get token balances using useReadContract for each token
@@ -159,6 +182,44 @@ export default function HomePage() {
     },
   });
 
+  const wethBalance = useReadContract({
+    address: '0x4200000000000000000000000000000000000006' as const,
+    abi: [
+      {
+        name: 'balanceOf',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [{ name: 'account', type: 'address' }],
+        outputs: [{ name: '', type: 'uint256' }],
+      },
+    ],
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    chainId: base.id,
+    query: {
+      enabled: !!address && isConnected,
+    },
+  });
+
+  const usdtBalance = useReadContract({
+    address: '0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2' as const,
+    abi: [
+      {
+        name: 'balanceOf',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [{ name: 'account', type: 'address' }],
+        outputs: [{ name: '', type: 'uint256' }],
+      },
+    ],
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    chainId: base.id,
+    query: {
+      enabled: !!address && isConnected,
+    },
+  });
+
   // Process token balances
   useEffect(() => {
     if (!isConnected || !address) {
@@ -166,8 +227,8 @@ export default function HomePage() {
       return;
     }
 
-    setIsLoading(usdcBalance.isLoading || cbethBalance.isLoading || daiBalance.isLoading || aeroBalance.isLoading);
-    setError(usdcBalance.error || cbethBalance.error || daiBalance.error || aeroBalance.error || null);
+    setIsLoading(usdcBalance.isLoading || cbethBalance.isLoading || daiBalance.isLoading || aeroBalance.isLoading || wethBalance.isLoading || usdtBalance.isLoading);
+    setError(usdcBalance.error || cbethBalance.error || daiBalance.error || aeroBalance.error || wethBalance.error || usdtBalance.error || null);
 
     try {
       const balances = [];
@@ -180,7 +241,7 @@ export default function HomePage() {
           const value = parseFloat(formatted);
           const price = tokenPrices.USDC;
           const totalValue = value * price;
-          if (totalValue >= 0.02) { // Filter out tokens worth less than $0.02
+          if (totalValue >= 0.001) { // Filter out tokens worth less than $0.001
             balances.push({
               token: usdcToken,
               balance: usdcBalance.data.toString(),
@@ -201,7 +262,7 @@ export default function HomePage() {
           const value = parseFloat(formatted);
           const price = tokenPrices.cBETH;
           const totalValue = value * price;
-          if (totalValue >= 0.02) { // Filter out tokens worth less than $0.02
+          if (totalValue >= 0.001) { // Filter out tokens worth less than $0.001
             balances.push({
               token: cbethToken,
               balance: cbethBalance.data.toString(),
@@ -222,7 +283,7 @@ export default function HomePage() {
           const value = parseFloat(formatted);
           const price = tokenPrices.DAI;
           const totalValue = value * price;
-          if (totalValue >= 0.02) { // Filter out tokens worth less than $0.02
+          if (totalValue >= 0.001) { // Filter out tokens worth less than $0.001
             balances.push({
               token: daiToken,
               balance: daiBalance.data.toString(),
@@ -243,10 +304,52 @@ export default function HomePage() {
           const value = parseFloat(formatted);
           const price = tokenPrices.AERO;
           const totalValue = value * price;
-          if (totalValue >= 0.02) { // Filter out tokens worth less than $0.02
+          if (totalValue >= 0.001) { // Filter out tokens worth less than $0.001
             balances.push({
               token: aeroToken,
               balance: aeroBalance.data.toString(),
+              formatted: value.toFixed(6),
+              value: value,
+              price: price,
+              totalValue: totalValue,
+            });
+          }
+        }
+      }
+
+      // WETH balance
+      if (wethBalance.data) {
+        const wethToken = tokensToTrack.find(t => t.symbol === 'WETH');
+        if (wethToken) {
+          const formatted = formatUnits(wethBalance.data, wethToken.decimals);
+          const value = parseFloat(formatted);
+          const price = tokenPrices.WETH;
+          const totalValue = value * price;
+          if (totalValue >= 0.001) { // Filter out tokens worth less than $0.001
+            balances.push({
+              token: wethToken,
+              balance: wethBalance.data.toString(),
+              formatted: value.toFixed(6),
+              value: value,
+              price: price,
+              totalValue: totalValue,
+            });
+          }
+        }
+      }
+
+      // USDT balance
+      if (usdtBalance.data) {
+        const usdtToken = tokensToTrack.find(t => t.symbol === 'USDT');
+        if (usdtToken) {
+          const formatted = formatUnits(usdtBalance.data, usdtToken.decimals);
+          const value = parseFloat(formatted);
+          const price = tokenPrices.USDT;
+          const totalValue = value * price;
+          if (totalValue >= 0.001) { // Filter out tokens worth less than $0.001
+            balances.push({
+              token: usdtToken,
+              balance: usdtBalance.data.toString(),
               formatted: value.toFixed(6),
               value: value,
               price: price,
@@ -260,7 +363,7 @@ export default function HomePage() {
     } catch (err) {
       setError(err as Error);
     }
-  }, [address, isConnected, usdcBalance.data, cbethBalance.data, daiBalance.data, aeroBalance.data, usdcBalance.isLoading, cbethBalance.isLoading, daiBalance.isLoading, aeroBalance.isLoading, usdcBalance.error, cbethBalance.error, daiBalance.error, aeroBalance.error, tokensToTrack, tokenPrices]);
+  }, [address, isConnected, usdcBalance.data, cbethBalance.data, daiBalance.data, aeroBalance.data, wethBalance.data, usdtBalance.data, usdcBalance.isLoading, cbethBalance.isLoading, daiBalance.isLoading, aeroBalance.isLoading, wethBalance.isLoading, usdtBalance.isLoading, usdcBalance.error, cbethBalance.error, daiBalance.error, aeroBalance.error, wethBalance.error, usdtBalance.error, tokensToTrack, tokenPrices]);
 
   // Add ETH to balances if it exists
   const allBalances = [
@@ -269,8 +372,8 @@ export default function HomePage() {
       const ethPrice = tokenPrices.ETH;
       const ethTotalValue = ethValue * ethPrice;
       
-      // Only include ETH if it's worth more than $0.02
-      if (ethTotalValue >= 0.02) {
+      // Only include ETH if it's worth more than $0.001
+      if (ethTotalValue >= 0.001) {
         return [{
           token: {
             name: 'ETH',
@@ -294,6 +397,54 @@ export default function HomePage() {
 
   // Calculate total portfolio value including ETH
   const totalValue = allBalances.reduce((sum, balance) => sum + balance.totalValue, 0);
+
+  // Swap functionality
+  const handleSwap = async () => {
+    if (!swapFromToken || !swapToToken || !swapAmount) {
+      alert('Please select tokens and enter amount');
+      return;
+    }
+    
+    setIsSwapLoading(true);
+    try {
+      // This would integrate with a DEX like Uniswap, 1inch, etc.
+      // For now, we'll just show a placeholder
+      alert(`Swap ${swapAmount} ${swapFromToken} to ${swapToToken} - Integration with DEX needed`);
+    } catch (error) {
+      console.error('Swap error:', error);
+      alert('Swap failed');
+    } finally {
+      setIsSwapLoading(false);
+    }
+  };
+
+  // Mock recent transactions data
+  const recentTransactions = useMemo(() => [
+    {
+      id: '1',
+      type: 'deposit',
+      token: 'USDC',
+      amount: '100.00',
+      timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
+      status: 'completed'
+    },
+    {
+      id: '2',
+      type: 'withdraw',
+      token: 'ETH',
+      amount: '0.05',
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
+      status: 'completed'
+    },
+    {
+      id: '3',
+      type: 'swap',
+      token: 'cBETH',
+      amount: '0.1',
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
+      status: 'completed'
+    }
+  ], []);
 
   return (
     <div className={styles.tabContent}>
@@ -360,21 +511,41 @@ export default function HomePage() {
 
       {/* Transactions and Swap Section */}
       <div className={styles.transactionsSwapSection}>
-        {/* Recent Transactions */}
-      <div className={styles.transactionsSection}>
-        <h2 className={styles.sectionTitle}>Recent Transactions</h2>
-        <div className={styles.transactionContainer}>
-          <Transaction 
-            calls={[]}
-            onSuccess={(receipt) => {
-              console.log('Transaction successful:', receipt);
-            }}
-            onError={(error) => {
-              console.error('Transaction error:', error);
-            }}
-          />
-          </div>
-        </div>
+            {/* Recent Transactions */}
+            <div className={styles.transactionsSection}>
+              <h2 className={styles.sectionTitle}>Recent Transactions</h2>
+              <div className={styles.transactionContainer}>
+                {recentTransactions.length > 0 ? (
+                  <div className={styles.transactionList}>
+                    {recentTransactions.map((tx) => (
+                      <div key={tx.id} className={styles.transactionItem}>
+                        <div className={styles.transactionIcon}>
+                          {tx.type === 'deposit' ? '⬇️' : tx.type === 'withdraw' ? '⬆️' : '🔄'}
+                        </div>
+                        <div className={styles.transactionDetails}>
+                          <div className={styles.transactionType}>
+                            {tx.type.charAt(0).toUpperCase() + tx.type.slice(1)} {tx.token}
+                          </div>
+                          <div className={styles.transactionAmount}>
+                            {tx.amount} {tx.token}
+                          </div>
+                          <div className={styles.transactionTime}>
+                            {tx.timestamp.toLocaleString()}
+                          </div>
+                        </div>
+                        <div className={`${styles.transactionStatus} ${styles[tx.status]}`}>
+                          {tx.status}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={styles.emptyTransactions}>
+                    <p>No recent transactions</p>
+                  </div>
+                )}
+              </div>
+            </div>
 
         {/* Swap Section */}
         <div className={styles.swapSection}>
@@ -388,7 +559,12 @@ export default function HomePage() {
               <div className={styles.swapContent}>
                 <div className={styles.swapInput}>
                   <label>From</label>
-                  <select className={styles.tokenSelect}>
+                  <select 
+                    className={styles.tokenSelect}
+                    value={swapFromToken}
+                    onChange={(e) => setSwapFromToken(e.target.value)}
+                    disabled={!isConnected}
+                  >
                     <option value="">Select token</option>
                     {allBalances
                       .filter(balance => parseFloat(balance.formatted) > 0)
@@ -402,18 +578,39 @@ export default function HomePage() {
                 <div className={styles.swapArrow}>⇄</div>
                 <div className={styles.swapInput}>
                   <label>To</label>
-                  <select className={styles.tokenSelect}>
+                  <select 
+                    className={styles.tokenSelect}
+                    value={swapToToken}
+                    onChange={(e) => setSwapToToken(e.target.value)}
+                    disabled={!isConnected}
+                  >
                     <option value="">Select token</option>
                     <option value="ETH">ETH</option>
                     <option value="USDC">USDC</option>
-                    <option value="WBTC">WBTC</option>
-                    <option value="cBBTC">cBBTC</option>
+                    <option value="cBETH">cBETH</option>
+                    <option value="WETH">WETH</option>
                     <option value="DAI">DAI</option>
                     <option value="AERO">AERO</option>
+                    <option value="USDT">USDT</option>
                   </select>
                 </div>
-                <button className={styles.swapButton} disabled>
-                  Connect Wallet to Swap
+                <div className={styles.swapInput}>
+                  <label>Amount</label>
+                  <input
+                    type="number"
+                    className={styles.amountInput}
+                    placeholder="0.00"
+                    value={swapAmount}
+                    onChange={(e) => setSwapAmount(e.target.value)}
+                    disabled={!isConnected}
+                  />
+                </div>
+                <button 
+                  className={styles.swapButton} 
+                  onClick={handleSwap}
+                  disabled={!isConnected || isSwapLoading || !swapFromToken || !swapToToken || !swapAmount}
+                >
+                  {isSwapLoading ? 'Swapping...' : !isConnected ? 'Connect Wallet to Swap' : 'Swap Tokens'}
                 </button>
               </div>
             </div>
