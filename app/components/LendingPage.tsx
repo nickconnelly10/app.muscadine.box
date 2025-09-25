@@ -1,9 +1,6 @@
 "use client";
 import { 
   Earn, 
-  EarnDeposit, 
-  EarnWithdraw, 
-  EarnDetails,
   DepositAmountInput,
   DepositBalance,
   DepositButton,

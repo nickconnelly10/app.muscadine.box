@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import { TokenRow } from "@coinbase/onchainkit/token";
 import { WalletIsland } from "@coinbase/onchainkit/wallet";
 import { Transaction } from "@coinbase/onchainkit/transaction";
