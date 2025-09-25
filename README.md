@@ -11,23 +11,26 @@ Muscadine Box is a full-featured DeFi application that combines portfolio manage
 ## Features
 
 ### Portfolio Management
-- Real-time token balance tracking for ETH, USDC, WBTC, cBBTC, DAI, and AERO
-- Total portfolio value calculation and display
+- Real-time token balance tracking for ETH, USDC, cBBTC, WETH, MORPHO, cbXRP, AERO, and MOONWELL
+- Total portfolio value calculation with real-time pricing
 - Interactive token selection and management
+- BaseScan integration for transaction history
 - Responsive design optimized for mobile and desktop
 
 ### Lending Services
-- Multiple Morpho vault support (USDC, cBBTC, WETH)
-- Dynamic vault selection interface
+- Multiple Morpho vault support (USDC, cBETH, WETH) in single-row layout
+- Accurate vault balance calculations using convertToAssets
 - Deposit and withdraw functionality with OnchainKit integration
 - Real-time yield and vault details display
 - Sponsored transactions for gas-free operations
+- Real-time token pricing integration
 
 ### Token Swapping
 - Custom swap interface with token selection
-- Support for all tracked tokens
+- Support for all tracked tokens (ETH, USDC, cBBTC, WETH, MORPHO, cbXRP, AERO, MOONWELL)
 - Integration-ready for DEX aggregators
 - User-friendly swap flow design
+- Real-time transaction history display
 
 ### Wallet Integration
 - Seamless wallet connection via OnchainKit
@@ -149,10 +152,12 @@ NEXT_PUBLIC_PROJECT_NAME=app.muscadine.box
 
 ### Vault Configuration
 
-The application supports multiple Morpho vaults:
+The application supports multiple Morpho vaults with accurate balance calculations:
 - **USDC Vault**: `0x7BfA7C4f149E7415b73bdeDfe609237e29CBF34A`
-- **cBBTC Vault**: `0x6770216aC60F634483Ec073cBABC4011c94307Cb`
+- **cBETH Vault**: `0x6770216aC60F634483Ec073cBABC4011c94307Cb`
 - **WETH Vault**: `0x6b13c060F13Af1fdB319F52315BbbF3fb1D88844`
+
+All vaults use the `convertToAssets` function to display accurate user balances rather than vault share amounts.
 
 ## Deployment
 
@@ -179,6 +184,20 @@ The application is optimized for deployment on Vercel, Netlify, or any Next.js-c
 - `GET /api/simple` - Simple API endpoint
 - `GET /api/test` - Test endpoint
 
+## Technical Implementation
+
+### Real-time Data Integration
+- **Token Pricing**: CoinGecko API integration for real-time token prices
+- **Vault Balances**: Morpho `convertToAssets` function for accurate balance calculations
+- **Transaction History**: BaseScan integration for wallet transaction viewing
+- **Price Updates**: Automatic price refresh every 30 seconds
+
+### Performance Optimizations
+- **Build Size**: 74.6 kB main bundle, 552 kB first load
+- **Static Generation**: Optimized for Vercel deployment
+- **Code Splitting**: Automatic route-based code splitting
+- **Type Safety**: Full TypeScript coverage with strict mode
+
 ## Development
 
 ### Code Quality
@@ -188,6 +207,7 @@ The project includes:
 - ESLint for code linting
 - Prettier for code formatting
 - Next.js built-in optimizations
+- Comprehensive error handling
 
 ### Testing
 

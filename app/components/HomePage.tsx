@@ -21,17 +21,17 @@ export default function HomePage() {
     },
     {
       name: 'USDC',
-      address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913' as const,
+      address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as const,
       symbol: 'USDC',
       decimals: 6,
       image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
       chainId: base.id,
     },
     {
-      name: 'cBETH',
-      address: '0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22' as const,
-      symbol: 'cBETH',
-      decimals: 18,
+      name: 'cBBTC',
+      address: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf' as const,
+      symbol: 'cBBTC',
+      decimals: 8,
       image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
       chainId: base.id,
     },
@@ -44,10 +44,18 @@ export default function HomePage() {
       chainId: base.id,
     },
     {
-      name: 'DAI',
-      address: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb' as const,
-      symbol: 'DAI',
+      name: 'MORPHO',
+      address: '0xBAa5CC21fd487B8Fcc2F632f3F4E8D37262a0842' as const,
+      symbol: 'MORPHO',
       decimals: 18,
+      image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
+      chainId: base.id,
+    },
+    {
+      name: 'cbXRP',
+      address: '0xcb585250f852C6c6bf90434AB21A00f02833a4af' as const,
+      symbol: 'cbXRP',
+      decimals: 6,
       image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
       chainId: base.id,
     },
@@ -60,10 +68,10 @@ export default function HomePage() {
       chainId: base.id,
     },
     {
-      name: 'USDT',
-      address: '0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2' as const,
-      symbol: 'USDT',
-      decimals: 6,
+      name: 'MOONWELL',
+      address: '0xA88594D404727625A9437C3f886C7643872296AE' as const,
+      symbol: 'MOONWELL',
+      decimals: 18,
       image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
       chainId: base.id,
     },
@@ -97,16 +105,17 @@ export default function HomePage() {
   const tokenPrices = useMemo(() => ({
     ETH: 3500, // Example price
     USDC: 1,
-    cBETH: 3500, // Similar to ETH
+    cBBTC: 65000, // Bitcoin price
     WETH: 3500, // Same as ETH
-    DAI: 1,
+    MORPHO: 2.5, // Example price
+    cbXRP: 0.6, // XRP price
     AERO: 0.5, // Example price
-    USDT: 1,
+    MOONWELL: 0.1, // Example price
   }), []);
 
   // Get token balances using useReadContract for each token
   const usdcBalance = useReadContract({
-    address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913' as const,
+    address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as const,
     abi: [
       {
         name: 'balanceOf',
@@ -201,8 +210,65 @@ export default function HomePage() {
     },
   });
 
-  const usdtBalance = useReadContract({
-    address: '0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2' as const,
+  const cbbtcBalance = useReadContract({
+    address: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf' as const,
+    abi: [
+      {
+        name: 'balanceOf',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [{ name: 'account', type: 'address' }],
+        outputs: [{ name: '', type: 'uint256' }],
+      },
+    ],
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    chainId: base.id,
+    query: {
+      enabled: !!address && isConnected,
+    },
+  });
+
+  const morphoBalance = useReadContract({
+    address: '0xBAa5CC21fd487B8Fcc2F632f3F4E8D37262a0842' as const,
+    abi: [
+      {
+        name: 'balanceOf',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [{ name: 'account', type: 'address' }],
+        outputs: [{ name: '', type: 'uint256' }],
+      },
+    ],
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    chainId: base.id,
+    query: {
+      enabled: !!address && isConnected,
+    },
+  });
+
+  const cbxrpBalance = useReadContract({
+    address: '0xcb585250f852C6c6bf90434AB21A00f02833a4af' as const,
+    abi: [
+      {
+        name: 'balanceOf',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [{ name: 'account', type: 'address' }],
+        outputs: [{ name: '', type: 'uint256' }],
+      },
+    ],
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    chainId: base.id,
+    query: {
+      enabled: !!address && isConnected,
+    },
+  });
+
+  const moonwellBalance = useReadContract({
+    address: '0xA88594D404727625A9437C3f886C7643872296AE' as const,
     abi: [
       {
         name: 'balanceOf',
@@ -227,8 +293,8 @@ export default function HomePage() {
       return;
     }
 
-    setIsLoading(usdcBalance.isLoading || cbethBalance.isLoading || daiBalance.isLoading || aeroBalance.isLoading || wethBalance.isLoading || usdtBalance.isLoading);
-    setError(usdcBalance.error || cbethBalance.error || daiBalance.error || aeroBalance.error || wethBalance.error || usdtBalance.error || null);
+    setIsLoading(usdcBalance.isLoading || cbethBalance.isLoading || daiBalance.isLoading || aeroBalance.isLoading || wethBalance.isLoading || cbbtcBalance.isLoading || morphoBalance.isLoading || cbxrpBalance.isLoading || moonwellBalance.isLoading);
+    setError(usdcBalance.error || cbethBalance.error || daiBalance.error || aeroBalance.error || wethBalance.error || cbbtcBalance.error || morphoBalance.error || cbxrpBalance.error || moonwellBalance.error || null);
 
     try {
       const balances = [];
@@ -260,7 +326,7 @@ export default function HomePage() {
         if (cbethToken) {
           const formatted = formatUnits(cbethBalance.data, cbethToken.decimals);
           const value = parseFloat(formatted);
-          const price = tokenPrices.cBETH;
+          const price = tokenPrices.WETH; // cBETH uses WETH price
           const totalValue = value * price;
           if (totalValue >= 0.001) { // Filter out tokens worth less than $0.001
             balances.push({
@@ -281,7 +347,7 @@ export default function HomePage() {
         if (daiToken) {
           const formatted = formatUnits(daiBalance.data, daiToken.decimals);
           const value = parseFloat(formatted);
-          const price = tokenPrices.DAI;
+          const price = tokenPrices.USDC; // DAI uses USDC price
           const totalValue = value * price;
           if (totalValue >= 0.001) { // Filter out tokens worth less than $0.001
             balances.push({
@@ -338,18 +404,81 @@ export default function HomePage() {
         }
       }
 
-      // USDT balance
-      if (usdtBalance.data) {
-        const usdtToken = tokensToTrack.find(t => t.symbol === 'USDT');
-        if (usdtToken) {
-          const formatted = formatUnits(usdtBalance.data, usdtToken.decimals);
+      // cBBTC balance
+      if (cbbtcBalance.data) {
+        const cbbtcToken = tokensToTrack.find(t => t.symbol === 'cBBTC');
+        if (cbbtcToken) {
+          const formatted = formatUnits(cbbtcBalance.data, cbbtcToken.decimals);
           const value = parseFloat(formatted);
-          const price = tokenPrices.USDT;
+          const price = tokenPrices.cBBTC;
           const totalValue = value * price;
           if (totalValue >= 0.001) { // Filter out tokens worth less than $0.001
             balances.push({
-              token: usdtToken,
-              balance: usdtBalance.data.toString(),
+              token: cbbtcToken,
+              balance: cbbtcBalance.data.toString(),
+              formatted: value.toFixed(8),
+              value: value,
+              price: price,
+              totalValue: totalValue,
+            });
+          }
+        }
+      }
+
+      // MORPHO balance
+      if (morphoBalance.data) {
+        const morphoToken = tokensToTrack.find(t => t.symbol === 'MORPHO');
+        if (morphoToken) {
+          const formatted = formatUnits(morphoBalance.data, morphoToken.decimals);
+          const value = parseFloat(formatted);
+          const price = tokenPrices.MORPHO;
+          const totalValue = value * price;
+          if (totalValue >= 0.001) { // Filter out tokens worth less than $0.001
+            balances.push({
+              token: morphoToken,
+              balance: morphoBalance.data.toString(),
+              formatted: value.toFixed(6),
+              value: value,
+              price: price,
+              totalValue: totalValue,
+            });
+          }
+        }
+      }
+
+      // cbXRP balance
+      if (cbxrpBalance.data) {
+        const cbxrpToken = tokensToTrack.find(t => t.symbol === 'cbXRP');
+        if (cbxrpToken) {
+          const formatted = formatUnits(cbxrpBalance.data, cbxrpToken.decimals);
+          const value = parseFloat(formatted);
+          const price = tokenPrices.cbXRP;
+          const totalValue = value * price;
+          if (totalValue >= 0.001) { // Filter out tokens worth less than $0.001
+            balances.push({
+              token: cbxrpToken,
+              balance: cbxrpBalance.data.toString(),
+              formatted: value.toFixed(6),
+              value: value,
+              price: price,
+              totalValue: totalValue,
+            });
+          }
+        }
+      }
+
+      // MOONWELL balance
+      if (moonwellBalance.data) {
+        const moonwellToken = tokensToTrack.find(t => t.symbol === 'MOONWELL');
+        if (moonwellToken) {
+          const formatted = formatUnits(moonwellBalance.data, moonwellToken.decimals);
+          const value = parseFloat(formatted);
+          const price = tokenPrices.MOONWELL;
+          const totalValue = value * price;
+          if (totalValue >= 0.001) { // Filter out tokens worth less than $0.001
+            balances.push({
+              token: moonwellToken,
+              balance: moonwellBalance.data.toString(),
               formatted: value.toFixed(6),
               value: value,
               price: price,
@@ -363,7 +492,7 @@ export default function HomePage() {
     } catch (err) {
       setError(err as Error);
     }
-  }, [address, isConnected, usdcBalance.data, cbethBalance.data, daiBalance.data, aeroBalance.data, wethBalance.data, usdtBalance.data, usdcBalance.isLoading, cbethBalance.isLoading, daiBalance.isLoading, aeroBalance.isLoading, wethBalance.isLoading, usdtBalance.isLoading, usdcBalance.error, cbethBalance.error, daiBalance.error, aeroBalance.error, wethBalance.error, usdtBalance.error, tokensToTrack, tokenPrices]);
+  }, [address, isConnected, usdcBalance.data, cbethBalance.data, daiBalance.data, aeroBalance.data, wethBalance.data, cbbtcBalance.data, morphoBalance.data, cbxrpBalance.data, moonwellBalance.data, usdcBalance.isLoading, cbethBalance.isLoading, daiBalance.isLoading, aeroBalance.isLoading, wethBalance.isLoading, cbbtcBalance.isLoading, morphoBalance.isLoading, cbxrpBalance.isLoading, moonwellBalance.isLoading, usdcBalance.error, cbethBalance.error, daiBalance.error, aeroBalance.error, wethBalance.error, cbbtcBalance.error, morphoBalance.error, cbxrpBalance.error, moonwellBalance.error, tokensToTrack, tokenPrices]);
 
   // Add ETH to balances if it exists
   const allBalances = [
@@ -512,9 +641,9 @@ export default function HomePage() {
       {/* Transactions and Swap Section */}
       <div className={styles.transactionsSwapSection}>
             {/* Recent Transactions */}
-            <div className={styles.transactionsSection}>
-              <h2 className={styles.sectionTitle}>Recent Transactions</h2>
-              <div className={styles.transactionContainer}>
+      <div className={styles.transactionsSection}>
+        <h2 className={styles.sectionTitle}>Recent Transactions</h2>
+        <div className={styles.transactionContainer}>
                 {recentTransactions.length > 0 ? (
                   <div className={styles.transactionList}>
                     {recentTransactions.map((tx) => (
@@ -542,6 +671,18 @@ export default function HomePage() {
                 ) : (
                   <div className={styles.emptyTransactions}>
                     <p>No recent transactions</p>
+                  </div>
+                )}
+                {isConnected && address && (
+                  <div className={styles.transactionFooter}>
+                    <a 
+                      href={`https://basescan.org/address/${address}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.basescanLink}
+                    >
+                      View on BaseScan ↗
+                    </a>
                   </div>
                 )}
               </div>
@@ -587,11 +728,12 @@ export default function HomePage() {
                     <option value="">Select token</option>
                     <option value="ETH">ETH</option>
                     <option value="USDC">USDC</option>
-                    <option value="cBETH">cBETH</option>
+                    <option value="cBBTC">cBBTC</option>
                     <option value="WETH">WETH</option>
-                    <option value="DAI">DAI</option>
+                    <option value="MORPHO">MORPHO</option>
+                    <option value="cbXRP">cbXRP</option>
                     <option value="AERO">AERO</option>
-                    <option value="USDT">USDT</option>
+                    <option value="MOONWELL">MOONWELL</option>
                   </select>
                 </div>
                 <div className={styles.swapInput}>

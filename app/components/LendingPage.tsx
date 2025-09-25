@@ -10,7 +10,7 @@ import {
   YieldDetails,
   VaultDetails
 } from "@coinbase/onchainkit/earn";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAccount, useReadContract } from "wagmi";
 import { base } from "wagmi/chains";
 import { formatUnits } from "viem";
@@ -47,14 +47,39 @@ export default function LendingPage() {
     }
   };
 
-  // Token prices for USD calculations
-  const tokenPrices = useMemo(() => ({
+  // Token prices for USD calculations - using real-time data
+  const [tokenPrices, setTokenPrices] = useState({
     USDC: 1,
     cBETH: 3500,
     WETH: 3500,
-  }), []);
+  });
 
-  // Get vault balances for each vault
+  // Fetch real-time token prices
+  useEffect(() => {
+    const fetchPrices = async () => {
+      try {
+        // Using CoinGecko API for real-time prices
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum,usd-coin&vs_currencies=usd');
+        const data = await response.json();
+        
+        setTokenPrices({
+          USDC: data['usd-coin']?.usd || 1,
+          cBETH: data.ethereum?.usd || 3500, // cBETH tracks ETH price
+          WETH: data.ethereum?.usd || 3500, // WETH tracks ETH price
+        });
+      } catch (error) {
+        console.error('Failed to fetch token prices:', error);
+        // Keep fallback prices
+      }
+    };
+
+    fetchPrices();
+    // Update prices every 30 seconds
+    const interval = setInterval(fetchPrices, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Get vault balances for each vault using proper Morpho functions
   const usdcVaultBalance = useReadContract({
     address: vaults.usdc.address,
     abi: [
@@ -63,6 +88,13 @@ export default function LendingPage() {
         type: 'function',
         stateMutability: 'view',
         inputs: [{ name: 'account', type: 'address' }],
+        outputs: [{ name: '', type: 'uint256' }],
+      },
+      {
+        name: 'convertToAssets',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [{ name: 'shares', type: 'uint256' }],
         outputs: [{ name: '', type: 'uint256' }],
       },
     ],
@@ -84,6 +116,13 @@ export default function LendingPage() {
         inputs: [{ name: 'account', type: 'address' }],
         outputs: [{ name: '', type: 'uint256' }],
       },
+      {
+        name: 'convertToAssets',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [{ name: 'shares', type: 'uint256' }],
+        outputs: [{ name: '', type: 'uint256' }],
+      },
     ],
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
@@ -103,6 +142,13 @@ export default function LendingPage() {
         inputs: [{ name: 'account', type: 'address' }],
         outputs: [{ name: '', type: 'uint256' }],
       },
+      {
+        name: 'convertToAssets',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [{ name: 'shares', type: 'uint256' }],
+        outputs: [{ name: '', type: 'uint256' }],
+      },
     ],
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
@@ -112,14 +158,72 @@ export default function LendingPage() {
     },
   });
 
+  // Get convertToAssets calls for each vault
+  const usdcConvertToAssets = useReadContract({
+    address: vaults.usdc.address,
+    abi: [
+      {
+        name: 'convertToAssets',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [{ name: 'shares', type: 'uint256' }],
+        outputs: [{ name: '', type: 'uint256' }],
+      },
+    ],
+    functionName: 'convertToAssets',
+    args: usdcVaultBalance.data ? [usdcVaultBalance.data] : undefined,
+    chainId: base.id,
+    query: {
+      enabled: !!address && isConnected && !!usdcVaultBalance.data,
+    },
+  });
+
+  const cbethConvertToAssets = useReadContract({
+    address: vaults.cbeth.address,
+    abi: [
+      {
+        name: 'convertToAssets',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [{ name: 'shares', type: 'uint256' }],
+        outputs: [{ name: '', type: 'uint256' }],
+      },
+    ],
+    functionName: 'convertToAssets',
+    args: cbethVaultBalance.data ? [cbethVaultBalance.data] : undefined,
+    chainId: base.id,
+    query: {
+      enabled: !!address && isConnected && !!cbethVaultBalance.data,
+    },
+  });
+
+  const wethConvertToAssets = useReadContract({
+    address: vaults.weth.address,
+    abi: [
+      {
+        name: 'convertToAssets',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [{ name: 'shares', type: 'uint256' }],
+        outputs: [{ name: '', type: 'uint256' }],
+      },
+    ],
+    functionName: 'convertToAssets',
+    args: wethVaultBalance.data ? [wethVaultBalance.data] : undefined,
+    chainId: base.id,
+    query: {
+      enabled: !!address && isConnected && !!wethVaultBalance.data,
+    },
+  });
+
   // Calculate vault balances and values
   const vaultBalances = useMemo(() => {
     const balances = [];
     
-    // USDC Vault
-    if (usdcVaultBalance.data) {
-      const formatted = formatUnits(usdcVaultBalance.data, vaults.usdc.decimals);
-      const value = parseFloat(formatted);
+    // USDC Vault - use convertToAssets for actual asset amount
+    if (usdcVaultBalance.data && usdcConvertToAssets.data) {
+      const assets = formatUnits(usdcConvertToAssets.data, vaults.usdc.decimals);
+      const value = parseFloat(assets);
       const usdValue = value * tokenPrices.USDC;
       balances.push({
         vault: vaults.usdc,
@@ -131,10 +235,10 @@ export default function LendingPage() {
       });
     }
 
-    // cBETH Vault
-    if (cbethVaultBalance.data) {
-      const formatted = formatUnits(cbethVaultBalance.data, vaults.cbeth.decimals);
-      const value = parseFloat(formatted);
+    // cBETH Vault - use convertToAssets for actual asset amount
+    if (cbethVaultBalance.data && cbethConvertToAssets.data) {
+      const assets = formatUnits(cbethConvertToAssets.data, vaults.cbeth.decimals);
+      const value = parseFloat(assets);
       const usdValue = value * tokenPrices.cBETH;
       balances.push({
         vault: vaults.cbeth,
@@ -146,10 +250,10 @@ export default function LendingPage() {
       });
     }
 
-    // WETH Vault
-    if (wethVaultBalance.data) {
-      const formatted = formatUnits(wethVaultBalance.data, vaults.weth.decimals);
-      const value = parseFloat(formatted);
+    // WETH Vault - use convertToAssets for actual asset amount
+    if (wethVaultBalance.data && wethConvertToAssets.data) {
+      const assets = formatUnits(wethConvertToAssets.data, vaults.weth.decimals);
+      const value = parseFloat(assets);
       const usdValue = value * tokenPrices.WETH;
       balances.push({
         vault: vaults.weth,
@@ -162,7 +266,7 @@ export default function LendingPage() {
     }
 
     return balances;
-  }, [usdcVaultBalance.data, cbethVaultBalance.data, wethVaultBalance.data, tokenPrices, vaults.usdc, vaults.cbeth, vaults.weth]);
+  }, [usdcVaultBalance.data, cbethVaultBalance.data, wethVaultBalance.data, usdcConvertToAssets.data, cbethConvertToAssets.data, wethConvertToAssets.data, tokenPrices, vaults.usdc, vaults.cbeth, vaults.weth]);
 
   return (
     <div className={styles.tabContent}>
