@@ -837,3 +837,121 @@
   margin: 0.5rem 0 1rem 0;
   font-style: italic;
 }
+
+/* Vaults Grid Layout */
+.vaultsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+@media (max-width: 768px) {
+  .vaultsGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+/* Individual Vault Card */
+.vaultCard {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+}
+
+.vaultCard:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.vaultCardContent {
+  padding: 1.5rem;
+}
+
+/* Vault Header */
+.vaultHeader {
+  margin-bottom: 1rem;
+}
+
+.vaultHeader .vaultTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.5rem 0;
+}
+
+.vaultHeader .vaultDescription {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+  font-style: italic;
+}
+
+/* Vault Balance Info */
+.vaultBalanceInfo {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.balanceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.balanceRow:last-child {
+  margin-bottom: 0;
+}
+
+.balanceLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.balanceValue {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.balanceAmount {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+.balanceUsd {
+  font-size: 0.75rem;
+  color: #059669;
+  font-weight: 500;
+}
+
+/* Vault Details */
+.vaultDetails {
+  margin-bottom: 1rem;
+}
+
+/* Vault Actions */
+.vaultActions {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 1rem;
+}
+
+.vaultActions .tabSelector {
+  margin-bottom: 1rem;
+}
+
+.vaultActions .actionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}

@@ -15,5 +15,8 @@
   "tagline": "Lend and earn with confidence",
   "ogTitle": "Muscadine Box - DeFi Lending Platform",
   "ogDescription": "Earn interest on your crypto with Morpho vaults on Base network",
-  "ogImageUrl": "https://app.muscadine.box/hero.png"
+  "ogImageUrl": "https://app.muscadine.box/hero.png",
+  "baseBuilder": {
+    "allowedAddresses": ["0x5332b9458D975Cd155C67EdC54C1AD0262336f3f"]
+  }
 }
