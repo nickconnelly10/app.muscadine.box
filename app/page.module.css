@@ -551,3 +551,40 @@
     font-size: 0.8rem;
   }
 }
+
+/* Portfolio States */
+.connectPrompt,
+.loadingPrompt,
+.errorPrompt,
+.emptyPrompt {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.connectPrompt {
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+}
+
+.loadingPrompt {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 8px;
+  border: 1px solid #f59e0b;
+}
+
+.errorPrompt {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border-radius: 8px;
+  border: 1px solid #ef4444;
+  color: #dc2626;
+}
+
+.emptyPrompt {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-radius: 8px;
+  border: 1px solid #0ea5e9;
+  color: #0284c7;
+}
