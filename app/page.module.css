@@ -731,3 +731,66 @@
   background: #9ca3af;
   cursor: not-allowed;
 }
+
+/* Vault Selection */
+.vaultSelection {
+  margin-bottom: 2rem;
+}
+
+.vaultSelectionTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 1rem;
+}
+
+.vaultButtons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.vaultButton {
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.vaultButton:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.vaultButton.activeVault {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.vaultButtonContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.vaultSymbol {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.vaultName {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.vaultDescription {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0.5rem 0 1rem 0;
+  font-style: italic;
+}
