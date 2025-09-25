@@ -588,3 +588,146 @@
   border: 1px solid #0ea5e9;
   color: #0284c7;
 }
+
+/* Portfolio Header */
+.portfolioHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.totalValue {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.totalValueLabel {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+}
+
+.totalValueAmount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #059669;
+}
+
+/* Transactions and Swap Section */
+.transactionsSwapSection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+@media (max-width: 768px) {
+  .transactionsSwapSection {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* Swap Section */
+.swapSection {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+}
+
+.swapContainer {
+  margin-top: 1rem;
+}
+
+.swapCard {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+.swapHeader {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.swapHeader h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.5rem 0;
+}
+
+.swapHeader p {
+  color: #6b7280;
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.swapContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.swapInput {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.swapInput label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.tokenSelect {
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #ffffff;
+  font-size: 0.875rem;
+  color: #111827;
+  transition: border-color 0.2s;
+}
+
+.tokenSelect:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.swapArrow {
+  text-align: center;
+  font-size: 1.5rem;
+  color: #6b7280;
+  margin: 0.5rem 0;
+}
+
+.swapButton {
+  background: #3b82f6;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 0.5rem;
+}
+
+.swapButton:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.swapButton:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
