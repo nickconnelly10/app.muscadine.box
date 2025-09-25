@@ -1,0 +1,19 @@
+{
+  "version": "1",
+  "name": "app-muscadine.box",
+  "subtitle": "DeFi Lending Platform",
+  "description": "Earn interest on your crypto with Morpho vaults on Base",
+  "screenshotUrls": ["https://app.muscadine.box/screenshot.png"],
+  "iconUrl": "https://app.muscadine.box/icon.png",
+  "splashImageUrl": "https://app.muscadine.box/splash.png",
+  "splashBackgroundColor": "#000000",
+  "homeUrl": "https://app.muscadine.box",
+  "webhookUrl": "https://app.muscadine.box/api/webhook",
+  "primaryCategory": "utility",
+  "tags": ["defi", "lending", "morpho", "base"],
+  "heroImageUrl": "https://app.muscadine.box/hero.png",
+  "tagline": "Lend and earn with confidence",
+  "ogTitle": "Muscadine Box - DeFi Lending Platform",
+  "ogDescription": "Earn interest on your crypto with Morpho vaults on Base network",
+  "ogImageUrl": "https://app.muscadine.box/hero.png"
+}
