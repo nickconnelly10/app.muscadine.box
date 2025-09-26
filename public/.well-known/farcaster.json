@@ -26,6 +26,10 @@
       "wallet": true,
       "transactions": true,
       "defi": true
+    },
+    "accountAssociation": {
+      "type": "fid",
+      "fid": "5332b9458D975Cd155C67EdC54C1AD0262336f3f"
     }
   },
   "baseBuilder": {
