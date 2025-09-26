@@ -597,6 +597,24 @@
   margin-bottom: 1rem;
 }
 
+.priceIndicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.loadingIndicator {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.liveIndicator {
+  font-size: 0.75rem;
+  color: #059669;
+  font-weight: 500;
+}
+
 .totalValue {
   display: flex;
   flex-direction: column;
@@ -675,6 +693,30 @@
   gap: 1rem;
 }
 
+.swapRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.swapRow .swapInput {
+  flex: 1;
+}
+
+.swapRow .swapArrow {
+  font-size: 1.25rem;
+  color: #6b7280;
+  align-self: center;
+  margin: 0 0.25rem;
+}
+
+.swapAmountSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
 .swapInput {
   display: flex;
   flex-direction: column;
@@ -732,6 +774,94 @@
   cursor: not-allowed;
 }
 
+.swapContainer > div {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.swapQuote {
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 6px;
+  padding: 0.75rem;
+  color: #0369a1;
+  font-size: 0.875rem;
+}
+
+.quoteRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.quoteItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.quoteItem label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.quoteItem span {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.swapButtonContainer {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.swapQuoteButton {
+  background: #059669;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.swapQuoteButton:hover:not(:disabled) {
+  background: #047857;
+}
+
+.swapQuoteButton:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.swapButton {
+  background: #3b82f6;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  flex: 1;
+}
+
+.swapButton:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.swapButton:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
 /* Token Card Styles */
 .tokenCard {
   background: #ffffff;
@@ -740,6 +870,9 @@
   padding: 1rem;
   margin-bottom: 0.5rem;
   transition: all 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .tokenCard:hover {
@@ -747,10 +880,37 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.tokenLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.tokenImageContainer {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tokenImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 .tokenInfo {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  min-width: 0; /* Allow text to wrap */
 }
 
 .tokenSymbol {
@@ -762,6 +922,9 @@
 .tokenAmount {
   font-size: 0.875rem;
   color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tokenPrice {
@@ -770,9 +933,36 @@
 }
 
 .tokenValue {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.125rem;
+  font-weight: 700;
   color: #059669;
+  text-align: right;
+  white-space: nowrap;
+  margin-left: 0.5rem;
+}
+
+/* Responsive Token Layout */
+@media (max-width: 640px) {
+  .tokenLeft {
+    gap: 0.5rem;
+  }
+  
+  .tokenImageContainer {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .tokenSymbol {
+    font-size: 1rem;
+  }
+  
+  .tokenAmount, .tokenPrice {
+    font-size: 0.8rem;
+  }
+  
+  .tokenValue {
+    font-size: 1rem;
+  }
 }
 
 /* Vault Selection */
@@ -1086,6 +1276,28 @@
 }
 
 .basescanLink:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+/* External Links */
+.portfolioLinks, .swapLinks {
+  margin-top: 0.75rem;
+  text-align: center;
+}
+
+.externalLink {
+  color: #3b82f6;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.externalLink:hover {
   color: #2563eb;
   text-decoration: underline;
 }

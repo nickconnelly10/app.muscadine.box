@@ -1,13 +1,16 @@
 "use client";
 import { WalletIsland } from "@coinbase/onchainkit/wallet";
-import { useAccount, useBalance, useReadContract } from "wagmi";
+import { useAccount, useBalance, useReadContract, useSendTransaction } from "wagmi";
 import { base } from "wagmi/chains";
 import { formatUnits } from "viem";
 import { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
 import styles from "../page.module.css";
+import DEXService, { SwapQuote, SwapTransaction } from "../services/dexService";
 
 export default function HomePage() {
   const { address, isConnected } = useAccount();
+  const { sendTransaction } = useSendTransaction();
   
   // Define tokens to track on Base network
   const tokensToTrack = useMemo(() => [
@@ -16,7 +19,7 @@ export default function HomePage() {
       address: '0x0000000000000000000000000000000000000000' as const,
       symbol: 'ETH',
       decimals: 18,
-      image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
+      image: 'https://base.basescan.org/images/main/empty-token.png',
       chainId: base.id,
     },
     {
@@ -24,7 +27,7 @@ export default function HomePage() {
       address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as const,
       symbol: 'USDC',
       decimals: 6,
-      image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
+      image: 'https://base.basescan.org/token/images/binanceusd_32.png',
       chainId: base.id,
     },
     {
@@ -32,7 +35,7 @@ export default function HomePage() {
       address: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf' as const,
       symbol: 'cBBTC',
       decimals: 8,
-      image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
+      image: 'https://base.basescan.org/token/images/wrappedbitcoin_42.png',
       chainId: base.id,
     },
     {
@@ -40,7 +43,7 @@ export default function HomePage() {
       address: '0x4200000000000000000000000000000000000006' as const,
       symbol: 'WETH',
       decimals: 18,
-      image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
+      image: 'https://base.basescan.org/token/images/eth_28.png',
       chainId: base.id,
     },
     {
@@ -48,7 +51,7 @@ export default function HomePage() {
       address: '0xBAa5CC21fd487B8Fcc2F632f3F4E8D37262a0842' as const,
       symbol: 'MORPHO',
       decimals: 18,
-      image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
+      image: 'https://base.basescan.org/images/main/empty-token.png',
       chainId: base.id,
     },
     {
@@ -56,7 +59,7 @@ export default function HomePage() {
       address: '0xcb585250f852C6c6bf90434AB21A00f02833a4af' as const,
       symbol: 'cbXRP',
       decimals: 6,
-      image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
+      image: 'https://base.basescan.org/images/main/empty-token.png',
       chainId: base.id,
     },
     {
@@ -64,7 +67,7 @@ export default function HomePage() {
       address: '0x940181a94A35A4569E4529A3CDfB74e38FD98631' as const,
       symbol: 'AERO',
       decimals: 18,
-      image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
+      image: 'https://base.basescan.org/images/main/empty-token.png',
       chainId: base.id,
     },
     {
@@ -72,7 +75,7 @@ export default function HomePage() {
       address: '0xA88594D404727625A9437C3f886C7643872296AE' as const,
       symbol: 'MOONWELL',
       decimals: 18,
-      image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
+      image: 'https://base.basescan.org/images/main/empty-token.png',
       chainId: base.id,
     },
   ], []);
@@ -94,24 +97,67 @@ export default function HomePage() {
   }>>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [pricesLoading, setPricesLoading] = useState(true);
   
   // Swap state
   const [swapFromToken, setSwapFromToken] = useState<string>('');
   const [swapToToken, setSwapToToken] = useState<string>('');
   const [swapAmount, setSwapAmount] = useState<string>('');
   const [isSwapLoading, setIsSwapLoading] = useState(false);
+  const [swapQuote, setSwapQuote] = useState<{ quote: SwapQuote | null; transaction: SwapTransaction | null } | null>(null);
+  const [swapSlippage, _setSwapSlippage] = useState<number>(3);
 
-  // Token prices (simplified - in production, use a price API)
-  const tokenPrices = useMemo(() => ({
-    ETH: 3500, // Example price
+  // Initialize DEX service
+  const dexService = useMemo(() => DEXService.getInstance(), []);
+
+  // Token prices with real-time data
+  const [tokenPrices, setTokenPrices] = useState({
+    ETH: 3500,
     USDC: 1,
-    cBBTC: 65000, // Bitcoin price
-    WETH: 3500, // Same as ETH
-    MORPHO: 2.5, // Example price
-    cbXRP: 0.6, // XRP price
-    AERO: 0.5, // Example price
-    MOONWELL: 0.1, // Example price
-  }), []);
+    cBBTC: 65000,
+    WETH: 3500,
+    MORPHO: 2.5,
+    cbXRP: 0.6,
+    AERO: 0.5,
+    MOONWELL: 0.1,
+  });
+
+  // Fetch real-time token prices
+  useEffect(() => {
+    const fetchPrices = async () => {
+      setPricesLoading(true);
+      try {
+        // Using CoinGecko API for real-time prices - batch request
+        const response = await fetch(
+          'https://api.coingecko.com/api/v3/simple/price?ids=ethereum,usd-coin,bitcoin,ripple,morpho-network,aero,well&vs_currencies=usd'
+        );
+        const data = await response.json();
+        
+        setTokenPrices(prevPrices => ({
+          ETH: data.ethereum?.usd || prevPrices.ETH,
+          USDC: data['usd-coin']?.usd || prevPrices.USDC,
+          cBBTC: data.bitcoin?.usd || prevPrices.cBBTC, // cBBTC tracks Bitcoin
+          WETH: data.ethereum?.usd || prevPrices.WETH, // WETH tracks ETH price
+          cbXRP: data.ripple?.usd || prevPrices.cbXRP,
+          AERO: data.aero?.usd || prevPrices.AERO,
+          MOONWELL: data.well?.usd || prevPrices.MOONWELL,
+          MORPHO: data['morpho-network']?.usd || prevPrices.MORPHO,
+        }));
+        
+        console.log('Token prices updated:', data);
+      } catch (error) {
+        console.error('Failed to fetch token prices:', error);
+        // API calls failed, keep existing values (no state change needed)
+      } finally {
+        setPricesLoading(false);
+      }
+    };
+
+    fetchPrices();
+    // Update prices every 30 seconds for real-time accuracy
+    const interval = setInterval(fetchPrices, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Get token balances using useReadContract for each token
   const usdcBalance = useReadContract({
@@ -527,21 +573,82 @@ export default function HomePage() {
   // Calculate total portfolio value including ETH
   const totalValue = allBalances.reduce((sum, balance) => sum + balance.totalValue, 0);
 
+  // Get swap quote
+  const getSwapQuote = async () => {
+    if (!swapFromToken || !swapToToken || !swapAmount || !address) return;
+
+    try {
+      const result = await dexService.swapTokens(
+        swapFromToken,
+        swapToToken,
+        swapAmount,
+        address,
+        swapSlippage
+      );
+
+      if (result.quote) {
+        setSwapQuote(result);
+        alert(`Quote: Get ${result.quote.toAmount} ${swapToToken} for ${swapAmount} ${swapFromToken}`);
+      } else {
+        alert('Could not get quote. Please try again.');
+      }
+    } catch (error) {
+      console.error('Quote error:', error);
+      alert('Error getting swap quote');
+    }
+  };
+
   // Swap functionality
   const handleSwap = async () => {
     if (!swapFromToken || !swapToToken || !swapAmount) {
       alert('Please select tokens and enter amount');
       return;
     }
+
+    if (!address) {
+      alert('Please connect your wallet');
+      return;
+    }
     
     setIsSwapLoading(true);
     try {
-      // This would integrate with a DEX like Uniswap, 1inch, etc.
-      // For now, we'll just show a placeholder
-      alert(`Swap ${swapAmount} ${swapFromToken} to ${swapToToken} - Integration with DEX needed`);
+      // Use the DEX service to get swap transaction
+      const result = await dexService.swapTokens(
+        swapFromToken,
+        swapToToken,
+        swapAmount,
+        address,
+        swapSlippage
+      );
+
+      if (!result.transaction) {
+        alert('Could not process swap transaction');
+        return;
+      }
+
+      // Execute the swap transaction - OnchainKit will handle routing
+      try {
+        const txHash = await sendTransaction({
+          to: result.transaction.to as `0x${string}`,
+          value: BigInt(result.transaction.value || '0'),
+          data: result.transaction.data as `0x${string}`,
+        });
+
+        console.log('Transaction Hash:', txHash);
+        alert(`Swap initiated: ${swapAmount} ${swapFromToken} → ${swapToToken}. Transaction submitted!`);
+        setSwapQuote(null);
+        setSwapAmount('');
+        setSwapFromToken('');
+        setSwapToToken('');
+      } catch (txError) {
+        console.error('Transaction error:', txError);
+        alert('Transaction failed. Please try again.');
+        return;
+      }
+      
     } catch (error) {
       console.error('Swap error:', error);
-      alert('Swap failed');
+      alert('Swap failed. Please ensure you have sufficient balance and try again.');
     } finally {
       setIsSwapLoading(false);
     }
@@ -580,14 +687,34 @@ export default function HomePage() {
 
       {/* Wallet Section */}
       <div className={styles.walletSection}>
-        <h2 className={styles.sectionTitle}>Your Wallet</h2>
         <div className={styles.walletIslandContainer}>
           <WalletIsland />
         </div>
         
         <div className={styles.topCoinsSection}>
           <div className={styles.portfolioHeader}>
-            <h3 className={styles.subsectionTitle}>Your Portfolio</h3>
+            <h3 className={styles.subsectionTitle}>
+              {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Your Portfolio'}
+            </h3>
+            <div className={styles.priceIndicator}>
+              {pricesLoading ? (
+                <span className={styles.loadingIndicator}>Updating prices...</span>
+              ) : (
+                <span className={styles.liveIndicator}>Live Prices</span>
+              )}
+            </div>
+            {isConnected && address && (
+              <div className={styles.portfolioLinks}>
+                <a 
+                  href={`https://app.zerion.io/${address}/overview`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.externalLink}
+                >
+                  View on Zerion ↗
+                </a>
+              </div>
+            )}
             {isConnected && !isLoading && !error && totalValue > 0 && (
               <div className={styles.totalValue}>
                 <span className={styles.totalValueLabel}>Total Value</span>
@@ -614,17 +741,39 @@ export default function HomePage() {
                 .map((balance) => (
                   <div key={balance.token.address} className={styles.coinRow}>
                     <div className={styles.tokenCard}>
-                      <div className={styles.tokenInfo}>
-                        <div className={styles.tokenSymbol}>{balance.token.symbol}</div>
-                        <div className={styles.tokenAmount}>
-                          {balance.formatted} {balance.token.symbol}
+                      <div className={styles.tokenLeft}>
+                        <div className={styles.tokenImageContainer}>
+                          <Image 
+                            src={balance.token.image || `/token-default.png`} 
+                            alt={balance.token.symbol}
+                            width={24}
+                            height={24}
+                            className={styles.tokenImage}
+                            onError={(e) => {
+                              // Simple fallback to generate icon with token symbol first letter
+                              const target = e.target as HTMLImageElement;
+                              const tokenSymbol = balance.token.symbol;
+                              target.src = `data:image/svg+xml;base64,${btoa(`
+                                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+                                  <rect width="40" height="40" rx="20" fill="#f3f4f6" />
+                                  <text x="20" y="26" text-anchor="middle" font-size="16" fill="#6b7280" font-family="system-ui" font-weight="bold">${tokenSymbol.charAt(0)}</text>
+                                </svg>
+                              `)}`;
+                            }}
+                          />
                         </div>
-                        <div className={styles.tokenPrice}>
-                          ${balance.price.toFixed(2)} per token
+                        <div className={styles.tokenInfo}>
+                          <div className={styles.tokenSymbol}>{balance.token.symbol}</div>
+                          <div className={styles.tokenAmount}>
+                            {balance.formatted} {balance.token.symbol}
+                          </div>
+                          <div className={styles.tokenPrice}>
+                            ${balance.price.toFixed(2)}
+                          </div>
                         </div>
-                        <div className={styles.tokenValue}>
-                          ${balance.totalValue.toFixed(2)}
-                        </div>
+                      </div>
+                      <div className={styles.tokenValue}>
+                        ${balance.totalValue.toFixed(2)}
                       </div>
                     </div>
                   </div>
@@ -692,71 +841,109 @@ export default function HomePage() {
         <div className={styles.swapSection}>
           <h2 className={styles.sectionTitle}>Swap Tokens</h2>
           <div className={styles.swapContainer}>
-            <div className={styles.swapCard}>
-              <div className={styles.swapHeader}>
-                <h3>Quick Swap</h3>
-                <p>Exchange tokens instantly on Base</p>
-              </div>
-              <div className={styles.swapContent}>
-                <div className={styles.swapInput}>
-                  <label>From</label>
-                  <select 
-                    className={styles.tokenSelect}
-                    value={swapFromToken}
-                    onChange={(e) => setSwapFromToken(e.target.value)}
-                    disabled={!isConnected}
-                  >
-                    <option value="">Select token</option>
-                    {allBalances
-                      .filter(balance => parseFloat(balance.formatted) > 0)
-                      .map((balance) => (
-                        <option key={balance.token.address} value={balance.token.symbol}>
-                          {balance.token.symbol} - {balance.formatted}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-                <div className={styles.swapArrow}>⇄</div>
-                <div className={styles.swapInput}>
-                  <label>To</label>
-                  <select 
-                    className={styles.tokenSelect}
-                    value={swapToToken}
-                    onChange={(e) => setSwapToToken(e.target.value)}
-                    disabled={!isConnected}
-                  >
-                    <option value="">Select token</option>
-                    <option value="ETH">ETH</option>
-                    <option value="USDC">USDC</option>
-                    <option value="cBBTC">cBBTC</option>
-                    <option value="WETH">WETH</option>
-                    <option value="MORPHO">MORPHO</option>
-                    <option value="cbXRP">cbXRP</option>
-                    <option value="AERO">AERO</option>
-                    <option value="MOONWELL">MOONWELL</option>
-                  </select>
-                </div>
-                <div className={styles.swapInput}>
-                  <label>Amount</label>
-                  <input
-                    type="number"
-                    className={styles.amountInput}
-                    placeholder="0.00"
-                    value={swapAmount}
-                    onChange={(e) => setSwapAmount(e.target.value)}
-                    disabled={!isConnected}
-                  />
-                </div>
-                <button 
-                  className={styles.swapButton} 
-                  onClick={handleSwap}
-                  disabled={!isConnected || isSwapLoading || !swapFromToken || !swapToToken || !swapAmount}
+          <div className={styles.swapCard}>
+            <div className={styles.swapHeader}>
+              <h3>Quick Swap</h3>
+              <p>Exchange tokens instantly on Base</p>
+              <div className={styles.swapLinks}>
+                <a 
+                  href="https://aerodrome.finance/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.externalLink}
                 >
-                  {isSwapLoading ? 'Swapping...' : !isConnected ? 'Connect Wallet to Swap' : 'Swap Tokens'}
-                </button>
+                  Advanced Swap on Aerodrome ↗
+                </a>
               </div>
             </div>
-          </div>
+              <div className={styles.swapContent}>
+                <div className={styles.swapRow}>
+                  <div className={styles.swapInput}>
+                    <label>From</label>
+                    <select 
+                      className={styles.tokenSelect}
+                      value={swapFromToken}
+                      onChange={(e) => setSwapFromToken(e.target.value)}
+                      disabled={!isConnected}
+                    >
+                      <option value="">Select token</option>
+                      {allBalances
+                        .filter(balance => parseFloat(balance.formatted) > 0)
+                        .map((balance) => (
+                          <option key={balance.token.address} value={balance.token.symbol}>
+                            {balance.token.symbol} - {balance.formatted}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                  <div className={styles.swapArrow}>⇄</div>
+                  <div className={styles.swapInput}>
+                    <label>To</label>
+                    <select 
+                      className={styles.tokenSelect}
+                      value={swapToToken}
+                      onChange={(e) => setSwapToToken(e.target.value)}
+                      disabled={!isConnected}
+                    >
+                      <option value="">Select token</option>
+                      <option value="ETH">ETH</option>
+                      <option value="USDC">USDC</option>
+                      <option value="cBBTC">cBBTC</option>
+                      <option value="WETH">WETH</option>
+                      <option value="MORPHO">MORPHO</option>
+                      <option value="cbXRP">cbXRP</option>
+                      <option value="AERO">AERO</option>
+                      <option value="MOONWELL">MOONWELL</option>
+                    </select>
+                  </div>
+                </div>
+                <div className={styles.swapAmountSection}>
+                  <div className={styles.swapInput}>
+                    <label>Amount to Sell</label>
+                    <input
+                      type="number"
+                      className={styles.amountInput}
+                      placeholder="0.00"
+                      value={swapAmount}
+                      onChange={(e) => setSwapAmount(e.target.value)}
+                      disabled={!isConnected}
+                    />
+                  </div>
+                  {swapQuote && (
+                    <div className={styles.swapQuote}>
+                      <div className={styles.quoteRow}>
+                        <div className={styles.quoteItem}>
+                          <label>Amount to Sell:</label>
+                          <span>{swapAmount} {swapFromToken}</span>
+                        </div>
+                        <div className={styles.quoteItem}>
+                          <label>Amount to Buy:</label>
+                          <span>{swapQuote.quote?.toAmount || '0'} {swapToToken}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className={styles.swapButtonContainer}>
+                  <button 
+                    className={styles.swapQuoteButton}
+                    onClick={getSwapQuote}
+                    disabled={!isConnected || !swapFromToken || !swapToToken || !swapAmount}
+                    style={{ marginRight: '8px' }}
+                  >
+                    Get Quote
+                  </button>
+                  <button 
+                    className={styles.swapButton} 
+                    onClick={handleSwap}
+                    disabled={!isConnected || isSwapLoading || !swapFromToken || !swapToToken || !swapAmount}
+                  >
+                    {isSwapLoading ? 'Swapping...' : !isConnected ? 'Connect Wallet to Swap' : 'Swap Tokens'}
+                  </button>
+                </div>
+              </div>
+            </div>
+      </div>
         </div>
       </div>
 

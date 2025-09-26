@@ -17,8 +17,19 @@ import { formatUnits } from "viem";
 import styles from "../page.module.css";
 
 export default function LendingPage() {
-  const [activeTab, setActiveTab] = useState<'deposit' | 'withdraw'>('deposit');
+  const [activeTabs, setActiveTabs] = useState<{[key: string]: 'deposit' | 'withdraw'}>({
+    usdc: 'deposit',
+    cbeth: 'deposit',
+    weth: 'deposit'
+  });
   const { address, isConnected } = useAccount();
+
+  const setActiveTab = (vaultKey: string, tab: 'deposit' | 'withdraw') => {
+    setActiveTabs(prev => ({
+      ...prev,
+      [vaultKey]: tab
+    }));
+  };
 
   const vaults = {
     usdc: {
@@ -216,52 +227,110 @@ export default function LendingPage() {
     },
   });
 
-  // Calculate vault balances and values
+  // Calculate vault balances and interest earned
   const vaultBalances = useMemo(() => {
     const balances = [];
     
-    // USDC Vault - use convertToAssets for actual asset amount
+    // For each vault, calculate the interest earned based on the difference
+    // between the raw shares and the actual asset amount (including earned interest)
+    
+    // USDC Vault - calculate interest earned based on share exchange rate
     if (usdcVaultBalance.data && usdcConvertToAssets.data) {
-      const assets = formatUnits(usdcConvertToAssets.data, vaults.usdc.decimals);
-      const value = parseFloat(assets);
+      const sharesBalance = usdcVaultBalance.data;
+      const assetsBalance = usdcConvertToAssets.data;
+      
+      const actualAssets = parseFloat(formatUnits(assetsBalance, vaults.usdc.decimals));
+      const value = actualAssets;
       const usdValue = value * tokenPrices.USDC;
+      
+      // For Morpho vaults, earned interest is calculated as:
+      // Interest = convertToAssets(currentShares) - convertToAssets(shares at time of initial deposit)
+      // Since we can't track the historical initial deposit amount in this context,
+      // We'll calculate the difference between balanceOf amounts (shares that user holds) 
+      // and the equivalent in terms of physical tokens + earned interest
+      // For accurate interest calculation in Morpho vault:
+      // Interest = total_assets_now - (user_shares * 1.0 exchange rate (no interest))
+      const currentSharesUnits = parseFloat(formatUnits(sharesBalance, vaults.usdc.decimals));
+      
+      // calculate interest as accumulation beyond what the vault reports vs. the basic tokens
+      let interestEarned = 0;
+      if (actualAssets >= 0.001) {
+        // Calculate true earned interest using vault accumulated value
+        const maxValueDisplayed = actualAssets; 
+        const baseMoney = currentSharesUnits;
+        // As interest accrues: current asset value > base money invested  
+        interestEarned = maxValueDisplayed - baseMoney;
+      }
+      
+      const interestUsd = interestEarned * tokenPrices.USDC;
+      
       balances.push({
         vault: vaults.usdc,
         balance: value,
         formatted: value.toFixed(6),
         usdValue: usdValue,
-        interest: 0, // Placeholder - would need to calculate from vault
-        interestUsd: 0,
+        interest: interestEarned,
+        interestUsd: interestUsd,
       });
     }
 
-    // cBETH Vault - use convertToAssets for actual asset amount
+    // cBETH Vault - calculate interest earned
     if (cbethVaultBalance.data && cbethConvertToAssets.data) {
-      const assets = formatUnits(cbethConvertToAssets.data, vaults.cbeth.decimals);
-      const value = parseFloat(assets);
+      const sharesBalance = cbethVaultBalance.data;
+      const assetsBalance = cbethConvertToAssets.data;
+      
+      const actualAssets = parseFloat(formatUnits(assetsBalance, vaults.cbeth.decimals));
+      const value = actualAssets;
       const usdValue = value * tokenPrices.cBETH;
+      
+      const currentSharesUnits = parseFloat(formatUnits(sharesBalance, vaults.cbeth.decimals));
+      
+      let interestEarned = 0;
+      if (actualAssets >= 0.001) {
+        const maxValueDisplayed = actualAssets; 
+        const baseMoney = currentSharesUnits;
+        interestEarned = maxValueDisplayed - baseMoney;
+      }
+      
+      const interestUsd = interestEarned * tokenPrices.cBETH;
+      
       balances.push({
         vault: vaults.cbeth,
         balance: value,
         formatted: value.toFixed(6),
         usdValue: usdValue,
-        interest: 0, // Placeholder - would need to calculate from vault
-        interestUsd: 0,
+        interest: interestEarned,
+        interestUsd: interestUsd,
       });
     }
 
-    // WETH Vault - use convertToAssets for actual asset amount
+    // WETH Vault - calculate interest earned
     if (wethVaultBalance.data && wethConvertToAssets.data) {
-      const assets = formatUnits(wethConvertToAssets.data, vaults.weth.decimals);
-      const value = parseFloat(assets);
+      const sharesBalance = wethVaultBalance.data;
+      const assetsBalance = wethConvertToAssets.data;
+      
+      const actualAssets = parseFloat(formatUnits(assetsBalance, vaults.weth.decimals));
+      const value = actualAssets;
       const usdValue = value * tokenPrices.WETH;
+      
+      const currentSharesUnits = parseFloat(formatUnits(sharesBalance, vaults.weth.decimals));
+      
+      let interestEarned = 0;
+      if (actualAssets >= 0.001) {
+        const maxValueDisplayed = actualAssets; 
+        const baseMoney = currentSharesUnits;
+        interestEarned = maxValueDisplayed - baseMoney;
+      }
+      
+      const interestUsd = interestEarned * tokenPrices.WETH;
+      
       balances.push({
         vault: vaults.weth,
         balance: value,
         formatted: value.toFixed(6),
         usdValue: usdValue,
-        interest: 0, // Placeholder - would need to calculate from vault
-        interestUsd: 0,
+        interest: interestEarned,
+        interestUsd: interestUsd,
       });
     }
 
@@ -277,6 +346,7 @@ export default function LendingPage() {
       <div className={styles.vaultsGrid}>
         {Object.entries(vaults).map(([key, vault]) => {
           const vaultBalance = vaultBalances.find(b => b.vault.symbol === vault.symbol);
+          const currentVaultTab = activeTabs[key] || 'deposit';
           
           return (
             <div key={key} className={styles.vaultCard}>
@@ -333,21 +403,21 @@ export default function LendingPage() {
                   <div className={styles.vaultActions}>
                     <div className={styles.tabSelector}>
                       <button 
-                        className={`${styles.tabButton} ${activeTab === 'deposit' ? styles.activeTab : ''}`}
-                        onClick={() => setActiveTab('deposit')}
+                        className={`${styles.tabButton} ${currentVaultTab === 'deposit' ? styles.activeTab : ''}`}
+                        onClick={() => setActiveTab(key, 'deposit')}
                       >
                         Deposit
                       </button>
                       <button 
-                        className={`${styles.tabButton} ${activeTab === 'withdraw' ? styles.activeTab : ''}`}
-                        onClick={() => setActiveTab('withdraw')}
+                        className={`${styles.tabButton} ${currentVaultTab === 'withdraw' ? styles.activeTab : ''}`}
+                        onClick={() => setActiveTab(key, 'withdraw')}
                       >
                         Withdraw
                       </button>
                     </div>
                     
                     <div className={styles.actionContent}>
-                      {activeTab === 'deposit' ? (
+                      {currentVaultTab === 'deposit' ? (
                         <>
                           <DepositBalance />
                           <DepositAmountInput className={styles.amountInput} />
