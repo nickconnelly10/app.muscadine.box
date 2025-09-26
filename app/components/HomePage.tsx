@@ -103,6 +103,8 @@ export default function HomePage() {
   const [swapFromToken, setSwapFromToken] = useState<string>('');
   const [swapToToken, setSwapToToken] = useState<string>('');
   const [swapAmount, setSwapAmount] = useState<string>('');
+  const [swapAmountBuy, setSwapAmountBuy] = useState<string>('');
+  const [swapMode, setSwapMode] = useState<'sell' | 'buy'>('sell'); // Default to sell mode
   const [isSwapLoading, setIsSwapLoading] = useState(false);
   const [swapQuote, setSwapQuote] = useState<{ quote: SwapQuote | null; transaction: SwapTransaction | null } | null>(null);
   const [swapSlippage, _setSwapSlippage] = useState<number>(3);
@@ -575,20 +577,25 @@ export default function HomePage() {
 
   // Get swap quote
   const getSwapQuote = async () => {
-    if (!swapFromToken || !swapToToken || !swapAmount || !address) return;
+    const amount = swapMode === 'sell' ? swapAmount : swapAmountBuy;
+    if (!swapFromToken || !swapToToken || !amount || !address) return;
 
     try {
       const result = await dexService.swapTokens(
         swapFromToken,
         swapToToken,
-        swapAmount,
+        amount,
         address,
         swapSlippage
       );
 
       if (result.quote) {
         setSwapQuote(result);
-        alert(`Quote: Get ${result.quote.toAmount} ${swapToToken} for ${swapAmount} ${swapFromToken}`);
+        if (swapMode === 'sell') {
+          alert(`Quote: Get ${result.quote.toAmount} ${swapToToken} for ${amount} ${swapFromToken}`);
+        } else {
+          alert(`Quote: Sell ${result.quote.fromAmount} ${swapFromToken} to get ${amount} ${swapToToken}`);
+        }
       } else {
         alert('Could not get quote. Please try again.');
       }
@@ -600,7 +607,8 @@ export default function HomePage() {
 
   // Swap functionality
   const handleSwap = async () => {
-    if (!swapFromToken || !swapToToken || !swapAmount) {
+    const amount = swapMode === 'sell' ? swapAmount : swapAmountBuy;
+    if (!swapFromToken || !swapToToken || !amount) {
       alert('Please select tokens and enter amount');
       return;
     }
@@ -616,7 +624,7 @@ export default function HomePage() {
       const result = await dexService.swapTokens(
         swapFromToken,
         swapToToken,
-        swapAmount,
+        amount,
         address,
         swapSlippage
       );
@@ -897,18 +905,48 @@ export default function HomePage() {
                     </select>
                   </div>
                 </div>
-                <div className={styles.swapAmountSection}>
-                  <div className={styles.swapInput}>
-                    <label>Amount to Sell</label>
-                    <input
-                      type="number"
-                      className={styles.amountInput}
-                      placeholder="0.00"
-                      value={swapAmount}
-                      onChange={(e) => setSwapAmount(e.target.value)}
-                      disabled={!isConnected}
-                    />
+                <div className={styles.swapModeSection}>
+                  <div className={styles.swapModeToggle}>
+                    <button
+                      className={`${styles.modeButton} ${swapMode === 'sell' ? styles.modeButtonActive : ''}`}
+                      onClick={() => setSwapMode('sell')}
+                    >
+                      Sell Amount
+                    </button>
+                    <button
+                      className={`${styles.modeButton} ${swapMode === 'buy' ? styles.modeButtonActive : ''}`}
+                      onClick={() => setSwapMode('buy')}
+                    >
+                      Buy Amount
+                    </button>
                   </div>
+                </div>
+                <div className={styles.swapAmountSection}>
+                  {swapMode === 'sell' ? (
+                    <div className={styles.swapInput}>
+                      <label>Amount to Sell</label>
+                      <input
+                        type="number"
+                        className={styles.amountInput}
+                        placeholder="0.00"
+                        value={swapAmount}
+                        onChange={(e) => setSwapAmount(e.target.value)}
+                        disabled={!isConnected}
+                      />
+                    </div>
+                  ) : (
+                    <div className={styles.swapInput}>
+                      <label>Amount to Buy</label>
+                      <input
+                        type="number"
+                        className={styles.amountInput}
+                        placeholder="0.00"
+                        value={swapAmountBuy}
+                        onChange={(e) => setSwapAmountBuy(e.target.value)}
+                        disabled={!isConnected}
+                      />
+                    </div>
+                  )}
                   {swapQuote && (
                     <div className={styles.swapQuote}>
                       <div className={styles.quoteRow}>
@@ -928,7 +966,7 @@ export default function HomePage() {
                   <button 
                     className={styles.swapQuoteButton}
                     onClick={getSwapQuote}
-                    disabled={!isConnected || !swapFromToken || !swapToToken || !swapAmount}
+                    disabled={!isConnected || !swapFromToken || !swapToToken || (!swapAmount && !swapAmountBuy)}
                     style={{ marginRight: '8px' }}
                   >
                     Get Quote
@@ -936,7 +974,7 @@ export default function HomePage() {
                   <button 
                     className={styles.swapButton} 
                     onClick={handleSwap}
-                    disabled={!isConnected || isSwapLoading || !swapFromToken || !swapToToken || !swapAmount}
+                    disabled={!isConnected || isSwapLoading || !swapFromToken || !swapToToken || (!swapAmount && !swapAmountBuy)}
                   >
                     {isSwapLoading ? 'Swapping...' : !isConnected ? 'Connect Wallet to Swap' : 'Swap Tokens'}
                   </button>

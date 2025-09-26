@@ -1301,3 +1301,45 @@
   color: #2563eb;
   text-decoration: underline;
 }
+
+/* Swap mode toggle */
+.swapModeSection {
+  margin-bottom: 1rem;
+}
+
+.swapModeToggle {
+  display: flex;
+  gap: 0.5rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.modeButton {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modeButton:hover {
+  color: #374151;
+  background: #f1f5f9;
+}
+
+.modeButtonActive {
+  background: #3b82f6 !important;
+  color: white !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.modeButtonActive:hover {
+  background: #2563eb !important;
+}

@@ -19,7 +19,7 @@ import styles from "../page.module.css";
 export default function LendingPage() {
   const [activeTabs, setActiveTabs] = useState<{[key: string]: 'deposit' | 'withdraw'}>({
     usdc: 'deposit',
-    cbeth: 'deposit',
+    cbbtc: 'deposit',
     weth: 'deposit'
   });
   const { address, isConnected } = useAccount();
@@ -40,13 +40,13 @@ export default function LendingPage() {
       decimals: 6,
       price: 1
     },
-    cbeth: {
-      address: '0x6770216aC60F634483Ec073cBABC4011c94307Cb' as const,
-      name: 'cBETH',
-      symbol: 'cBETH',
-      description: 'Earn interest on cBETH deposits',
-      decimals: 18,
-      price: 3500
+    cbbtc: {
+      address: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf' as const,
+      name: 'cbBTC',
+      symbol: 'cbBTC',
+      description: 'Earn interest on cbBTC deposits',
+      decimals: 8,
+      price: 65000
     },
     weth: {
       address: '0x6b13c060F13Af1fdB319F52315BbbF3fb1D88844' as const,
@@ -61,7 +61,7 @@ export default function LendingPage() {
   // Token prices for USD calculations - using real-time data
   const [tokenPrices, setTokenPrices] = useState({
     USDC: 1,
-    cBETH: 3500,
+    cbBTC: 65000,
     WETH: 3500,
   });
 
@@ -70,12 +70,12 @@ export default function LendingPage() {
     const fetchPrices = async () => {
       try {
         // Using CoinGecko API for real-time prices
-        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum,usd-coin&vs_currencies=usd');
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,usd-coin&vs_currencies=usd');
         const data = await response.json();
         
         setTokenPrices({
           USDC: data['usd-coin']?.usd || 1,
-          cBETH: data.ethereum?.usd || 3500, // cBETH tracks ETH price
+          cbBTC: data.bitcoin?.usd || 65000, // cbBTC tracks BTC price 
           WETH: data.ethereum?.usd || 3500, // WETH tracks ETH price
         });
       } catch (error) {
@@ -117,8 +117,8 @@ export default function LendingPage() {
     },
   });
 
-  const cbethVaultBalance = useReadContract({
-    address: vaults.cbeth.address,
+  const cbbtcVaultBalance = useReadContract({
+    address: vaults.cbbtc.address,
     abi: [
       {
         name: 'balanceOf',
@@ -189,8 +189,8 @@ export default function LendingPage() {
     },
   });
 
-  const cbethConvertToAssets = useReadContract({
-    address: vaults.cbeth.address,
+  const cbbtcConvertToAssets = useReadContract({
+    address: vaults.cbbtc.address,
     abi: [
       {
         name: 'convertToAssets',
@@ -201,10 +201,10 @@ export default function LendingPage() {
       },
     ],
     functionName: 'convertToAssets',
-    args: cbethVaultBalance.data ? [cbethVaultBalance.data] : undefined,
+    args: cbbtcVaultBalance.data ? [cbbtcVaultBalance.data] : undefined,
     chainId: base.id,
     query: {
-      enabled: !!address && isConnected && !!cbethVaultBalance.data,
+      enabled: !!address && isConnected && !!cbbtcVaultBalance.data,
     },
   });
 
@@ -267,16 +267,16 @@ export default function LendingPage() {
       });
     }
 
-      // cBETH Vault - calculate interest earned
-      if (cbethVaultBalance.data && cbethConvertToAssets.data) {
-        const sharesBalance = cbethVaultBalance.data;
-        const assetsBalance = cbethConvertToAssets.data;
+      // cbBTC Vault - calculate interest earned
+      if (cbbtcVaultBalance.data && cbbtcConvertToAssets.data) {
+        const sharesBalance = cbbtcVaultBalance.data;
+        const assetsBalance = cbbtcConvertToAssets.data;
         
-        const actualAssets = parseFloat(formatUnits(assetsBalance, vaults.cbeth.decimals));
-        const sharesAmount = parseFloat(formatUnits(sharesBalance, vaults.cbeth.decimals));
+        const actualAssets = parseFloat(formatUnits(assetsBalance, vaults.cbbtc.decimals));
+        const sharesAmount = parseFloat(formatUnits(sharesBalance, vaults.cbbtc.decimals));
         
         const value = actualAssets;
-        const usdValue = value * tokenPrices.cBETH;
+        const usdValue = value * tokenPrices.cbBTC;
         
         let interestEarned = 0;
         if (actualAssets > 0 && sharesAmount > 0 && actualAssets >= sharesAmount) {
@@ -284,10 +284,10 @@ export default function LendingPage() {
           interestEarned = Math.abs(yieldValue);
         }
       
-      const interestUsd = interestEarned * tokenPrices.cBETH;
-      
-      balances.push({
-        vault: vaults.cbeth,
+        const interestUsd = interestEarned * tokenPrices.cbBTC;
+        
+        balances.push({
+          vault: vaults.cbbtc,
         balance: value,
         formatted: value.toFixed(6),
         usdValue: usdValue,
@@ -326,7 +326,7 @@ export default function LendingPage() {
     }
 
     return balances;
-  }, [usdcVaultBalance.data, cbethVaultBalance.data, wethVaultBalance.data, usdcConvertToAssets.data, cbethConvertToAssets.data, wethConvertToAssets.data, tokenPrices, vaults.usdc, vaults.cbeth, vaults.weth]);
+  }, [usdcVaultBalance.data, cbbtcVaultBalance.data, wethVaultBalance.data, usdcConvertToAssets.data, cbbtcConvertToAssets.data, wethConvertToAssets.data, tokenPrices, vaults.usdc, vaults.cbbtc, vaults.weth]);
 
   return (
     <div className={styles.tabContent}>

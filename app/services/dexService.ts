@@ -66,9 +66,21 @@ class DEXService {
       const fromTokenAddress = this.tokenAddresses[fromAsset] || fromAsset;
       const toTokenAddress = this.tokenAddresses[toAsset] || toAsset;
       
-      // Format amount for 1inch API
-      const decimals = fromAsset === 'ETH' || fromAsset === 'WETH' ? 18 : 6;
-      const formattedAmount = parseUnits(amount, decimals).toString();
+      // Format amount for 1inch API with proper decimals for each token
+      let fromDecimals = 18; // Default for ETH
+      let toDecimals = 18; // Default
+      
+      if (fromAsset === 'ETH' || fromAsset === 'WETH') fromDecimals = 18;
+      else if (fromAsset === 'USDC') fromDecimals = 6;
+      else if (fromAsset === 'cBBTC' || fromAsset === 'cbBTC') fromDecimals = 8;
+      else fromDecimals = 18; // Default for other tokens
+      
+      if (toAsset === 'ETH' || toAsset === 'WETH') toDecimals = 18;
+      else if (toAsset === 'USDC') toDecimals = 6;
+      else if (toAsset === 'cBBTC' || toAsset === 'cbBTC') toDecimals = 8;
+      else toDecimals = 18; // Default for other tokens
+      
+      const formattedAmount = parseUnits(amount, fromDecimals).toString();
 
       // Get swap quote from 1inch
       const response = await axios.get(`${baseUrl}/${chainId}/quote`, {
@@ -91,7 +103,7 @@ class DEXService {
         fromToken: fromAsset,
         toToken: toAsset,
         fromAmount: amount,
-        toAmount: formatUnits(data.toAmount, toAsset === 'ETH' ? 18 : 6),
+        toAmount: formatUnits(data.toAmount, toDecimals),
         estimatedGas: data.estimatedGas,
         slippagePercentage: slippage.toString()
       };
@@ -116,8 +128,13 @@ class DEXService {
       const fromTokenAddress = this.tokenAddresses[fromAsset] || fromAsset;
       const toTokenAddress = this.tokenAddresses[toAsset] || toAsset;
       
-      // Format amount for 1inch API
-      const decimals = fromAsset === 'ETH' || fromAsset === 'WETH' ? 18 : 6;
+      // Format amount for 1inch API with proper decimals for each token
+      let decimals = 18; // Default for ETH
+      if (fromAsset === 'ETH' || fromAsset === 'WETH') decimals = 18;
+      else if (fromAsset === 'USDC') decimals = 6;
+      else if (fromAsset === 'cBBTC' || fromAsset === 'cbBTC') decimals = 8;
+      else decimals = 18; // Default for other tokens
+      
       const formattedAmount = parseUnits(amount, decimals).toString();
 
       // Get swap transaction data from 1inch
