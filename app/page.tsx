@@ -2,11 +2,11 @@
 import { Wallet } from "@coinbase/onchainkit/wallet";
 import { useState } from "react";
 import HomePage from "./components/HomePage";
-import LendingPage from "./components/LendingPage";
 import { useQuickAuth, useMiniKit } from "@coinbase/onchainkit/minikit";
+import Link from "next/link";
 import styles from "./page.module.css";
 
-type TabType = "home" | "lending";
+type TabType = "home";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabType>("home");
@@ -28,8 +28,6 @@ export default function Home() {
     switch (activeTab) {
       case "home":
         return <HomePage />;
-      case "lending":
-        return <LendingPage />;
       default:
         return null;
     }
@@ -54,12 +52,18 @@ export default function Home() {
           >
             Home
           </button>
-          <button
-            className={`${styles.tab} ${activeTab === "lending" ? styles.activeTab : ""}`}
-            onClick={() => setActiveTab("lending")}
-          >
-            Lending
-          </button>
+          <Link href="/portfolio" className={`${styles.tab}`}>
+            Portfolio
+          </Link>
+          <Link href="/lending" className={`${styles.tab}`}>
+            Lending  
+          </Link>
+          <Link href="/swap" className={`${styles.tab}`}>
+            Swap
+          </Link>
+          <Link href="/transactions" className={`${styles.tab}`}>
+            Transactions
+          </Link>
         </div>
         
         <div className={styles.tabPanel}>

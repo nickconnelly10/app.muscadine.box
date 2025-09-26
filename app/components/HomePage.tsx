@@ -597,7 +597,7 @@ export default function HomePage() {
           alert(`Quote: Sell ${result.quote.fromAmount} ${swapFromToken} to get ${amount} ${swapToToken}`);
         }
       } else {
-        alert('Could not get quote. Please try again.');
+        alert('Could not get quote. Please check the token pair and ensure you have sufficient balance.');
       }
     } catch (error) {
       console.error('Quote error:', error);
@@ -630,7 +630,7 @@ export default function HomePage() {
       );
 
       if (!result.transaction) {
-        alert('Could not process swap transaction');
+        alert('Could not process swap transaction. Please check the token pair and try again. Ensure you have sufficient balance.');
         return;
       }
 

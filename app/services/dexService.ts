@@ -61,7 +61,7 @@ class DEXService {
   ): Promise<SwapQuote | null> {
     try {
       const baseUrl = 'https://api.1inch.dev/swap/v7.0/';
-      const chainId = base.id; // Base chain ID
+      const chainId = 8453; // Explicitly set Base chain ID (8453)
       
       const fromTokenAddress = this.tokenAddresses[fromAsset] || fromAsset;
       const toTokenAddress = this.tokenAddresses[toAsset] || toAsset;
@@ -82,13 +82,23 @@ class DEXService {
       
       const formattedAmount = parseUnits(amount, fromDecimals).toString();
 
+      console.log('Getting quote from params:', {
+        fromTokenAddress,
+        toTokenAddress,
+        formattedAmount,
+        slippage,
+        chainId
+      });
+
       // Get swap quote from 1inch
       const response = await axios.get(`${baseUrl}/${chainId}/quote`, {
         params: {
           fromTokenAddress: fromTokenAddress,
           toTokenAddress: toTokenAddress,
           amount: formattedAmount,
-          slippage: slippage
+          slippage: slippage,
+          includeTokensInfo: true,
+          includeProtocols: true
         }
       });
 
@@ -98,6 +108,13 @@ class DEXService {
       }
 
       const data = response.data;
+      console.log('1inch quote API response:', { data });
+      
+      // Validate essential response fields
+      if (!data || !data.toAmount) {
+        console.error('Invalid quote response format:', data);
+        return null;
+      }
       
       return {
         fromToken: fromAsset,
@@ -123,7 +140,7 @@ class DEXService {
   ): Promise<SwapTransaction | null> {
     try {
       const baseUrl = 'https://api.1inch.dev/swap/v7.0/';
-      const chainId = base.id;
+      const chainId = 8453; // Explicitly set Base chain ID (8453)
       
       const fromTokenAddress = this.tokenAddresses[fromAsset] || fromAsset;
       const toTokenAddress = this.tokenAddresses[toAsset] || toAsset;
@@ -137,6 +154,15 @@ class DEXService {
       
       const formattedAmount = parseUnits(amount, decimals).toString();
 
+      console.log('Getting swap transaction from params:', {
+        fromTokenAddress,
+        toTokenAddress,
+        formattedAmount,
+        fromAddress,
+        slippage,
+        chainId
+      });
+
       // Get swap transaction data from 1inch
       const response = await axios.get(`${baseUrl}/${chainId}/swap`, {
         params: {
@@ -144,7 +170,9 @@ class DEXService {
           toTokenAddress: toTokenAddress,
           amount: formattedAmount,
           fromAddress: fromAddress,
-          slippage: slippage
+          slippage: slippage,
+          includeTokensInfo: true,
+          includeProtocols: true
         }
       });
 
@@ -154,11 +182,18 @@ class DEXService {
       }
 
       const data = response.data;
+      console.log('1inch API response:', { data, fullResponse: response.data });
+      
+      // Validate that the transaction response contains the required fields
+      if (!data || !data.tx || !data.tx.to || !data.tx.data) {
+        console.error('Invalid 1inch API response format:', data);
+        return null;
+      }
       
       return {
         to: data.tx.to,
         data: data.tx.data,
-        value: data.tx.value,
+        value: data.tx.value || '0',
         gas: data.tx.gas,
         gasPrice: data.tx.gasPrice
       };

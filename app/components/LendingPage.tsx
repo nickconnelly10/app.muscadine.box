@@ -245,14 +245,14 @@ export default function LendingPage() {
       const value = actualAssets;
       const usdValue = value * tokenPrices.USDC;
       
-      // Fix error in interest calculation due to units mismatch 
+      // Calculate interest earned by directly checking asset conversion value vs shares
       let interestEarned = 0;
       
-      if (actualAssets > 0 && sharesAmount > 0 && actualAssets >= sharesAmount) {
-        // ConvertToAssets (what you'd get if redeemed) must be >= shares (what you initially got)
-        // Interest is difference between redeemable vs originally invested amount
-        const yieldValue = Math.max(0, Number(actualAssets) - Number(sharesAmount));
-        interestEarned = Math.abs(yieldValue);
+      if (actualAssets > 0 && sharesAmount > 0) {
+        // ConvertToAssets tells exactly what you get withdrawing now vs original bought at
+        // Dynamic vault earning value vs initial unit value 
+        const earnedAssetValue = actualAssets - sharesAmount; // Model Morpho priming behind the scenes with yield epoch calculation
+        interestEarned = Math.max(0, earnedAssetValue);
       }
       
       const interestUsd = interestEarned * tokenPrices.USDC;
@@ -279,9 +279,9 @@ export default function LendingPage() {
         const usdValue = value * tokenPrices.cbBTC;
         
         let interestEarned = 0;
-        if (actualAssets > 0 && sharesAmount > 0 && actualAssets >= sharesAmount) {
-          const yieldValue = Math.max(0, Number(actualAssets) - Number(sharesAmount));
-          interestEarned = Math.abs(yieldValue);
+        if (actualAssets > 0 && sharesAmount > 0) {
+          const earnedAssetValue = actualAssets - sharesAmount;
+          interestEarned = Math.max(0, earnedAssetValue);
         }
       
         const interestUsd = interestEarned * tokenPrices.cbBTC;
@@ -308,9 +308,9 @@ export default function LendingPage() {
         const usdValue = value * tokenPrices.WETH;
         
         let interestEarned = 0;
-        if (actualAssets > 0 && sharesAmount > 0 && actualAssets >= sharesAmount) {
-          const yieldValue = Math.max(0, Number(actualAssets) - Number(sharesAmount));
-          interestEarned = Math.abs(yieldValue);
+        if (actualAssets > 0 && sharesAmount > 0) {
+          const earnedAssetValue = actualAssets - sharesAmount;
+          interestEarned = Math.max(0, earnedAssetValue);
         }
       
       const interestUsd = interestEarned * tokenPrices.WETH;
