@@ -6,11 +6,6 @@ const ROOT_URL = process.env.NEXT_PUBLIC_URL || process.env.VERCEL_URL || "https
  * @see {@link https://miniapps.farcaster.xyz/docs/guides/publishing}
  */
 export const minikitConfig = {
-  accountAssociation: {
-    header: "",
-    payload: "",
-    signature: "",
-  },
   frame: {
     version: "1",
     name: "app-muscadine.box",

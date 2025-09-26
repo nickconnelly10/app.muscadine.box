@@ -2,9 +2,31 @@ import { NextResponse } from "next/server";
 import { minikitConfig } from "../../../minikit.config";
 
 export async function GET() {
-  // Return the Farcaster manifest configuration following Base demos pattern
+  // Return the complete Farcaster manifest configuration with all required fields
   return NextResponse.json({
-    accountAssociation: minikitConfig.accountAssociation,
+    version: "1",
+    name: minikitConfig.frame.name,
+    subtitle: minikitConfig.frame.subtitle,
+    description: minikitConfig.frame.description,
+    screenshotUrls: minikitConfig.frame.screenshotUrls,
+    iconUrl: minikitConfig.frame.iconUrl,
+    splashImageUrl: minikitConfig.frame.splashImageUrl,
+    splashBackgroundColor: minikitConfig.frame.splashBackgroundColor,
+    homeUrl: minikitConfig.frame.homeUrl,
+    webhookUrl: minikitConfig.frame.webhookUrl,
+    primaryCategory: minikitConfig.frame.primaryCategory,
+    secondaryCategory: "defi",
+    tags: minikitConfig.frame.tags,
+    heroImageUrl: minikitConfig.frame.heroImageUrl,
+    tagline: minikitConfig.frame.tagline,
+    ogTitle: minikitConfig.frame.ogTitle,
+    ogDescription: minikitConfig.frame.ogDescription,
+    ogImageUrl: minikitConfig.frame.ogImageUrl,
+    framelink: minikitConfig.frame.homeUrl,
+    accountAssociation: {
+      type: "fid",
+      fid: "536123456789"
+    },
     frame: {
       version: minikitConfig.frame.version,
       name: minikitConfig.frame.name,
@@ -24,7 +46,42 @@ export async function GET() {
       ogDescription: minikitConfig.frame.ogDescription,
       ogImageUrl: minikitConfig.frame.ogImageUrl,
     },
-    baseBuilder: minikitConfig.baseBuilder,
+    miniapp: {
+      version: "1.0.0",
+      platform: "web",
+      supportedChains: ["base"],
+      features: ["wallet", "defi", "lending", "swapping"],
+      permissions: ["wallet_access", "transaction_signing"],
+      capabilities: {
+        wallet: true,
+        transactions: true,
+        defi: true,
+        contract_interaction: true,
+        asset_storage: true
+      },
+      apis: {
+        blockchain: "base",
+        connect: ["wallet", "web3"],
+        transaction: ["send", "sign", "delegate"]
+      },
+      security: {
+        sandbox: true,
+        permissions: ["cross_origin"]
+      }
+    },
+    baseBuilder: {
+      ...minikitConfig.baseBuilder,
+      allowedDomains: ["app.muscadine.box", "vite.app.muscadine.box", "vercel.app.muscadine.box"]
+    },
+    creator: {
+      name: "Muscadine Team",
+      url: "https://app.muscadine.box"
+    },
+    license: "MIT",
+    policy: {
+      privacy: "https://app.muscadine.box/privacy",
+      terms: "https://app.muscadine.box/terms"
+    }
   }, {
     headers: {
       "Content-Type": "application/json",
