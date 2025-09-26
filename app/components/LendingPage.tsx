@@ -240,26 +240,19 @@ export default function LendingPage() {
       const assetsBalance = usdcConvertToAssets.data;
       
       const actualAssets = parseFloat(formatUnits(assetsBalance, vaults.usdc.decimals));
+      const sharesAmount = parseFloat(formatUnits(sharesBalance, vaults.usdc.decimals));
+      
       const value = actualAssets;
       const usdValue = value * tokenPrices.USDC;
       
-      // For Morpho vaults, earned interest is calculated as:
-      // Interest = convertToAssets(currentShares) - convertToAssets(shares at time of initial deposit)
-      // Since we can't track the historical initial deposit amount in this context,
-      // We'll calculate the difference between balanceOf amounts (shares that user holds) 
-      // and the equivalent in terms of physical tokens + earned interest
-      // For accurate interest calculation in Morpho vault:
-      // Interest = total_assets_now - (user_shares * 1.0 exchange rate (no interest))
-      const currentSharesUnits = parseFloat(formatUnits(sharesBalance, vaults.usdc.decimals));
-      
-      // calculate interest as accumulation beyond what the vault reports vs. the basic tokens
+      // Fix error in interest calculation due to units mismatch 
       let interestEarned = 0;
-      if (actualAssets >= 0.001) {
-        // Calculate true earned interest using vault accumulated value
-        const maxValueDisplayed = actualAssets; 
-        const baseMoney = currentSharesUnits;
-        // As interest accrues: current asset value > base money invested  
-        interestEarned = maxValueDisplayed - baseMoney;
+      
+      if (actualAssets > 0 && sharesAmount > 0 && actualAssets >= sharesAmount) {
+        // ConvertToAssets (what you'd get if redeemed) must be >= shares (what you initially got)
+        // Interest is difference between redeemable vs originally invested amount
+        const yieldValue = Math.max(0, Number(actualAssets) - Number(sharesAmount));
+        interestEarned = Math.abs(yieldValue);
       }
       
       const interestUsd = interestEarned * tokenPrices.USDC;
@@ -269,28 +262,27 @@ export default function LendingPage() {
         balance: value,
         formatted: value.toFixed(6),
         usdValue: usdValue,
-        interest: interestEarned,
-        interestUsd: interestUsd,
+        interest: Math.max(0, interestEarned), // Ensure non-negative
+        interestUsd: Math.max(0, interestUsd), // Ensure non-negative
       });
     }
 
-    // cBETH Vault - calculate interest earned
-    if (cbethVaultBalance.data && cbethConvertToAssets.data) {
-      const sharesBalance = cbethVaultBalance.data;
-      const assetsBalance = cbethConvertToAssets.data;
-      
-      const actualAssets = parseFloat(formatUnits(assetsBalance, vaults.cbeth.decimals));
-      const value = actualAssets;
-      const usdValue = value * tokenPrices.cBETH;
-      
-      const currentSharesUnits = parseFloat(formatUnits(sharesBalance, vaults.cbeth.decimals));
-      
-      let interestEarned = 0;
-      if (actualAssets >= 0.001) {
-        const maxValueDisplayed = actualAssets; 
-        const baseMoney = currentSharesUnits;
-        interestEarned = maxValueDisplayed - baseMoney;
-      }
+      // cBETH Vault - calculate interest earned
+      if (cbethVaultBalance.data && cbethConvertToAssets.data) {
+        const sharesBalance = cbethVaultBalance.data;
+        const assetsBalance = cbethConvertToAssets.data;
+        
+        const actualAssets = parseFloat(formatUnits(assetsBalance, vaults.cbeth.decimals));
+        const sharesAmount = parseFloat(formatUnits(sharesBalance, vaults.cbeth.decimals));
+        
+        const value = actualAssets;
+        const usdValue = value * tokenPrices.cBETH;
+        
+        let interestEarned = 0;
+        if (actualAssets > 0 && sharesAmount > 0 && actualAssets >= sharesAmount) {
+          const yieldValue = Math.max(0, Number(actualAssets) - Number(sharesAmount));
+          interestEarned = Math.abs(yieldValue);
+        }
       
       const interestUsd = interestEarned * tokenPrices.cBETH;
       
@@ -299,28 +291,27 @@ export default function LendingPage() {
         balance: value,
         formatted: value.toFixed(6),
         usdValue: usdValue,
-        interest: interestEarned,
-        interestUsd: interestUsd,
+        interest: Math.max(0, interestEarned), // Ensure non-negative
+        interestUsd: Math.max(0, interestUsd), // Ensure non-negative
       });
     }
 
-    // WETH Vault - calculate interest earned
-    if (wethVaultBalance.data && wethConvertToAssets.data) {
-      const sharesBalance = wethVaultBalance.data;
-      const assetsBalance = wethConvertToAssets.data;
-      
-      const actualAssets = parseFloat(formatUnits(assetsBalance, vaults.weth.decimals));
-      const value = actualAssets;
-      const usdValue = value * tokenPrices.WETH;
-      
-      const currentSharesUnits = parseFloat(formatUnits(sharesBalance, vaults.weth.decimals));
-      
-      let interestEarned = 0;
-      if (actualAssets >= 0.001) {
-        const maxValueDisplayed = actualAssets; 
-        const baseMoney = currentSharesUnits;
-        interestEarned = maxValueDisplayed - baseMoney;
-      }
+      // WETH Vault - calculate interest earned
+      if (wethVaultBalance.data && wethConvertToAssets.data) {
+        const sharesBalance = wethVaultBalance.data;
+        const assetsBalance = wethConvertToAssets.data;
+        
+        const actualAssets = parseFloat(formatUnits(assetsBalance, vaults.weth.decimals));
+        const sharesAmount = parseFloat(formatUnits(sharesBalance, vaults.weth.decimals));
+        
+        const value = actualAssets;
+        const usdValue = value * tokenPrices.WETH;
+        
+        let interestEarned = 0;
+        if (actualAssets > 0 && sharesAmount > 0 && actualAssets >= sharesAmount) {
+          const yieldValue = Math.max(0, Number(actualAssets) - Number(sharesAmount));
+          interestEarned = Math.abs(yieldValue);
+        }
       
       const interestUsd = interestEarned * tokenPrices.WETH;
       
@@ -329,8 +320,8 @@ export default function LendingPage() {
         balance: value,
         formatted: value.toFixed(6),
         usdValue: usdValue,
-        interest: interestEarned,
-        interestUsd: interestUsd,
+        interest: Math.max(0, interestEarned), // Ensure non-negative
+        interestUsd: Math.max(0, interestUsd), // Ensure non-negative
       });
     }
 
