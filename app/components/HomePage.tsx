@@ -31,9 +31,9 @@ export default function HomePage() {
       chainId: base.id,
     },
     {
-      name: 'cBBTC',
+      name: 'cbBTC',
       address: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf' as const,
-      symbol: 'cBBTC',
+      symbol: 'cbBTC',
       decimals: 8,
       image: 'https://base.basescan.org/token/images/wrappedbitcoin_42.png',
       chainId: base.id,
@@ -116,7 +116,7 @@ export default function HomePage() {
   const [tokenPrices, setTokenPrices] = useState({
     ETH: 3500,
     USDC: 1,
-    cBBTC: 65000,
+    cbBTC: 65000,
     WETH: 3500,
     MORPHO: 2.5,
     cbXRP: 0.6,
@@ -129,21 +129,21 @@ export default function HomePage() {
     const fetchPrices = async () => {
       setPricesLoading(true);
       try {
-        // Using CoinGecko API for real-time prices - batch request
+        // Using CoinGecko API for real-time prices - batch request with correct coin IDs
         const response = await fetch(
-          'https://api.coingecko.com/api/v3/simple/price?ids=ethereum,usd-coin,bitcoin,ripple,morpho-network,aero,well&vs_currencies=usd'
+          'https://api.coingecko.com/api/v3/simple/price?ids=ethereum,usd-coin,bitcoin,ripple,aerodrome-finance,moonwell,well,morpho&vs_currencies=usd'
         );
         const data = await response.json();
         
         setTokenPrices(prevPrices => ({
           ETH: data.ethereum?.usd || prevPrices.ETH,
           USDC: data['usd-coin']?.usd || prevPrices.USDC,
-          cBBTC: data.bitcoin?.usd || prevPrices.cBBTC, // cBBTC tracks Bitcoin
+          cbBTC: data.bitcoin?.usd || prevPrices.cbBTC, // cbBTC tracks Bitcoin
           WETH: data.ethereum?.usd || prevPrices.WETH, // WETH tracks ETH price
           cbXRP: data.ripple?.usd || prevPrices.cbXRP,
-          AERO: data.aero?.usd || prevPrices.AERO,
-          MOONWELL: data.well?.usd || prevPrices.MOONWELL,
-          MORPHO: data['morpho-network']?.usd || prevPrices.MORPHO,
+          AERO: data['aerodrome-finance']?.usd || prevPrices.AERO,
+          MOONWELL: data.moonwell?.usd || prevPrices.MOONWELL,
+          MORPHO: data.morpho?.usd || prevPrices.MORPHO,
         }));
         
         console.log('Token prices updated:', data);
@@ -454,11 +454,11 @@ export default function HomePage() {
 
       // cBBTC balance
       if (cbbtcBalance.data) {
-        const cbbtcToken = tokensToTrack.find(t => t.symbol === 'cBBTC');
+        const cbbtcToken = tokensToTrack.find(t => t.symbol === 'cbBTC');
         if (cbbtcToken) {
           const formatted = formatUnits(cbbtcBalance.data, cbbtcToken.decimals);
           const value = parseFloat(formatted);
-          const price = tokenPrices.cBBTC;
+          const price = tokenPrices.cbBTC;
           const totalValue = value * price;
           if (totalValue >= 0.001) { // Filter out tokens worth less than $0.001
             balances.push({
@@ -896,7 +896,7 @@ export default function HomePage() {
                       <option value="">Select token</option>
                       <option value="ETH">ETH</option>
                       <option value="USDC">USDC</option>
-                      <option value="cBBTC">cBBTC</option>
+                      <option value="cbBTC">cbBTC</option>
                       <option value="WETH">WETH</option>
                       <option value="MORPHO">MORPHO</option>
                       <option value="cbXRP">cbXRP</option>

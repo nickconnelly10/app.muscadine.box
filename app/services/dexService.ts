@@ -30,7 +30,7 @@ class DEXService {
     ETH: '0x0000000000000000000000000000000000000000',
     WETH: '0x4200000000000000000000000000000000000006',
     USDC: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-    cBBTC: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf',
+    cbBTC: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf',
     MORPHO: '0xBAa5CC21fd487B8Fcc2F632f3F4E8D37262a0842',
     cbXRP: '0xcb585250f852C6c6bf90434AB21A00f02833a4af',
     AERO: '0x940181a94A35A4569E4529A3CDfB74e38FD98631',
@@ -72,12 +72,12 @@ class DEXService {
       
       if (fromAsset === 'ETH' || fromAsset === 'WETH') fromDecimals = 18;
       else if (fromAsset === 'USDC') fromDecimals = 6;
-      else if (fromAsset === 'cBBTC' || fromAsset === 'cbBTC') fromDecimals = 8;
+      else if (fromAsset === 'cbBTC') fromDecimals = 8;
       else fromDecimals = 18; // Default for other tokens
       
       if (toAsset === 'ETH' || toAsset === 'WETH') toDecimals = 18;
       else if (toAsset === 'USDC') toDecimals = 6;
-      else if (toAsset === 'cBBTC' || toAsset === 'cbBTC') toDecimals = 8;
+      else if (toAsset === 'cbBTC') toDecimals = 8;
       else toDecimals = 18; // Default for other tokens
       
       const formattedAmount = parseUnits(amount, fromDecimals).toString();
@@ -132,7 +132,7 @@ class DEXService {
       let decimals = 18; // Default for ETH
       if (fromAsset === 'ETH' || fromAsset === 'WETH') decimals = 18;
       else if (fromAsset === 'USDC') decimals = 6;
-      else if (fromAsset === 'cBBTC' || fromAsset === 'cbBTC') decimals = 8;
+      else if (fromAsset === 'cbBTC') decimals = 8;
       else decimals = 18; // Default for other tokens
       
       const formattedAmount = parseUnits(amount, decimals).toString();
