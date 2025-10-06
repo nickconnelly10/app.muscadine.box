@@ -11,7 +11,7 @@ import {
   VaultDetails
 } from "@coinbase/onchainkit/earn";
 import { useState, useMemo, useEffect } from "react";
-import { useAccount, useReadContract } from "wagmi";
+import { useAccount, useReadContract, useBalance } from "wagmi";
 import { base } from "wagmi/chains";
 import { formatUnits } from "viem";
 import styles from "../page.module.css";
@@ -20,14 +20,35 @@ export default function LendingPage() {
   const [activeTabs, setActiveTabs] = useState<{[key: string]: 'deposit' | 'withdraw'}>({
     usdc: 'deposit',
     cbbtc: 'deposit',
-    weth: 'deposit'
+    eth: 'deposit'
   });
   const [expandedVaults, setExpandedVaults] = useState<{[key: string]: boolean}>({
     usdc: false,
     cbbtc: false,
-    weth: false
+    eth: false
   });
   const { address, isConnected } = useAccount();
+
+  // Get wallet balances for each token
+  const usdcWalletBalance = useBalance({
+    address: address,
+    token: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
+    chainId: base.id,
+    query: { enabled: !!address && isConnected }
+  });
+
+  const cbbtcWalletBalance = useBalance({
+    address: address,
+    token: '0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22', // cbBTC on Base
+    chainId: base.id,
+    query: { enabled: !!address && isConnected }
+  });
+
+  const ethWalletBalance = useBalance({
+    address: address,
+    chainId: base.id,
+    query: { enabled: !!address && isConnected }
+  });
 
   const setActiveTab = (vaultKey: string, tab: 'deposit' | 'withdraw') => {
     setActiveTabs(prev => ({
@@ -43,6 +64,13 @@ export default function LendingPage() {
     }));
   };
 
+  // Token prices for USD calculations - using real-time data
+  const [tokenPrices, setTokenPrices] = useState({
+    USDC: 1.00,
+    cbBTC: 65000,
+    ETH: 3500,
+  });
+
   const vaults = {
     usdc: {
       address: '0xf7e26Fa48A568b8b0038e104DfD8ABdf0f99074F' as const,
@@ -50,7 +78,7 @@ export default function LendingPage() {
       symbol: 'USDC',
       description: 'Morpho v1 USDC vault - Earn interest on USDC deposits',
       decimals: 6,
-      price: 1
+      price: tokenPrices.USDC // USDC is always $1.00
     },
     cbbtc: {
       address: '0xAeCc8113a7bD0CFAF7000EA7A31afFD4691ff3E9' as const,
@@ -58,41 +86,39 @@ export default function LendingPage() {
       symbol: 'cbBTC',
       description: 'Morpho v1 cbBTC vault - Earn interest on cbBTC deposits',
       decimals: 8,
-      price: 65000
+      price: tokenPrices.cbBTC // Use real-time price
     },
-    weth: {
+    eth: {
       address: '0x21e0d366272798da3A977FEBA699FCB91959d120' as const,
       name: 'Muscadine ETH Vaults',
       symbol: 'ETH',
       description: 'Morpho v1 ETH vault - Earn interest on ETH deposits',
       decimals: 18,
-      price: 3500
+      price: tokenPrices.ETH // Use real-time price
     }
   };
-
-  // Token prices for USD calculations - using real-time data
-  const [tokenPrices, setTokenPrices] = useState({
-    USDC: 1,
-    cbBTC: 65000,
-    WETH: 3500,
-  });
 
   // Fetch real-time token prices
   useEffect(() => {
     const fetchPrices = async () => {
       try {
         // Using CoinGecko API for real-time prices
-        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,usd-coin&vs_currencies=usd');
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd');
         const data = await response.json();
         
         setTokenPrices({
-          USDC: data['usd-coin']?.usd || 1,
+          USDC: 1.00, // USDC is always $1.00
           cbBTC: data.bitcoin?.usd || 65000, // cbBTC tracks BTC price 
-          WETH: data.ethereum?.usd || 3500, // WETH tracks ETH price
+          ETH: data.ethereum?.usd || 3500, // ETH price
         });
       } catch (error) {
         console.error('Failed to fetch token prices:', error);
         // Keep fallback prices
+        setTokenPrices({
+          USDC: 1.00,
+          cbBTC: 65000,
+          ETH: 3500,
+        });
       }
     };
 
@@ -155,8 +181,8 @@ export default function LendingPage() {
     },
   });
 
-  const wethVaultBalance = useReadContract({
-    address: vaults.weth.address,
+  const ethVaultBalance = useReadContract({
+    address: vaults.eth.address,
     abi: [
       {
         name: 'balanceOf',
@@ -220,8 +246,8 @@ export default function LendingPage() {
     },
   });
 
-  const wethConvertToAssets = useReadContract({
-    address: vaults.weth.address,
+  const ethConvertToAssets = useReadContract({
+    address: vaults.eth.address,
     abi: [
       {
         name: 'convertToAssets',
@@ -232,10 +258,10 @@ export default function LendingPage() {
       },
     ],
     functionName: 'convertToAssets',
-    args: wethVaultBalance.data ? [wethVaultBalance.data] : undefined,
+    args: ethVaultBalance.data ? [ethVaultBalance.data] : undefined,
     chainId: base.id,
     query: {
-      enabled: !!address && isConnected && !!wethVaultBalance.data,
+      enabled: !!address && isConnected && !!ethVaultBalance.data,
     },
   });
 
@@ -308,16 +334,16 @@ export default function LendingPage() {
       });
     }
 
-      // WETH Vault - calculate interest earned
-      if (wethVaultBalance.data && wethConvertToAssets.data) {
-        const sharesBalance = wethVaultBalance.data;
-        const assetsBalance = wethConvertToAssets.data;
+      // ETH Vault - calculate interest earned
+      if (ethVaultBalance.data && ethConvertToAssets.data) {
+        const sharesBalance = ethVaultBalance.data;
+        const assetsBalance = ethConvertToAssets.data;
         
-        const actualAssets = parseFloat(formatUnits(assetsBalance, vaults.weth.decimals));
-        const sharesAmount = parseFloat(formatUnits(sharesBalance, vaults.weth.decimals));
+        const actualAssets = parseFloat(formatUnits(assetsBalance, vaults.eth.decimals));
+        const sharesAmount = parseFloat(formatUnits(sharesBalance, vaults.eth.decimals));
         
         const value = actualAssets;
-        const usdValue = value * tokenPrices.WETH;
+        const usdValue = value * tokenPrices.ETH;
         
         let interestEarned = 0;
         if (actualAssets > 0 && sharesAmount > 0) {
@@ -325,10 +351,10 @@ export default function LendingPage() {
           interestEarned = Math.max(0, earnedAssetValue);
         }
       
-      const interestUsd = interestEarned * tokenPrices.WETH;
+      const interestUsd = interestEarned * tokenPrices.ETH;
       
       balances.push({
-        vault: vaults.weth,
+        vault: vaults.eth,
         balance: value,
         formatted: value.toFixed(6),
         usdValue: usdValue,
@@ -338,7 +364,7 @@ export default function LendingPage() {
     }
 
     return balances;
-  }, [usdcVaultBalance.data, cbbtcVaultBalance.data, wethVaultBalance.data, usdcConvertToAssets.data, cbbtcConvertToAssets.data, wethConvertToAssets.data, tokenPrices, vaults.usdc, vaults.cbbtc, vaults.weth]);
+  }, [usdcVaultBalance.data, cbbtcVaultBalance.data, ethVaultBalance.data, usdcConvertToAssets.data, cbbtcConvertToAssets.data, ethConvertToAssets.data, tokenPrices, vaults.usdc, vaults.cbbtc, vaults.eth]);
 
   return (
     <div className={styles.tabContent}>
@@ -424,11 +450,25 @@ export default function LendingPage() {
                   <div className={styles.supplyBorrowSection}>
                     <div className={styles.amountDisplay}>
                       <span className={styles.amountLabel}>Supplied:</span>
-                      <span className={styles.amountValue}>$0.00</span>
+                      <span className={styles.amountValue}>
+                        ${vaultBalance ? vaultBalance.usdValue.toFixed(2) : '0.00'}
+                      </span>
                     </div>
                     <div className={styles.amountDisplay}>
                       <span className={styles.amountLabel}>Available:</span>
-                      <span className={styles.amountValue}>$0.00</span>
+                      <span className={styles.amountValue}>
+                        ${(() => {
+                          let walletBalance = 0;
+                          if (vault.symbol === 'USDC' && usdcWalletBalance.data) {
+                            walletBalance = parseFloat(formatUnits(usdcWalletBalance.data.value, usdcWalletBalance.data.decimals)) * tokenPrices.USDC;
+                          } else if (vault.symbol === 'cbBTC' && cbbtcWalletBalance.data) {
+                            walletBalance = parseFloat(formatUnits(cbbtcWalletBalance.data.value, cbbtcWalletBalance.data.decimals)) * tokenPrices.cbBTC;
+                          } else if (vault.symbol === 'ETH' && ethWalletBalance.data) {
+                            walletBalance = parseFloat(formatUnits(ethWalletBalance.data.value, ethWalletBalance.data.decimals)) * tokenPrices.ETH;
+                          }
+                          return walletBalance.toFixed(2);
+                        })()}
+                      </span>
                     </div>
                     <div className={styles.actionButtons}>
                       <button className={styles.supplyButton}>Supply</button>

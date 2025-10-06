@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAccount, useReadContract } from "wagmi";
 import { base } from "wagmi/chains";
@@ -12,24 +12,61 @@ export default function Home() {
   const { address, isConnected } = useAccount();
 
   // Muscadine Vault addresses
+  // Token prices for USD calculations - using real-time data
+  const [tokenPrices, setTokenPrices] = useState({
+    USDC: 1.00,
+    cbBTC: 65000,
+    ETH: 3500,
+  });
+
+  // Fetch real-time token prices
+  useEffect(() => {
+    const fetchPrices = async () => {
+      try {
+        // Using CoinGecko API for real-time prices
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd');
+        const data = await response.json();
+        
+        setTokenPrices({
+          USDC: 1.00, // USDC is always $1.00
+          cbBTC: data.bitcoin?.usd || 65000, // cbBTC tracks BTC price 
+          ETH: data.ethereum?.usd || 3500, // ETH price
+        });
+      } catch (error) {
+        console.error('Failed to fetch token prices:', error);
+        // Keep fallback prices
+        setTokenPrices({
+          USDC: 1.00,
+          cbBTC: 65000,
+          ETH: 3500,
+        });
+      }
+    };
+
+    fetchPrices();
+    // Update prices every 30 seconds
+    const interval = setInterval(fetchPrices, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   const vaults = {
     usdc: {
       address: '0xf7e26Fa48A568b8b0038e104DfD8ABdf0f99074F' as const,
       symbol: 'USDC',
       decimals: 6,
-      price: 1
+      price: tokenPrices.USDC
     },
     cbbtc: {
       address: '0xAeCc8113a7bD0CFAF7000EA7A31afFD4691ff3E9' as const,
       symbol: 'cbBTC',
       decimals: 8,
-      price: 65000
+      price: tokenPrices.cbBTC
     },
     eth: {
       address: '0x21e0d366272798da3A977FEBA699FCB91959d120' as const,
       symbol: 'ETH',
       decimals: 18,
-      price: 3500
+      price: tokenPrices.ETH
     }
   };
 
