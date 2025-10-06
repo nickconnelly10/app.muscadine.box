@@ -34,25 +34,25 @@ export default function LendingPage() {
   const vaults = {
     usdc: {
       address: '0xf7e26Fa48A568b8b0038e104DfD8ABdf0f99074F' as const,
-      name: 'Muscadine USDC',
+      name: 'Muscadine USDC Vaults',
       symbol: 'USDC',
-      description: 'Earn interest on USDC deposits with Muscadine',
+      description: 'Morpho v1 USDC vault - Earn interest on USDC deposits',
       decimals: 6,
       price: 1
     },
     cbbtc: {
       address: '0xAeCc8113a7bD0CFAF7000EA7A31afFD4691ff3E9' as const,
-      name: 'Muscadine cbBTC',
+      name: 'Muscadine cbBTC Vaults',
       symbol: 'cbBTC',
-      description: 'Earn interest on cbBTC deposits with Muscadine',
+      description: 'Morpho v1 cbBTC vault - Earn interest on cbBTC deposits',
       decimals: 8,
       price: 65000
     },
     weth: {
       address: '0x21e0d366272798da3A977FEBA699FCB91959d120' as const,
-      name: 'Muscadine ETH',
+      name: 'Muscadine ETH Vaults',
       symbol: 'ETH',
-      description: 'Earn interest on ETH deposits with Muscadine',
+      description: 'Morpho v1 ETH vault - Earn interest on ETH deposits',
       decimals: 18,
       price: 3500
     }

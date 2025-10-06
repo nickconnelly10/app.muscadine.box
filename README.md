@@ -18,7 +18,7 @@ Muscadine Box is a production-ready DeFi application that combines sophisticated
 - Direct BaseScan integration for complete transaction visibility
 
 ### Lending Services
-- Morpho Protocol vault integration supporting USDC, cBETH, and WETH deposits
+- Morpho Protocol v1 vault integration supporting USDC, cbBTC, and ETH deposits
 - Accurate vault balance tracking using convertToAssets methodology
 - Transparent deposit and withdrawal mechanisms with OnchainKit validation
 - Real-time yield calculation and vault analytics display
@@ -77,11 +77,11 @@ Muscadine Box is a production-ready DeFi application that combines sophisticated
 - **Base Network** - Optimized Ethereum Layer 2 for transaction processing
 
 ### DeFi Protocol Integrations
-- **Morpho Labs** - Advanced lending protocol with yield optimization
-- **Morpho Vaults** - Specialized vault support with precise balance conversions
-  - Muscadine USDC Vault (0xf7e26Fa48A568b8b0038e104DfD8ABdf0f99074F)
-  - Muscadine cbBTC Vault (0xAeCc8113a7bD0CFAF7000EA7A31afFD4691ff3E9)
-  - Muscadine ETH Vault (0x21e0d366272798da3A977FEBA699FCB91959d120)
+- **Morpho Labs v1** - Advanced lending protocol with yield optimization
+- **Morpho v1 Vaults** - Specialized vault support with precise balance conversions
+  - Muscadine USDC Vaults (0xf7e26Fa48A568b8b0038e104DfD8ABdf0f99074F)
+  - Muscadine cbBTC Vaults (0xAeCc8113a7bD0CFAF7000EA7A31afFD4691ff3E9)
+  - Muscadine ETH Vaults (0x21e0d366272798da3A977FEBA699FCB91959d120)
 
 ### Authentication Framework
 - **Farcaster MiniKit 1.0.8** - Mini App development framework
