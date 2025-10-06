@@ -363,9 +363,24 @@ export default function LendingPage() {
                 {/* Asset Identification */}
                 <div className={styles.assetInfo}>
                   <div className={styles.assetIcon}>
-                    {vault.symbol === 'USDC' && <span className={styles.usdcIcon}>$</span>}
-                    {vault.symbol === 'cbBTC' && <span className={styles.btcIcon}>₿</span>}
-                    {vault.symbol === 'ETH' && <span className={styles.ethIcon}>Ξ</span>}
+                    {vault.symbol === 'USDC' && (
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="12" fill="#2775CA"/>
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1V9h1v1zm0-2h-1V7h1v1zm0-2h-1V5h1v1zm2 10h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1V9h1v1zm0-2h-1V7h1v1zm0-2h-1V5h1v1zm2 10h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1V9h1v1zm0-2h-1V7h1v1zm0-2h-1V5h1v1z" fill="white"/>
+                      </svg>
+                    )}
+                    {vault.symbol === 'cbBTC' && (
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="12" fill="#F7931A"/>
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1V9h1v1zm0-2h-1V7h1v1zm0-2h-1V5h1v1zm2 10h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1V9h1v1zm0-2h-1V7h1v1zm0-2h-1V5h1v1zm2 10h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1V9h1v1zm0-2h-1V7h1v1zm0-2h-1V5h1v1z" fill="white"/>
+                      </svg>
+                    )}
+                    {vault.symbol === 'ETH' && (
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="12" fill="#627EEA"/>
+                        <path d="M12.498 3v6.87l5.257 2.35-5.257-9.22zm-.996 0L6.245 12.22l5.257-2.35V3zm6.257 9.9l-5.257 2.35v6.87l5.257-9.22zm-11.514 0l5.257 9.22v-6.87l-5.257-2.35z" fill="white"/>
+                      </svg>
+                    )}
                   </div>
                   <div className={styles.assetName}>
                     <div className={styles.assetSymbol}>{vault.symbol}</div>
@@ -387,8 +402,14 @@ export default function LendingPage() {
                 <div className={styles.financialMetrics}>
                   <div className={styles.price}>${vault.price.toLocaleString()}</div>
                   <div className={styles.interestRates}>
-                    <span className={styles.rate}>6.1% <span className={styles.infoIcon}>ⓘ</span></span>
-                    <span className={styles.rate}>5.6% <span className={styles.infoIcon}>ⓘ</span></span>
+                    <Earn 
+                      vaultAddress={vault.address}
+                      isSponsored={true}
+                      onSuccess={() => {}}
+                      onError={() => {}}
+                    >
+                      <YieldDetails />
+                    </Earn>
                   </div>
                 </div>
 
@@ -401,11 +422,17 @@ export default function LendingPage() {
                     {vaultBalance ? vaultBalance.formatted : '0.000000'} {vault.symbol}
                   </div>
                   <div className={styles.supplyBorrowSection}>
-                    <div className={styles.amountDisplay}>$0.00</div>
-                    <div className={styles.amountDisplay}>$0.00</div>
+                    <div className={styles.amountDisplay}>
+                      <span className={styles.amountLabel}>Supplied:</span>
+                      <span className={styles.amountValue}>$0.00</span>
+                    </div>
+                    <div className={styles.amountDisplay}>
+                      <span className={styles.amountLabel}>Available:</span>
+                      <span className={styles.amountValue}>$0.00</span>
+                    </div>
                     <div className={styles.actionButtons}>
                       <button className={styles.supplyButton}>Supply</button>
-                      <button className={styles.borrowButton}>Borrow</button>
+                      <button className={styles.withdrawButton}>Withdraw</button>
                     </div>
                   </div>
                 </div>
