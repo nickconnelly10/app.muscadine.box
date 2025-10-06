@@ -17,15 +17,16 @@ Muscadine Box is a production-ready DeFi lending application featuring Muscadine
 - Real-time yield calculation and vault analytics display
 - Sponsored transaction processing to eliminate gas costs
 - Dynamic token pricing with automatic refresh capabilities
-- Collapsible vault interface for improved user experience
+- Horizontal vault interface with expandable details
 
 ### Enhanced Platform Features
 - **Streamlined Interface** - Focused lending experience with clean navigation
-- **Consistent UI/UX** - Clean, modern design with light theme
+- **Horizontal Vault Design** - Professional vault rows with asset icons and metrics
 - **Light Theme Design** - Optimized visibility and user experience
-- **Collapsible Vault Interface** - Clean bars that expand to show full functionality
+- **Expandable Vault Interface** - Click vault rows to reveal full functionality
 - **Real-time Balance Tracking** - Live updates of vault balances and yields
 - **Gasless Transactions** - Sponsored transactions for seamless user experience
+- **Asset Recognition** - Clear icons and branding for USDC, cbBTC, and ETH
 
 ## Technical Architecture
 
@@ -78,9 +79,35 @@ app/
 - **Responsive Design** - Mobile-first approach with adaptive layouts
 
 ### Layout Architecture
-- **Collapsible Vault Bars** - Clean interface showing vault name and balance
+- **Horizontal Vault Rows** - Professional display with asset icons and metrics
+- **Asset Recognition** - Distinct icons for USDC ($), cbBTC (₿), and ETH (Ξ)
+- **Network Tags** - Core and Base protocol identification
+- **Financial Metrics** - Price, interest rates, and vault totals
 - **Expandable Content** - Click to reveal full deposit/withdraw functionality
 - **Real-time Updates** - Live data synchronization for vault balances
+
+## Recent Updates and Changes
+
+### Major Platform Simplification
+- **Removed Portfolio Management** - Eliminated portfolio tracking functionality
+- **Removed Token Swapping** - Removed 1inch DEX integration
+- **Removed Transaction History** - Eliminated transaction tracking features
+- **Focused on Lending** - Streamlined platform to focus exclusively on lending
+
+### UI/UX Improvements
+- **Horizontal Vault Design** - Redesigned interface to match professional DeFi platforms
+- **Asset Icons** - Added distinctive circular icons for each token type
+- **Network Tags** - Included Core and Base protocol identification
+- **Financial Metrics** - Clear display of prices, interest rates, and vault totals
+- **Supply/Borrow Buttons** - Ready-to-use action buttons for each vault
+- **Expandable Details** - Click vault rows to access full OnchainKit functionality
+
+### Technical Enhancements
+- **Light Theme Enforcement** - Removed all dark mode support
+- **Text Visibility** - Fixed input field text contrast issues
+- **Collapsible Interface** - Clean vault rows that expand to show full functionality
+- **OnchainKit Integration** - Maintained all deposit/withdraw functionality
+- **Build Optimization** - Reduced bundle size and improved performance
 
 ## Development and Deployment
 
