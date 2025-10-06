@@ -366,12 +366,28 @@ export default function LendingPage() {
     return balances;
   }, [usdcVaultBalance.data, cbbtcVaultBalance.data, ethVaultBalance.data, usdcConvertToAssets.data, cbbtcConvertToAssets.data, ethConvertToAssets.data, tokenPrices, vaults.usdc, vaults.cbbtc, vaults.eth]);
 
+  // Calculate total amounts
+  const totalSupplied = vaultBalances.reduce((sum, balance) => sum + balance.usdValue, 0);
+  const totalInterest = vaultBalances.reduce((sum, balance) => sum + balance.interestUsd, 0);
+
   return (
     <div className={styles.tabContent}>
       <div className={styles.header}>
-        <h2 className={styles.sectionTitle}>Lending</h2>
+        <h1 className={styles.mainTitle}>Earn interest on your crypto with Muscadine Morpho vaults</h1>
       </div>
-      <p className={styles.subtitle}>Earn interest on your crypto with Muscadine Morpho vaults</p>
+      
+      {/* Total Amount Supplied Section */}
+      <div className={styles.totalSuppliedSection}>
+        <div className={styles.totalSuppliedCard}>
+          <h2 className={styles.totalSuppliedTitle}>Total Amount supplied to Vaults</h2>
+          <div className={styles.totalSuppliedAmount}>
+            ${totalSupplied.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </div>
+          <div className={styles.totalInterestAmount}>
+            + ${totalInterest.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} interest accrued
+          </div>
+        </div>
+      </div>
       
       {/* Horizontal Vault Display */}
       <div className={styles.vaultsContainer}>
