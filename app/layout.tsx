@@ -42,7 +42,11 @@ export default function RootLayout({
 }>) {
   return (
     <RootProvider>
-      <html lang="en">
+      <html lang="en" style={{ colorScheme: 'light' }}>
+        <head>
+          <meta name="color-scheme" content="light" />
+          <meta name="theme-color" content="#ffffff" />
+        </head>
         <body className={`${inter.variable} ${sourceCodePro.variable}`}>
           <SafeArea>{children}</SafeArea>
         </body>
