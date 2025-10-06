@@ -1795,3 +1795,98 @@
   border: 1px solid #e5e7eb;
 }
 
+/* Total Deposits Display Styles */
+.totalDepositsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.totalDepositsCard {
+  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  color: white;
+  box-shadow: 0 8px 32px rgba(14, 165, 233, 0.3);
+}
+
+.totalDepositsTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  opacity: 0.9;
+}
+
+.totalDepositsAmount {
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.totalDepositsSubtext {
+  font-size: 0.875rem;
+  opacity: 0.8;
+  margin: 0;
+}
+
+.vaultBreakdown {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f3f4f6;
+}
+
+.vaultBreakdownItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.vaultBreakdownItem:last-child {
+  border-bottom: none;
+}
+
+.vaultBreakdownLabel {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.vaultBreakdownValue {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.connectWalletPrompt {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.connectWalletPrompt p {
+  font-size: 1.125rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.redirectMessage {
+  text-align: center;
+  padding: 1rem;
+  margin-top: 2rem;
+}
+
+.redirectMessage p {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
