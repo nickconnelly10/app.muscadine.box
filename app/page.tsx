@@ -1,6 +1,6 @@
 "use client";
 import { WalletIsland } from "@coinbase/onchainkit/wallet";
-import { useAccount, useBalance } from "wagmi";
+import { useAccount, useBalance, useReadContract } from "wagmi";
 import { base } from "wagmi/chains";
 import { formatUnits } from "viem";
 import { useState, useEffect } from "react";
@@ -15,6 +15,59 @@ export default function Home() {
   const { data: ethBalance } = useBalance({
     address: address,
     chainId: base.id,
+  });
+
+  // Muscadine Vault addresses
+  const vaults = {
+    usdc: {
+      address: '0xf7e26Fa48A568b8b0038e104DfD8ABdf0f99074F' as const,
+      name: 'Muscadine USDC Vaults',
+      symbol: 'USDC',
+      decimals: 6,
+      image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
+    },
+    cbbtc: {
+      address: '0xAeCc8113a7bD0CFAF7000EA7A31afFD4691ff3E9' as const,
+      name: 'Muscadine cbBTC Vaults',
+      symbol: 'cbBTC',
+      decimals: 8,
+      image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
+    },
+    eth: {
+      address: '0x21e0d366272798da3A977FEBA699FCB91959d120' as const,
+      name: 'Muscadine ETH Vaults',
+      symbol: 'ETH',
+      decimals: 18,
+      image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
+    }
+  };
+
+  // Get vault balances
+  const usdcVaultBalance = useReadContract({
+    address: vaults.usdc.address,
+    abi: [{ name: 'balanceOf', type: 'function', stateMutability: 'view', inputs: [{ name: 'account', type: 'address' }], outputs: [{ name: '', type: 'uint256' }] }],
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    chainId: base.id,
+    query: { enabled: !!address && isConnected },
+  });
+
+  const cbbtcVaultBalance = useReadContract({
+    address: vaults.cbbtc.address,
+    abi: [{ name: 'balanceOf', type: 'function', stateMutability: 'view', inputs: [{ name: 'account', type: 'address' }], outputs: [{ name: '', type: 'uint256' }] }],
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    chainId: base.id,
+    query: { enabled: !!address && isConnected },
+  });
+
+  const ethVaultBalance = useReadContract({
+    address: vaults.eth.address,
+    abi: [{ name: 'balanceOf', type: 'function', stateMutability: 'view', inputs: [{ name: 'account', type: 'address' }], outputs: [{ name: '', type: 'uint256' }] }],
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    chainId: base.id,
+    query: { enabled: !!address && isConnected },
   });
 
   // Demo portfolio with basic ETH support and real-time prices
@@ -99,6 +152,82 @@ export default function Home() {
           value: ethValue,
           price: ethPrice,
           totalValue: ethTotalValue,
+        }];
+      }
+      return [];
+    })() : []),
+    // Add Muscadine Vault balances
+    ...(usdcVaultBalance.data && usdcVaultBalance.data > 0 ? (() => {
+      const formattedBalance = formatUnits(usdcVaultBalance.data, vaults.usdc.decimals);
+      const vaultValue = parseFloat(formattedBalance);
+      const vaultPrice = tokenPrices.USDC;
+      const vaultTotalValue = vaultValue * vaultPrice;
+      
+      if (vaultTotalValue >= 0.001) {
+        return [{
+          token: {
+            name: vaults.usdc.name,
+            address: vaults.usdc.address,
+            symbol: vaults.usdc.symbol,
+            decimals: vaults.usdc.decimals,
+            image: vaults.usdc.image,
+            chainId: base.id,
+          },
+          balance: usdcVaultBalance.data.toString(),
+          formatted: formattedBalance,
+          value: vaultValue,
+          price: vaultPrice,
+          totalValue: vaultTotalValue,
+        }];
+      }
+      return [];
+    })() : []),
+    ...(cbbtcVaultBalance.data && cbbtcVaultBalance.data > 0 ? (() => {
+      const formattedBalance = formatUnits(cbbtcVaultBalance.data, vaults.cbbtc.decimals);
+      const vaultValue = parseFloat(formattedBalance);
+      const vaultPrice = tokenPrices.cbBTC;
+      const vaultTotalValue = vaultValue * vaultPrice;
+      
+      if (vaultTotalValue >= 0.001) {
+        return [{
+          token: {
+            name: vaults.cbbtc.name,
+            address: vaults.cbbtc.address,
+            symbol: vaults.cbbtc.symbol,
+            decimals: vaults.cbbtc.decimals,
+            image: vaults.cbbtc.image,
+            chainId: base.id,
+          },
+          balance: cbbtcVaultBalance.data.toString(),
+          formatted: formattedBalance,
+          value: vaultValue,
+          price: vaultPrice,
+          totalValue: vaultTotalValue,
+        }];
+      }
+      return [];
+    })() : []),
+    ...(ethVaultBalance.data && ethVaultBalance.data > 0 ? (() => {
+      const formattedBalance = formatUnits(ethVaultBalance.data, vaults.eth.decimals);
+      const vaultValue = parseFloat(formattedBalance);
+      const vaultPrice = tokenPrices.ETH;
+      const vaultTotalValue = vaultValue * vaultPrice;
+      
+      if (vaultTotalValue >= 0.001) {
+        return [{
+          token: {
+            name: vaults.eth.name,
+            address: vaults.eth.address,
+            symbol: vaults.eth.symbol,
+            decimals: vaults.eth.decimals,
+            image: vaults.eth.image,
+            chainId: base.id,
+          },
+          balance: ethVaultBalance.data.toString(),
+          formatted: formattedBalance,
+          value: vaultValue,
+          price: vaultPrice,
+          totalValue: vaultTotalValue,
         }];
       }
       return [];

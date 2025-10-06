@@ -22,12 +22,24 @@ export default function LendingPage() {
     cbbtc: 'deposit',
     weth: 'deposit'
   });
+  const [expandedVaults, setExpandedVaults] = useState<{[key: string]: boolean}>({
+    usdc: false,
+    cbbtc: false,
+    weth: false
+  });
   const { address, isConnected } = useAccount();
 
   const setActiveTab = (vaultKey: string, tab: 'deposit' | 'withdraw') => {
     setActiveTabs(prev => ({
       ...prev,
       [vaultKey]: tab
+    }));
+  };
+
+  const toggleVaultExpansion = (vaultKey: string) => {
+    setExpandedVaults(prev => ({
+      ...prev,
+      [vaultKey]: !prev[vaultKey]
     }));
   };
 
@@ -335,98 +347,115 @@ export default function LendingPage() {
       </div>
       <p className={styles.subtitle}>Earn interest on your crypto with Morpho vaults</p>
       
-      {/* All Vaults Display */}
-      <div className={styles.vaultsGrid}>
+      {/* Collapsible Vault Bars */}
+      <div className={styles.vaultBarsContainer}>
         {Object.entries(vaults).map(([key, vault]) => {
           const vaultBalance = vaultBalances.find(b => b.vault.symbol === vault.symbol);
           const currentVaultTab = activeTabs[key] || 'deposit';
+          const isExpanded = expandedVaults[key] || false;
           
           return (
-            <div key={key} className={styles.vaultCard}>
-              <Earn 
-                vaultAddress={vault.address}
-                isSponsored={true}
-                onSuccess={(receipt) => {
-                  console.log("Transaction successful:", receipt);
-                }}
-                onError={(error) => {
-                  console.error("Transaction error:", error);
-                }}
+            <div key={key} className={styles.vaultBar}>
+              {/* Vault Bar Header - Always Visible */}
+              <div 
+                className={styles.vaultBarHeader}
+                onClick={() => toggleVaultExpansion(key)}
               >
-                <div className={styles.vaultCardContent}>
-                  {/* Vault Header */}
-                  <div className={styles.vaultHeader}>
-                    <h3 className={styles.vaultTitle}>{vault.name}</h3>
-                    <p className={styles.vaultDescription}>{vault.description}</p>
-                  </div>
-
-                  {/* Vault Balance Info */}
-                  <div className={styles.vaultBalanceInfo}>
-                    <div className={styles.balanceRow}>
-                      <span className={styles.balanceLabel}>Your Balance:</span>
-                      <div className={styles.balanceValue}>
-                        <span className={styles.balanceAmount}>
-                          {vaultBalance ? vaultBalance.formatted : '0.000000'} {vault.symbol}
-                        </span>
-                        <span className={styles.balanceUsd}>
-                          ${vaultBalance ? vaultBalance.usdValue.toFixed(2) : '0.00'}
-                        </span>
-                      </div>
-                    </div>
-                    <div className={styles.balanceRow}>
-                      <span className={styles.balanceLabel}>Interest Earned:</span>
-                      <div className={styles.balanceValue}>
-                        <span className={styles.balanceAmount}>
-                          {vaultBalance ? vaultBalance.interest.toFixed(6) : '0.000000'} {vault.symbol}
-                        </span>
-                        <span className={styles.balanceUsd}>
-                          ${vaultBalance ? vaultBalance.interestUsd.toFixed(2) : '0.00'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Vault Details */}
-                  <div className={styles.vaultDetails}>
-                    <VaultDetails />
-                    <YieldDetails />
-                  </div>
-
-                  {/* Action Section */}
-                  <div className={styles.vaultActions}>
-                    <div className={styles.tabSelector}>
-                      <button 
-                        className={`${styles.tabButton} ${currentVaultTab === 'deposit' ? styles.activeTab : ''}`}
-                        onClick={() => setActiveTab(key, 'deposit')}
-                      >
-                        Deposit
-                      </button>
-                      <button 
-                        className={`${styles.tabButton} ${currentVaultTab === 'withdraw' ? styles.activeTab : ''}`}
-                        onClick={() => setActiveTab(key, 'withdraw')}
-                      >
-                        Withdraw
-                      </button>
-                    </div>
-                    
-                    <div className={styles.actionContent}>
-                      {currentVaultTab === 'deposit' ? (
-                        <>
-                          <DepositBalance />
-                          <DepositAmountInput className={styles.amountInput} />
-                          <DepositButton className={styles.actionButton} />
-                        </>
-                      ) : (
-                        <>
-                          <WithdrawBalance />
-                          <WithdrawAmountInput className={styles.amountInput} />
-                          <WithdrawButton className={styles.actionButton} />
-                        </>
-                      )}
-                    </div>
+                <div className={styles.vaultBarInfo}>
+                  <h3 className={styles.vaultBarTitle}>{vault.name}</h3>
+                  <div className={styles.vaultBarBalance}>
+                    <span className={styles.vaultBarAmount}>
+                      {vaultBalance ? vaultBalance.formatted : '0.000000'} {vault.symbol}
+                    </span>
+                    <span className={styles.vaultBarUsd}>
+                      ${vaultBalance ? vaultBalance.usdValue.toFixed(2) : '0.00'}
+                    </span>
                   </div>
                 </div>
-              </Earn>
+                <div className={styles.vaultBarActions}>
+                  <span className={styles.expandIcon}>
+                    {isExpanded ? '▼' : '▶'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Expanded Vault Content */}
+              {isExpanded && (
+                <div className={styles.vaultBarContent}>
+                  <Earn 
+                    vaultAddress={vault.address}
+                    isSponsored={true}
+                    onSuccess={(receipt) => {
+                      console.log("Transaction successful:", receipt);
+                    }}
+                    onError={(error) => {
+                      console.error("Transaction error:", error);
+                    }}
+                  >
+                    <div className={styles.vaultExpandedContent}>
+                      {/* Vault Description */}
+                      <div className={styles.vaultDescription}>
+                        <p>{vault.description}</p>
+                      </div>
+
+                      {/* Interest Earned Info */}
+                      <div className={styles.vaultInterestInfo}>
+                        <div className={styles.interestRow}>
+                          <span className={styles.interestLabel}>Interest Earned:</span>
+                          <div className={styles.interestValue}>
+                            <span className={styles.interestAmount}>
+                              {vaultBalance ? vaultBalance.interest.toFixed(6) : '0.000000'} {vault.symbol}
+                            </span>
+                            <span className={styles.interestUsd}>
+                              ${vaultBalance ? vaultBalance.interestUsd.toFixed(2) : '0.00'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Vault Details */}
+                      <div className={styles.vaultDetails}>
+                        <VaultDetails />
+                        <YieldDetails />
+                      </div>
+
+                      {/* Action Section */}
+                      <div className={styles.vaultActions}>
+                        <div className={styles.tabSelector}>
+                          <button 
+                            className={`${styles.tabButton} ${currentVaultTab === 'deposit' ? styles.activeTab : ''}`}
+                            onClick={() => setActiveTab(key, 'deposit')}
+                          >
+                            Deposit
+                          </button>
+                          <button 
+                            className={`${styles.tabButton} ${currentVaultTab === 'withdraw' ? styles.activeTab : ''}`}
+                            onClick={() => setActiveTab(key, 'withdraw')}
+                          >
+                            Withdraw
+                          </button>
+                        </div>
+                        
+                        <div className={styles.actionContent}>
+                          {currentVaultTab === 'deposit' ? (
+                            <>
+                              <DepositBalance />
+                              <DepositAmountInput className={styles.amountInput} />
+                              <DepositButton className={styles.actionButton} />
+                            </>
+                          ) : (
+                            <>
+                              <WithdrawBalance />
+                              <WithdrawAmountInput className={styles.amountInput} />
+                              <WithdrawButton className={styles.actionButton} />
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </Earn>
+                </div>
+              )}
             </div>
           );
         })}
