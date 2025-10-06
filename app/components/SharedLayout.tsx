@@ -25,38 +25,20 @@ export default function SharedLayout({ children }: SharedLayoutProps) {
         )}
       </header>
 
-      <div className={styles.mainContentBox}>
-        <div className={styles.tabs}>
-          <Link 
-            href="/" 
-            className={`${styles.tab} ${pathname === '/' ? styles.activeTab : ''}`}
-          >
-            Portfolio
-          </Link>
-          <Link 
-            href="/lending" 
-            className={`${styles.tab} ${pathname === '/lending' ? styles.activeTab : ''}`}
-          >
-            Lending  
-          </Link>
-          <Link 
-            href="/swap" 
-            className={`${styles.tab} ${pathname === '/swap' ? styles.activeTab : ''}`}
-          >
-            Swap
-          </Link>
-          <Link 
-            href="/transactions" 
-            className={`${styles.tab} ${pathname === '/transactions' ? styles.activeTab : ''}`}
-          >
-            Transactions
-          </Link>
-        </div>
-        
-        <div className={styles.tabPanel}>
-          {children}
-        </div>
-      </div>
+          <div className={styles.mainContentBox}>
+            <div className={styles.tabs}>
+              <Link
+                href="/lending"
+                className={`${styles.tab} ${pathname === '/lending' ? styles.activeTab : ''}`}
+              >
+                Lending
+              </Link>
+            </div>
+
+            <div className={styles.tabPanel}>
+              {children}
+            </div>
+          </div>
     </div>
   );
 }

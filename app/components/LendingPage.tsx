@@ -347,41 +347,78 @@ export default function LendingPage() {
       </div>
       <p className={styles.subtitle}>Earn interest on your crypto with Morpho vaults</p>
       
-      {/* Collapsible Vault Bars */}
-      <div className={styles.vaultBarsContainer}>
+      {/* Horizontal Vault Display */}
+      <div className={styles.vaultsContainer}>
         {Object.entries(vaults).map(([key, vault]) => {
           const vaultBalance = vaultBalances.find(b => b.vault.symbol === vault.symbol);
-          const currentVaultTab = activeTabs[key] || 'deposit';
           const isExpanded = expandedVaults[key] || false;
           
           return (
-            <div key={key} className={styles.vaultBar}>
-              {/* Vault Bar Header - Always Visible */}
+            <div key={key} className={styles.vaultRow}>
+              {/* Main Vault Row - Always Visible */}
               <div 
-                className={styles.vaultBarHeader}
+                className={styles.vaultRowMain}
                 onClick={() => toggleVaultExpansion(key)}
               >
-                <div className={styles.vaultBarInfo}>
-                  <h3 className={styles.vaultBarTitle}>{vault.name}</h3>
-                  <div className={styles.vaultBarBalance}>
-                    <span className={styles.vaultBarAmount}>
-                      {vaultBalance ? vaultBalance.formatted : '0.000000'} {vault.symbol}
-                    </span>
-                    <span className={styles.vaultBarUsd}>
-                      ${vaultBalance ? vaultBalance.usdValue.toFixed(2) : '0.00'}
-                    </span>
+                {/* Asset Identification */}
+                <div className={styles.assetInfo}>
+                  <div className={styles.assetIcon}>
+                    {vault.symbol === 'USDC' && <span className={styles.usdcIcon}>$</span>}
+                    {vault.symbol === 'cbBTC' && <span className={styles.btcIcon}>₿</span>}
+                    {vault.symbol === 'ETH' && <span className={styles.ethIcon}>Ξ</span>}
+                  </div>
+                  <div className={styles.assetName}>
+                    <div className={styles.assetSymbol}>{vault.symbol}</div>
+                    <div className={styles.assetFullName}>
+                      {vault.symbol === 'USDC' && 'USD Coin'}
+                      {vault.symbol === 'cbBTC' && 'Coinbase Bitcoin'}
+                      {vault.symbol === 'ETH' && 'Ethereum'}
+                    </div>
                   </div>
                 </div>
-                <div className={styles.vaultBarActions}>
-                  <span className={styles.expandIcon}>
-                    {isExpanded ? '▼' : '▶'}
-                  </span>
+
+                {/* Network Tags */}
+                <div className={styles.networkTags}>
+                  <span className={styles.coreTag}>Core</span>
+                  <span className={styles.baseTag}>Base</span>
+                </div>
+
+                {/* Financial Metrics */}
+                <div className={styles.financialMetrics}>
+                  <div className={styles.price}>${vault.price.toLocaleString()}</div>
+                  <div className={styles.interestRates}>
+                    <span className={styles.rate}>6.1% <span className={styles.infoIcon}>ⓘ</span></span>
+                    <span className={styles.rate}>5.6% <span className={styles.infoIcon}>ⓘ</span></span>
+                  </div>
+                </div>
+
+                {/* Vault Totals and Actions */}
+                <div className={styles.vaultTotals}>
+                  <div className={styles.totalValue}>
+                    ${vaultBalance ? vaultBalance.usdValue.toLocaleString() : '0'}
+                  </div>
+                  <div className={styles.totalAmount}>
+                    {vaultBalance ? vaultBalance.formatted : '0.000000'} {vault.symbol}
+                  </div>
+                  <div className={styles.supplyBorrowSection}>
+                    <div className={styles.amountDisplay}>$0.00</div>
+                    <div className={styles.amountDisplay}>$0.00</div>
+                    <div className={styles.actionButtons}>
+                      <button className={styles.supplyButton}>Supply</button>
+                      <button className={styles.borrowButton}>Borrow</button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Expand Icon */}
+                <div className={styles.expandIcon}>
+                  {isExpanded ? '▼' : '▶'}
                 </div>
               </div>
 
               {/* Expanded Vault Content */}
               {isExpanded && (
-                <div className={styles.vaultBarContent}>
+                <div className={styles.vaultExpandedContent}>
                   <Earn 
                     vaultAddress={vault.address}
                     isSponsored={true}
@@ -392,7 +429,7 @@ export default function LendingPage() {
                       console.error("Transaction error:", error);
                     }}
                   >
-                    <div className={styles.vaultExpandedContent}>
+                    <div className={styles.vaultDetailsContent}>
                       {/* Vault Description */}
                       <div className={styles.vaultDescription}>
                         <p>{vault.description}</p>
@@ -423,13 +460,13 @@ export default function LendingPage() {
                       <div className={styles.vaultActions}>
                         <div className={styles.tabSelector}>
                           <button 
-                            className={`${styles.tabButton} ${currentVaultTab === 'deposit' ? styles.activeTab : ''}`}
+                            className={`${styles.tabButton} ${activeTabs[key] === 'deposit' ? styles.activeTab : ''}`}
                             onClick={() => setActiveTab(key, 'deposit')}
                           >
                             Deposit
                           </button>
                           <button 
-                            className={`${styles.tabButton} ${currentVaultTab === 'withdraw' ? styles.activeTab : ''}`}
+                            className={`${styles.tabButton} ${activeTabs[key] === 'withdraw' ? styles.activeTab : ''}`}
                             onClick={() => setActiveTab(key, 'withdraw')}
                           >
                             Withdraw
@@ -437,7 +474,7 @@ export default function LendingPage() {
                         </div>
                         
                         <div className={styles.actionContent}>
-                          {currentVaultTab === 'deposit' ? (
+                          {activeTabs[key] === 'deposit' ? (
                             <>
                               <DepositBalance />
                               <DepositAmountInput className={styles.amountInput} />
