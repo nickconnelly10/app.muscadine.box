@@ -345,7 +345,7 @@ export default function LendingPage() {
       <div className={styles.header}>
         <h2 className={styles.sectionTitle}>Lending</h2>
       </div>
-      <p className={styles.subtitle}>Earn interest on your crypto with Morpho vaults</p>
+      <p className={styles.subtitle}>Earn interest on your crypto with Muscadine Morpho vaults</p>
       
       {/* Horizontal Vault Display */}
       <div className={styles.vaultsContainer}>
@@ -394,7 +394,7 @@ export default function LendingPage() {
 
                 {/* Network Tags */}
                 <div className={styles.networkTags}>
-                  <span className={styles.coreTag}>Core</span>
+                  <span className={styles.v1Tag}>V1 vault</span>
                   <span className={styles.baseTag}>Base</span>
                 </div>
 
