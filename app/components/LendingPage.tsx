@@ -33,7 +33,7 @@ export default function LendingPage() {
 
   const vaults = {
     usdc: {
-      address: '0x7BfA7C4f149E7415b73bdeDfe609237e29CBF34A' as const,
+      address: '0xf7e26Fa48A568b8b0038e104DfD8ABdf0f99074F' as const,
       name: 'USDC',
       symbol: 'USDC',
       description: 'Earn interest on USDC deposits',
@@ -41,7 +41,7 @@ export default function LendingPage() {
       price: 1
     },
     cbbtc: {
-      address: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf' as const,
+      address: '0xAeCc8113a7bD0CFAF7000EA7A31afFD4691ff3E9' as const,
       name: 'cbBTC',
       symbol: 'cbBTC',
       description: 'Earn interest on cbBTC deposits',
@@ -49,7 +49,7 @@ export default function LendingPage() {
       price: 65000
     },
     weth: {
-      address: '0x6b13c060F13Af1fdB319F52315BbbF3fb1D88844' as const,
+      address: '0x21e0d366272798da3A977FEBA699FCB91959d120' as const,
       name: 'WETH',
       symbol: 'WETH',
       description: 'Earn interest on WETH deposits',
@@ -330,7 +330,9 @@ export default function LendingPage() {
 
   return (
     <div className={styles.tabContent}>
-      <h2 className={styles.title}>Lending</h2>
+      <div className={styles.header}>
+        <h2 className={styles.sectionTitle}>Lending</h2>
+      </div>
       <p className={styles.subtitle}>Earn interest on your crypto with Morpho vaults</p>
       
       {/* All Vaults Display */}

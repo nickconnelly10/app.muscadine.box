@@ -2,6 +2,7 @@
 import { WalletIsland } from "@coinbase/onchainkit/wallet";
 import { useAccount, useSendTransaction } from "wagmi";
 import { useState, useMemo } from "react";
+import SharedLayout from "../components/SharedLayout";
 import styles from "../page.module.css";
 import DEXService, { SwapQuote, SwapTransaction } from "../services/dexService";
 
@@ -110,149 +111,151 @@ export default function Swap() {
   };
 
   return (
-    <div className={styles.tabContent}>
-      <div className={styles.header}>
-        <h2 className={styles.sectionTitle}>Swap Tokens</h2>
-        <WalletIsland />
-      </div>
+    <SharedLayout>
+      <div className={styles.tabContent}>
+        <div className={styles.header}>
+          <h2 className={styles.sectionTitle}>Swap Tokens</h2>
+          <WalletIsland />
+        </div>
 
-      <div className={styles.swapSection}>
-        <div className={styles.swapContainer}>
-          <div className={styles.swapCard}>
-            <div className={styles.swapHeader}>
-              <h3>Quick Swap</h3>
-              <p>Exchange tokens instantly on Base</p>
-              <div className={styles.swapLinks}>
-                <a 
-                  href="https://aerodrome.finance/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.externalLink}
-                >
-                  Advanced Swap on Aerodrome ↗
-                </a>
-              </div>
-            </div>
-            <div className={styles.swapContent}>
-              <div className={styles.swapRow}>
-                <div className={styles.swapInput}>
-                  <label>From</label>
-                  <select 
-                    className={styles.tokenSelect}
-                    value={swapFromToken}
-                    onChange={(e) => setSwapFromToken(e.target.value)}
-                    disabled={!isConnected}
+        <div className={styles.swapSection}>
+          <div className={styles.swapContainer}>
+            <div className={styles.swapCard}>
+              <div className={styles.swapHeader}>
+                <h3>Quick Swap</h3>
+                <p>Exchange tokens instantly on Base</p>
+                <div className={styles.swapLinks}>
+                  <a 
+                    href="https://aerodrome.finance/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.externalLink}
                   >
-                    <option value="">Select token</option>
-                    <option value="ETH">ETH</option>
-                    <option value="USDC">USDC</option>
-                    <option value="cbBTC">cbBTC</option>
-                    <option value="WETH">WETH</option>
-                    <option value="MORPHO">MORPHO</option>
-                    <option value="cbXRP">cbXRP</option>
-                    <option value="AERO">AERO</option>
-                    <option value="MOONWELL">MOONWELL</option>
-                  </select>
-                </div>
-                <div className={styles.swapArrow}>⇄</div>
-                <div className={styles.swapInput}>
-                  <label>To</label>
-                  <select 
-                    className={styles.tokenSelect}
-                    value={swapToToken}
-                    onChange={(e) => setSwapToToken(e.target.value)}
-                    disabled={!isConnected}
-                  >
-                    <option value="">Select token</option>
-                    <option value="ETH">ETH</option>
-                    <option value="USDC">USDC</option>
-                    <option value="cbBTC">cbBTC</option>
-                    <option value="WETH">WETH</option>
-                    <option value="MORPHO">MORPHO</option>
-                    <option value="cbXRP">cbXRP</option>
-                    <option value="AERO">AERO</option>
-                    <option value="MOONWELL">MOONWELL</option>
-                  </select>
+                    Advanced Swap on Aerodrome ↗
+                  </a>
                 </div>
               </div>
-              <div className={styles.swapModeSection}>
-                <div className={styles.swapModeToggle}>
-                  <button
-                    className={`${styles.modeButton} ${swapMode === 'sell' ? styles.modeButtonActive : ''}`}
-                    onClick={() => setSwapMode('sell')}
-                  >
-                    Sell Amount
-                  </button>
-                  <button
-                    className={`${styles.modeButton} ${swapMode === 'buy' ? styles.modeButtonActive : ''}`}
-                    onClick={() => setSwapMode('buy')}
-                  >
-                    Buy Amount
-                  </button>
-                </div>
-              </div>
-              <div className={styles.swapAmountSection}>
-                {swapMode === 'sell' ? (
+              <div className={styles.swapContent}>
+                <div className={styles.swapRow}>
                   <div className={styles.swapInput}>
-                    <label>Amount to Sell</label>
-                    <input
-                      type="number"
-                      className={styles.amountInput}
-                      placeholder="0.00"
-                      value={swapAmount}
-                      onChange={(e) => setSwapAmount(e.target.value)}
+                    <label>From</label>
+                    <select 
+                      className={styles.tokenSelect}
+                      value={swapFromToken}
+                      onChange={(e) => setSwapFromToken(e.target.value)}
                       disabled={!isConnected}
-                    />
+                    >
+                      <option value="">Select token</option>
+                      <option value="ETH">ETH</option>
+                      <option value="USDC">USDC</option>
+                      <option value="cbBTC">cbBTC</option>
+                      <option value="WETH">WETH</option>
+                      <option value="MORPHO">MORPHO</option>
+                      <option value="cbXRP">cbXRP</option>
+                      <option value="AERO">AERO</option>
+                      <option value="MOONWELL">MOONWELL</option>
+                    </select>
                   </div>
-                ) : (
+                  <div className={styles.swapArrow}>⇄</div>
                   <div className={styles.swapInput}>
-                    <label>Amount to Buy</label>
-                    <input
-                      type="number"
-                      className={styles.amountInput}
-                      placeholder="0.00"
-                      value={swapAmountBuy}
-                      onChange={(e) => setSwapAmountBuy(e.target.value)}
+                    <label>To</label>
+                    <select 
+                      className={styles.tokenSelect}
+                      value={swapToToken}
+                      onChange={(e) => setSwapToToken(e.target.value)}
                       disabled={!isConnected}
-                    />
+                    >
+                      <option value="">Select token</option>
+                      <option value="ETH">ETH</option>
+                      <option value="USDC">USDC</option>
+                      <option value="cbBTC">cbBTC</option>
+                      <option value="WETH">WETH</option>
+                      <option value="MORPHO">MORPHO</option>
+                      <option value="cbXRP">cbXRP</option>
+                      <option value="AERO">AERO</option>
+                      <option value="MOONWELL">MOONWELL</option>
+                    </select>
                   </div>
-                )}
-                {swapQuote && (
-                  <div className={styles.swapQuote}>
-                    <div className={styles.quoteRow}>
-                      <div className={styles.quoteItem}>
-                        <label>Amount to Sell:</label>
-                        <span>{swapAmount} {swapFromToken}</span>
-                      </div>
-                      <div className={styles.quoteItem}>
-                        <label>Amount to Buy:</label>
-                        <span>{swapQuote.quote?.toAmount || '0'} {swapToToken}</span>
+                </div>
+                <div className={styles.swapModeSection}>
+                  <div className={styles.swapModeToggle}>
+                    <button
+                      className={`${styles.modeButton} ${swapMode === 'sell' ? styles.modeButtonActive : ''}`}
+                      onClick={() => setSwapMode('sell')}
+                    >
+                      Sell Amount
+                    </button>
+                    <button
+                      className={`${styles.modeButton} ${swapMode === 'buy' ? styles.modeButtonActive : ''}`}
+                      onClick={() => setSwapMode('buy')}
+                    >
+                      Buy Amount
+                    </button>
+                  </div>
+                </div>
+                <div className={styles.swapAmountSection}>
+                  {swapMode === 'sell' ? (
+                    <div className={styles.swapInput}>
+                      <label>Amount to Sell</label>
+                      <input
+                        type="number"
+                        className={styles.amountInput}
+                        placeholder="0.00"
+                        value={swapAmount}
+                        onChange={(e) => setSwapAmount(e.target.value)}
+                        disabled={!isConnected}
+                      />
+                    </div>
+                  ) : (
+                    <div className={styles.swapInput}>
+                      <label>Amount to Buy</label>
+                      <input
+                        type="number"
+                        className={styles.amountInput}
+                        placeholder="0.00"
+                        value={swapAmountBuy}
+                        onChange={(e) => setSwapAmountBuy(e.target.value)}
+                        disabled={!isConnected}
+                      />
+                    </div>
+                  )}
+                  {swapQuote && (
+                    <div className={styles.swapQuote}>
+                      <div className={styles.quoteRow}>
+                        <div className={styles.quoteItem}>
+                          <label>Amount to Sell:</label>
+                          <span>{swapAmount} {swapFromToken}</span>
+                        </div>
+                        <div className={styles.quoteItem}>
+                          <label>Amount to Buy:</label>
+                          <span>{swapQuote.quote?.toAmount || '0'} {swapToToken}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-              <div className={styles.swapButtonContainer}>
-                <button 
-                  className={styles.swapQuoteButton}
-                  onClick={getSwapQuote}
-                  disabled={!isConnected || !swapFromToken || !swapToToken || (!swapAmount && !swapAmountBuy)}
-                  style={{ marginRight: '8px' }}
-                >
-                  Get Quote
-                </button>
-                <button 
-                  className={styles.swapButton} 
-                  onClick={handleSwap}
-                  disabled={!isConnected || isSwapLoading || !swapFromToken || !swapToToken || (!swapAmount && !swapAmountBuy)}
-                >
-                  {isSwapLoading ? 'Swapping...' : !isConnected ? 'Connect Wallet to Swap' : 'Swap Tokens'}
-                </button>
+                  )}
+                </div>
+                <div className={styles.swapButtonContainer}>
+                  <button 
+                    className={styles.swapQuoteButton}
+                    onClick={getSwapQuote}
+                    disabled={!isConnected || !swapFromToken || !swapToToken || (!swapAmount && !swapAmountBuy)}
+                    style={{ marginRight: '8px' }}
+                  >
+                    Get Quote
+                  </button>
+                  <button 
+                    className={styles.swapButton} 
+                    onClick={handleSwap}
+                    disabled={!isConnected || isSwapLoading || !swapFromToken || !swapToToken || (!swapAmount && !swapAmountBuy)}
+                  >
+                    {isSwapLoading ? 'Swapping...' : !isConnected ? 'Connect Wallet to Swap' : 'Swap Tokens'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </SharedLayout>
   );
 }

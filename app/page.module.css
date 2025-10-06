@@ -2,7 +2,7 @@
   display: grid;
   grid-template-rows: auto 1fr;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
 }
 
 .headerWrapper {
@@ -16,7 +16,7 @@
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
   margin: 2rem auto;
   max-width: 1200px;
   width: 90%;
@@ -51,9 +51,9 @@
 }
 
 .activeTab {
-  color: #667eea;
+  color: #0ea5e9;
   background: white;
-  border-bottom-color: #667eea;
+  border-bottom-color: #0ea5e9;
 }
 
 .tabPanel {
@@ -98,7 +98,7 @@
 }
 
 .components a {
-  color: #667eea;
+  color: #0ea5e9;
   text-decoration: none;
 }
 
@@ -169,7 +169,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, #0ea5e9 0%, #06b6d4 100%);
   border-radius: 12px 12px 0 0;
 }
 
@@ -201,7 +201,7 @@
 }
 
 .tabButton.activeTab {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
   color: white;
   font-weight: 600;
 }
@@ -226,14 +226,14 @@
 
 .amountInput:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
 }
 
 .actionButton {
   width: 100%;
   padding: 0.875rem 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -245,7 +245,7 @@
 
 .actionButton:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
 }
 
 .actionButton:active {
@@ -273,12 +273,12 @@
 }
 
 .comingSoonCard {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
   border-radius: 16px;
   padding: 3rem 2rem;
   text-align: center;
   color: white;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
 }
 
 .comingSoonCard h3 {
@@ -550,6 +550,102 @@
   .actionDescription {
     font-size: 0.8rem;
   }
+}
+
+/* Portfolio Section Styles */
+.portfolioSection {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.assetsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.assetCard {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.assetCard:hover {
+  border-color: #0ea5e9;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.assetHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.tokenInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.tokenLogo {
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tokenNameGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.tokenName {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.tokenBalance {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.tokenUsdValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #059669;
+  text-align: right;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #1f2937;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.emptyPromt {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #6b7280;
+  font-style: italic;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-radius: 8px;
+  border: 1px solid #0ea5e9;
 }
 
 /* Portfolio States */
@@ -1156,6 +1252,84 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+/* Transaction Styles */
+.transactionsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.transactionIndicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.transactionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.transactionCard {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+
+.transactionCard:hover {
+  border-color: #0ea5e9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.transactionDetails {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.transactionMain {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.transactionMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.transactionAmount {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.transactionType {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.statusBadge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  text-transform: capitalize;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.transactionDate {
+  font-size: 0.75rem;
+  color: #9ca3af;
 }
 
 /* Transaction List Styles */

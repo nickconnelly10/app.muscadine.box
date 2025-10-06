@@ -38,6 +38,29 @@ Muscadine Box is a production-ready DeFi application that combines sophisticated
 - Responsive design optimized for mobile and desktop experiences
 - Real-time data synchronization for portfolio accuracy
 - External integrations with Zerion for advanced portfolio analytics
+- **Unified Navigation System** - Persistent tab navigation across all pages
+- **Consistent UI/UX** - Shared layout component ensuring uniform experience
+- **Light Theme Design** - Optimized color scheme for better visibility and readability
+
+## User Interface and Experience
+
+### Navigation System
+- **Persistent Tab Navigation** - Consistent navigation bar across all pages (Portfolio, Lending, Swap, Transactions)
+- **Active State Management** - Dynamic highlighting of current page using Next.js `usePathname()` hook
+- **Seamless Page Transitions** - Smooth navigation between different sections without losing context
+- **Responsive Design** - Optimized for both mobile and desktop experiences
+
+### Visual Design
+- **Light Theme Implementation** - Clean, modern color scheme optimized for readability
+- **Consistent Color Palette** - Light blue (`#0ea5e9`) and cyan (`#06b6d4`) gradients for interactive elements
+- **High Contrast Text** - Ensured visibility with proper color contrast ratios
+- **Unified Component Styling** - Shared CSS classes for consistent appearance across all pages
+
+### Layout Architecture
+- **SharedLayout Component** - Centralized layout management with header, navigation, and content areas
+- **Modular Page Structure** - Each page wrapped in SharedLayout for consistency
+- **Responsive Grid Systems** - Flexible layouts that adapt to different screen sizes
+- **Component Reusability** - Shared styling and layout patterns across the application
 
 ## Technical Architecture
 
@@ -56,9 +79,9 @@ Muscadine Box is a production-ready DeFi application that combines sophisticated
 ### DeFi Protocol Integrations
 - **Morpho Labs** - Advanced lending protocol with yield optimization
 - **Morpho Vaults** - Specialized vault support with precise balance conversions
-  - USDC Vault (0x7BfA7C4f149E7415b73bdeDfe609237e29CBF34A)
-  - cBETH Vault (0x6770216aC60F634483Ec073cBABC4011c94307Cb)
-  - WETH Vault (0x6b13c060F13Af1fdB319F52315BbbF3fb1D88844)
+  - USDC Vault (0xf7e26Fa48A568b8b0038e104DfD8ABdf0f99074F)
+  - cBETH Vault (0xAeCc8113a7bD0CFAF7000EA7A31afFD4691ff3E9)
+  - WETH Vault (0x21e0d366272798da3A977FEBA699FCB91959d120)
 
 ### Authentication Framework
 - **Farcaster MiniKit 1.0.8** - Mini App development framework
@@ -123,12 +146,20 @@ project/
 │   │   ├── simple/                     # Standard API routes
 │   │   └── test/                       # Testing endpoints
 │   ├── components/
+│   │   ├── SharedLayout.tsx            # Unified navigation and layout component
 │   │   ├── HomePage.tsx                # Portfolio and swap interface
 │   │   └── LendingPage.tsx             # Lending vault interface
+│   ├── lending/
+│   │   └── page.tsx                    # Lending page with shared layout
+│   ├── swap/
+│   │   └── page.tsx                    # Swap page with shared layout
+│   ├── transactions/
+│   │   └── page.tsx                    # Transactions page with shared layout
 │   ├── services/
 │   │   └── dexService.ts               # 1inch integration service
 │   ├── layout.tsx                      # Root layout component
 │   ├── page.tsx                        # Primary application page
+│   ├── page.module.css                 # Comprehensive styling with light theme
 │   ├── rootProvider.tsx               # OnchainKit configuration
 │   └── globals.css                     # Global styling definitions
 ├── public/                            # Static asset directory
