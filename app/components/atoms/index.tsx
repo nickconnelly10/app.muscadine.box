@@ -153,37 +153,76 @@ interface VaultIconProps {
 }
 
 export function VaultIcon({ symbol, size = 48, className = '' }: VaultIconProps) {
-  const getIconColor = (symbol: string) => {
+  const getTokenIcon = (symbol: string) => {
     switch (symbol) {
-      case 'USDC': return '#2775CA';
-      case 'cbBTC': return '#F7931A';
-      case 'WETH': return '#627EEA';
-      default: return '#6B7280';
+      case 'USDC':
+        return 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png';
+      case 'cbBTC':
+        return 'https://cryptologos.cc/logos/bitcoin-btc-logo.png';
+      case 'WETH':
+      case 'ETH':
+        return 'https://cryptologos.cc/logos/ethereum-eth-logo.png';
+      default:
+        return null;
     }
   };
+
+  const iconUrl = getTokenIcon(symbol);
   
-  const getIconText = (symbol: string) => {
-    switch (symbol) {
-      case 'USDC': return 'USDC';
-      case 'cbBTC': return '₿';
-      case 'WETH': return 'Ξ';
-      default: return symbol;
-    }
-  };
-  
+  if (iconUrl) {
+    return (
+      <div
+        className={`vaultIcon ${className}`}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: '50%',
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        <img
+          src={iconUrl}
+          alt={symbol}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover'
+          }}
+          onError={(e) => {
+            // Fallback to colored circle if image fails to load
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+            const parent = target.parentElement;
+            if (parent) {
+              parent.innerHTML = `<div style="width: 100%; height: 100%; background-color: #6B7280; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: ${size * 0.4}px;">${symbol}</div>`;
+            }
+          }}
+        />
+      </div>
+    );
+  }
+
+  // Fallback for unknown tokens
   return (
     <div
       className={`vaultIcon ${className}`}
       style={{
         width: size,
         height: size,
-        backgroundColor: getIconColor(symbol),
+        backgroundColor: '#6B7280',
         color: 'white',
         fontSize: size * 0.4,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
       }}
     >
-      {getIconText(symbol)}
+      {symbol}
     </div>
   );
 }

@@ -203,8 +203,8 @@ export default function ModernDashboard() {
       const yieldEarned = assetsAmount - sharesAmount;
       const realAPY = sharesAmount > 0 ? (yieldEarned / sharesAmount) * 100 : 0;
       
-      // Calculate monthly earnings based on current APY
-      const monthlyEarnings = usdValue * (realAPY / 100 / 12);
+      // Show actual earned amount, not estimated monthly earnings
+      const actualEarned = yieldEarned * tokenPrices.USDC;
 
       vaultBalances.push({
         symbol: VAULTS_CONFIG.usdc.symbol,
@@ -212,7 +212,7 @@ export default function ModernDashboard() {
         description: VAULTS_CONFIG.usdc.description,
         apy: Math.max(0, realAPY), // Ensure non-negative APY
         deposited: `$${usdValue.toFixed(2)}`,
-        earned: `$${monthlyEarnings.toFixed(2)}`,
+        earned: `$${actualEarned.toFixed(2)}`,
         status: 'active' as const,
         usdValue,
         sharesAmount,
@@ -228,7 +228,9 @@ export default function ModernDashboard() {
       
       // Calculate real APY based on the difference between shares and assets
       const realAPY = sharesAmount > 0 ? ((assetsAmount - sharesAmount) / sharesAmount) * 100 : 0;
-      const monthlyEarnings = usdValue * (realAPY / 100 / 12);
+      
+      // Show actual earned amount, not estimated monthly earnings
+      const actualEarned = (assetsAmount - sharesAmount) * tokenPrices.cbBTC;
 
       vaultBalances.push({
         symbol: VAULTS_CONFIG.cbbtc.symbol,
@@ -236,7 +238,7 @@ export default function ModernDashboard() {
         description: VAULTS_CONFIG.cbbtc.description,
         apy: Math.max(0, realAPY),
         deposited: `$${usdValue.toFixed(2)}`,
-        earned: `$${monthlyEarnings.toFixed(2)}`,
+        earned: `$${actualEarned.toFixed(2)}`,
         status: 'active' as const,
         usdValue,
         sharesAmount,
@@ -252,7 +254,9 @@ export default function ModernDashboard() {
       
       // Calculate real APY based on the difference between shares and assets
       const realAPY = sharesAmount > 0 ? ((assetsAmount - sharesAmount) / sharesAmount) * 100 : 0;
-      const monthlyEarnings = usdValue * (realAPY / 100 / 12);
+      
+      // Show actual earned amount, not estimated monthly earnings
+      const actualEarned = (assetsAmount - sharesAmount) * tokenPrices.ETH;
 
       vaultBalances.push({
         symbol: VAULTS_CONFIG.eth.symbol,
@@ -260,7 +264,7 @@ export default function ModernDashboard() {
         description: VAULTS_CONFIG.eth.description,
         apy: Math.max(0, realAPY),
         deposited: `$${usdValue.toFixed(2)}`,
-        earned: `$${monthlyEarnings.toFixed(2)}`,
+        earned: `$${actualEarned.toFixed(2)}`,
         status: 'active' as const,
         usdValue,
         sharesAmount,
@@ -270,8 +274,12 @@ export default function ModernDashboard() {
 
     const totalValue = vaultBalances.reduce((sum, vault) => sum + vault.usdValue, 0);
     const totalEarned = vaultBalances.reduce((sum, vault) => {
-      const monthlyEarnings = vault.usdValue * (vault.apy / 100 / 12);
-      return sum + monthlyEarnings;
+      // Calculate actual earned amount for each vault
+      const actualEarned = (vault.assetsAmount - vault.sharesAmount) * 
+        (vault.symbol === 'USDC' ? tokenPrices.USDC : 
+         vault.symbol === 'cbBTC' ? tokenPrices.cbBTC : 
+         tokenPrices.ETH);
+      return sum + actualEarned;
     }, 0);
 
     return {

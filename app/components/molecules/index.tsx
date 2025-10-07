@@ -1,7 +1,7 @@
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
 import { ConnectWallet } from '@coinbase/onchainkit/wallet';
-import { Button, Badge, Metric, MiniChart, VaultIcon } from '../atoms';
+import { Button, Badge, Metric, VaultIcon } from '../atoms';
 
 // Vault Card Component
 interface VaultCardProps {
@@ -14,7 +14,7 @@ interface VaultCardProps {
     earned: string;
     status: 'active' | 'inactive';
   };
-  chartData: number[];
+  _chartData: number[];
   onDeposit: () => void;
   onWithdraw: () => void;
   className?: string;
@@ -22,7 +22,7 @@ interface VaultCardProps {
 
 export function VaultCard({ 
   vault, 
-  chartData, 
+  _chartData, 
   onDeposit, 
   onWithdraw, 
   className = '' 
@@ -48,13 +48,9 @@ export function VaultCard({
         <Metric
           label="Earned"
           value={vault.earned}
-          change={`+${vault.apy}% APY`}
+          change={`+${vault.apy.toFixed(2)}% APY`}
           changeType="positive"
         />
-      </div>
-      
-      <div style={{ marginBottom: '1.5rem' }}>
-        <MiniChart data={chartData} />
       </div>
       
       <div className="vaultActions">
@@ -96,32 +92,6 @@ export function PortfolioOverview({
   onVaultAction, 
   className = '' 
 }: PortfolioOverviewProps) {
-  // Generate chart data based on actual vault performance
-  const generateChartData = (vault: {
-    symbol: string;
-    name: string;
-    description: string;
-    apy: number;
-    deposited: string;
-    earned: string;
-    status: 'active' | 'inactive';
-    usdValue: number;
-    sharesAmount: number;
-    assetsAmount: number;
-  }) => {
-    if (vault.usdValue > 0) {
-      // Create a realistic chart based on vault performance
-      const baseValue = vault.usdValue;
-      return Array.from({ length: 7 }, (_, i) => {
-        // Simulate gradual growth with realistic volatility based on vault performance
-        const growthFactor = 1 + (vault.apy / 100) * (i / 12); // Monthly growth
-        const volatility = Math.sin(i * 0.5) * 0.01; // Realistic sine wave volatility instead of random
-        return baseValue * (growthFactor + volatility);
-      });
-    }
-    return Array.from({ length: 7 }, () => 0);
-  };
-  
   return (
     <div className={`portfolioOverview ${className}`}>
       <div className="portfolioHeader">
@@ -136,7 +106,7 @@ export function PortfolioOverview({
           <VaultCard
             key={vault.symbol}
             vault={vault}
-            chartData={generateChartData(vault)}
+            _chartData={[]}
             onDeposit={() => onVaultAction(vault.symbol, 'deposit')}
             onWithdraw={() => onVaultAction(vault.symbol, 'withdraw')}
           />
@@ -159,6 +129,7 @@ interface DepositFlowProps {
   onBack: () => void;
   maxAmount: string;
   gasFee: string;
+  tokenPrice: number;
   className?: string;
 }
 
@@ -174,11 +145,44 @@ export function DepositFlow({
   onBack,
   maxAmount,
   gasFee,
+  tokenPrice,
   className = ''
 }: DepositFlowProps) {
-  const quickAmounts = ['100', '500', '1000', 'Max'];
+  const [dollarAmount, setDollarAmount] = useState('');
   
-  const total = (parseFloat(amount) + parseFloat(gasFee)).toFixed(2);
+  // Convert dollar amount to token amount
+  const convertDollarToToken = (dollars: string) => {
+    if (!dollars || !tokenPrice) return '';
+    const dollarValue = parseFloat(dollars);
+    if (isNaN(dollarValue)) return '';
+    return (dollarValue / tokenPrice).toFixed(6);
+  };
+  
+  // Convert token amount to dollar amount
+  const convertTokenToDollar = (tokens: string) => {
+    if (!tokens || !tokenPrice) return '';
+    const tokenValue = parseFloat(tokens);
+    if (isNaN(tokenValue)) return '';
+    return (tokenValue * tokenPrice).toFixed(2);
+  };
+  
+  const handleDollarChange = (dollars: string) => {
+    setDollarAmount(dollars);
+    const tokenAmount = convertDollarToToken(dollars);
+    onAmountChange(tokenAmount);
+  };
+  
+  const handleTokenChange = (tokens: string) => {
+    onAmountChange(tokens);
+    const dollarAmount = convertTokenToDollar(tokens);
+    setDollarAmount(dollarAmount);
+  };
+  
+  const quickDollarAmounts = ['100', '500', '1000', 'Max'];
+  
+  const total = parseFloat(amount) && tokenPrice ? 
+    (parseFloat(amount) * tokenPrice + parseFloat(gasFee)).toFixed(2) : 
+    parseFloat(gasFee).toFixed(2);
   
   return (
     <div className={`depositFlow ${className}`}>
@@ -214,22 +218,54 @@ export function DepositFlow({
         <div style={{ width: '120px' }}></div> {/* Spacer for centering */}
       </div>
       
-      <input
-        type="number"
-        className="amountInput"
-        placeholder="0.00"
-        value={amount}
-        onChange={(e) => onAmountChange(e.target.value)}
-      />
+      {/* Dollar Amount Input */}
+      <div style={{ marginBottom: '1rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
+          Dollar Amount (USD)
+        </label>
+        <input
+          type="number"
+          className="amountInput"
+          placeholder="0.00"
+          value={dollarAmount}
+          onChange={(e) => handleDollarChange(e.target.value)}
+          step="0.01"
+          min="0"
+        />
+      </div>
       
+      {/* Token Amount Input */}
+      <div style={{ marginBottom: '1rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
+          {vaultSymbol} Amount
+        </label>
+        <input
+          type="number"
+          className="amountInput"
+          placeholder="0.000000"
+          value={amount}
+          onChange={(e) => handleTokenChange(e.target.value)}
+          step="0.000001"
+          min="0"
+        />
+      </div>
+      
+      {/* Quick Dollar Amounts */}
       <div className="quickAmounts">
-        {quickAmounts.map((quickAmount) => (
+        {quickDollarAmounts.map((dollarAmount) => (
           <button
-            key={quickAmount}
+            key={dollarAmount}
             className="quickButton"
-            onClick={() => onQuickAmount(quickAmount === 'Max' ? maxAmount : quickAmount)}
+            onClick={() => {
+              if (dollarAmount === 'Max') {
+                const maxDollars = parseFloat(maxAmount) * tokenPrice;
+                handleDollarChange(maxDollars.toFixed(2));
+              } else {
+                handleDollarChange(dollarAmount);
+              }
+            }}
           >
-            {quickAmount}
+            ${dollarAmount}
           </button>
         ))}
       </div>
