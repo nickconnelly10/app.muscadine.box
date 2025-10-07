@@ -90,6 +90,8 @@ interface PortfolioOverviewProps {
     usdValue: number;
     sharesAmount: number;
     assetsAmount: number;
+    interestEarned: number;
+    monthlyEarnings: number;
   }>;
   onVaultAction: (vaultSymbol: string, action: 'deposit' | 'withdraw') => void;
   className?: string;
