@@ -137,7 +137,19 @@ export default function SimpleDashboard() {
             color: '#0f172a',
             margin: 0
           }}>
-            Muscadine
+            <a 
+              href="https://muscadine.box" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{
+                color: '#0f172a',
+                textDecoration: 'none'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+              onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
+            >
+              Muscadine
+            </a>
           </h1>
           <p style={{
             fontSize: '0.875rem',
@@ -268,8 +280,8 @@ export default function SimpleDashboard() {
         {/* Vault Cards using OnchainKit Earn */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-          gap: '1.5rem'
+          gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+          gap: '2rem'
         }}>
           {VAULTS.map((vault) => (
             <div
@@ -279,7 +291,8 @@ export default function SimpleDashboard() {
                 borderRadius: '12px',
                 boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
                 padding: '1.5rem',
-                overflow: 'hidden'
+                overflow: 'visible',
+                minWidth: '400px'
               }}
             >
               <div style={{
@@ -372,8 +385,9 @@ export default function SimpleDashboard() {
 
               {/* OnchainKit Earn Component */}
               <div style={{
-                margin: '-0.5rem -0.5rem -0.5rem -0.5rem',
-                padding: '0'
+                margin: '-0.5rem -1rem -0.5rem -1rem',
+                padding: '0',
+                overflow: 'visible'
               }}>
                 <Earn
                   vaultAddress={vault.address}
