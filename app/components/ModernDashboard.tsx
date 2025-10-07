@@ -3,6 +3,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useAccount, useBalance, useReadContract } from 'wagmi';
 import { base } from 'wagmi/chains';
 import { formatUnits } from 'viem';
+import { useMorphoVault } from '@coinbase/onchainkit/earn';
 import { ModernHeader, PortfolioOverview, DepositFlow, WithdrawFlow } from '../components/molecules';
 import { Skeleton } from '../components/atoms';
 import '../styles/design-system.css';
@@ -204,6 +205,22 @@ export default function ModernDashboard() {
     query: { enabled: !!address && isConnected && !!ethVaultBalance.data }
   });
 
+  // Get real-time vault data from OnchainKit
+  const usdcVaultData = useMorphoVault({
+    vaultAddress: VAULTS_CONFIG.usdc.address,
+    recipientAddress: address
+  });
+
+  const cbbtcVaultData = useMorphoVault({
+    vaultAddress: VAULTS_CONFIG.cbbtc.address,
+    recipientAddress: address
+  });
+
+  const ethVaultData = useMorphoVault({
+    vaultAddress: VAULTS_CONFIG.eth.address,
+    recipientAddress: address
+  });
+
   // Calculate portfolio data with corrected interest calculation
   const portfolioData = useMemo(() => {
     const vaultBalances = [];
@@ -214,7 +231,8 @@ export default function ModernDashboard() {
       const currentAssetValue = parseFloat(formatUnits(usdcConvertToAssets.data, VAULTS_CONFIG.usdc.decimals));
       const usdValue = currentAssetValue * tokenPrices.USDC;
       
-      const estimatedAPY = 0.085; // 8.5% Morpho USDC APY
+      // Use real-time APY from OnchainKit, fallback to estimated if not available
+      const realAPY = usdcVaultData.totalApy || 0.085; // Fallback to 8.5% if data not available
       
       // For demonstration: Calculate interest based on vault's share price growth
       // In reality, Morpho vaults accumulate interest over time
@@ -234,13 +252,13 @@ export default function ModernDashboard() {
       const interestEarned = Math.max(0, estimatedCurrentValue - estimatedOriginalDeposit);
       const interestEarnedUSD = interestEarned * tokenPrices.USDC;
       
-      const monthlyEarnings = currentAssetValue * (estimatedAPY / 12);
+      const monthlyEarnings = currentAssetValue * (realAPY / 12);
 
       vaultBalances.push({
         symbol: VAULTS_CONFIG.usdc.symbol,
         name: VAULTS_CONFIG.usdc.name,
         description: VAULTS_CONFIG.usdc.description,
-        apy: estimatedAPY * 100,
+        apy: realAPY * 100,
         deposited: `$${usdValue.toFixed(2)}`,
         depositedAmount: currentAssetValue,
         earned: `$${interestEarnedUSD.toFixed(2)}`,
@@ -260,7 +278,8 @@ export default function ModernDashboard() {
       const currentAssetValue = parseFloat(formatUnits(cbbtcConvertToAssets.data, VAULTS_CONFIG.cbbtc.decimals));
       const usdValue = currentAssetValue * tokenPrices.cbBTC;
       
-      const estimatedAPY = 0.062; // 6.2% Morpho cbBTC APY
+      // Use real-time APY from OnchainKit, fallback to estimated if not available
+      const realAPY = cbbtcVaultData.totalApy || 0.062; // Fallback to 6.2% if data not available
       
       // Calculate interest earned from share price appreciation
       const currentSharePrice = sharesAmount > 0 ? currentAssetValue / sharesAmount : 1.0;
@@ -268,13 +287,13 @@ export default function ModernDashboard() {
       const estimatedCurrentValue = sharesAmount * currentSharePrice;
       const interestEarned = Math.max(0, estimatedCurrentValue - estimatedOriginalDeposit);
       const interestEarnedUSD = interestEarned * tokenPrices.cbBTC;
-      const monthlyEarnings = currentAssetValue * (estimatedAPY / 12);
+      const monthlyEarnings = currentAssetValue * (realAPY / 12);
 
       vaultBalances.push({
         symbol: VAULTS_CONFIG.cbbtc.symbol,
         name: VAULTS_CONFIG.cbbtc.name,
         description: VAULTS_CONFIG.cbbtc.description,
-        apy: estimatedAPY * 100,
+        apy: realAPY * 100,
         deposited: `$${usdValue.toFixed(2)}`,
         depositedAmount: currentAssetValue,
         earned: `$${interestEarnedUSD.toFixed(2)}`,
@@ -294,7 +313,8 @@ export default function ModernDashboard() {
       const currentAssetValue = parseFloat(formatUnits(ethConvertToAssets.data, VAULTS_CONFIG.eth.decimals));
       const usdValue = currentAssetValue * tokenPrices.ETH;
       
-      const estimatedAPY = 0.078; // 7.8% Morpho ETH APY
+      // Use real-time APY from OnchainKit, fallback to estimated if not available
+      const realAPY = ethVaultData.totalApy || 0.078; // Fallback to 7.8% if data not available
       
       // Calculate interest earned from share price appreciation
       const currentSharePrice = sharesAmount > 0 ? currentAssetValue / sharesAmount : 1.0;
@@ -302,13 +322,13 @@ export default function ModernDashboard() {
       const estimatedCurrentValue = sharesAmount * currentSharePrice;
       const interestEarned = Math.max(0, estimatedCurrentValue - estimatedOriginalDeposit);
       const interestEarnedUSD = interestEarned * tokenPrices.ETH;
-      const monthlyEarnings = currentAssetValue * (estimatedAPY / 12);
+      const monthlyEarnings = currentAssetValue * (realAPY / 12);
 
       vaultBalances.push({
         symbol: VAULTS_CONFIG.eth.symbol,
         name: VAULTS_CONFIG.eth.name,
         description: VAULTS_CONFIG.eth.description,
-        apy: estimatedAPY * 100,
+        apy: realAPY * 100,
         deposited: `$${usdValue.toFixed(2)}`,
         depositedAmount: currentAssetValue,
         earned: `$${interestEarnedUSD.toFixed(2)}`,
@@ -341,7 +361,8 @@ export default function ModernDashboard() {
   }, [
     usdcVaultBalance.data, cbbtcVaultBalance.data, ethVaultBalance.data,
     usdcConvertToAssets.data, cbbtcConvertToAssets.data, ethConvertToAssets.data,
-    tokenPrices
+    tokenPrices,
+    usdcVaultData.totalApy, cbbtcVaultData.totalApy, ethVaultData.totalApy
   ]);
 
   const handleVaultAction = (vaultSymbol: string, action: 'deposit' | 'withdraw') => {
