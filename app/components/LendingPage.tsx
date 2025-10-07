@@ -29,7 +29,7 @@ export default function LendingPage() {
   });
   const { address, isConnected } = useAccount();
 
-  // Get wallet balances for each token
+  // Get wallet balances for each token using correct BaseScan addresses
   const usdcWalletBalance = useBalance({
     address: address,
     token: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
@@ -39,7 +39,14 @@ export default function LendingPage() {
 
   const cbbtcWalletBalance = useBalance({
     address: address,
-    token: '0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22', // cbBTC on Base
+    token: '0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf', // cbBTC on Base
+    chainId: base.id,
+    query: { enabled: !!address && isConnected }
+  });
+
+  const wethWalletBalance = useBalance({
+    address: address,
+    token: '0x4200000000000000000000000000000000000006', // WETH on Base
     chainId: base.id,
     query: { enabled: !!address && isConnected }
   });
@@ -92,7 +99,7 @@ export default function LendingPage() {
       address: '0x21e0d366272798da3A977FEBA699FCB91959d120' as const,
       name: 'Muscadine ETH Vaults',
       symbol: 'ETH',
-      description: 'Morpho v1 ETH vault - Earn interest on ETH deposits',
+      description: 'Morpho v1 ETH vault - Earn interest on ETH deposits (automatically wrapped to WETH)',
       decimals: 18,
       price: tokenPrices.ETH // Use real-time price
     }
@@ -379,12 +386,16 @@ export default function LendingPage() {
       {/* Total Amount Supplied Section */}
       <div className={styles.totalSuppliedSection}>
         <div className={styles.totalSuppliedCard}>
-          <h2 className={styles.totalSuppliedTitle}>Total Amount supplied to Vaults</h2>
+          <h2 className={styles.totalSuppliedTitle}>Total Supplied</h2>
           <div className={styles.totalSuppliedAmount}>
             ${totalSupplied.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
           <div className={styles.totalInterestAmount}>
-            + ${totalInterest.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} interest accrued
+            {totalInterest > 0 ? (
+              <>+ ${totalInterest.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} interest accrued</>
+            ) : (
+              <>Interest will accrue over time</>
+            )}
           </div>
         </div>
       </div>
@@ -442,7 +453,9 @@ export default function LendingPage() {
 
                 {/* Financial Metrics */}
                 <div className={styles.financialMetrics}>
-                  <div className={styles.price}>${vault.price.toLocaleString()}</div>
+                  <div className={styles.price}>
+                    ${vault.symbol === 'USDC' ? vault.price.toFixed(2) : vault.price.toLocaleString()}
+                  </div>
                   <div className={styles.interestRates}>
                     <Earn 
                       vaultAddress={vault.address}
@@ -465,12 +478,6 @@ export default function LendingPage() {
                   </div>
                   <div className={styles.supplyBorrowSection}>
                     <div className={styles.amountDisplay}>
-                      <span className={styles.amountLabel}>Supplied:</span>
-                      <span className={styles.amountValue}>
-                        ${vaultBalance ? vaultBalance.usdValue.toFixed(2) : '0.00'}
-                      </span>
-                    </div>
-                    <div className={styles.amountDisplay}>
                       <span className={styles.amountLabel}>Available:</span>
                       <span className={styles.amountValue}>
                         ${(() => {
@@ -479,8 +486,20 @@ export default function LendingPage() {
                             walletBalance = parseFloat(formatUnits(usdcWalletBalance.data.value, usdcWalletBalance.data.decimals)) * tokenPrices.USDC;
                           } else if (vault.symbol === 'cbBTC' && cbbtcWalletBalance.data) {
                             walletBalance = parseFloat(formatUnits(cbbtcWalletBalance.data.value, cbbtcWalletBalance.data.decimals)) * tokenPrices.cbBTC;
-                          } else if (vault.symbol === 'ETH' && ethWalletBalance.data) {
-                            walletBalance = parseFloat(formatUnits(ethWalletBalance.data.value, ethWalletBalance.data.decimals)) * tokenPrices.ETH;
+                          } else if (vault.symbol === 'ETH') {
+                            // For ETH vault, show combined ETH + WETH balance
+                            let ethBalance = 0;
+                            let wethBalance = 0;
+                            
+                            if (ethWalletBalance.data) {
+                              ethBalance = parseFloat(formatUnits(ethWalletBalance.data.value, ethWalletBalance.data.decimals)) * tokenPrices.ETH;
+                            }
+                            
+                            if (wethWalletBalance.data) {
+                              wethBalance = parseFloat(formatUnits(wethWalletBalance.data.value, wethWalletBalance.data.decimals)) * tokenPrices.ETH;
+                            }
+                            
+                            walletBalance = ethBalance + wethBalance;
                           }
                           return walletBalance.toFixed(2);
                         })()}
@@ -516,6 +535,11 @@ export default function LendingPage() {
                       {/* Vault Description */}
                       <div className={styles.vaultDescription}>
                         <p>{vault.description}</p>
+                        {vault.symbol === 'ETH' && (
+                          <div className={styles.ethConversionNote}>
+                            <p><strong>Note:</strong> This vault accepts native ETH deposits. Your ETH will be automatically wrapped to WETH when deposited, and unwrapped back to ETH when withdrawn.</p>
+                          </div>
+                        )}
                       </div>
 
                       {/* Interest Earned Info */}

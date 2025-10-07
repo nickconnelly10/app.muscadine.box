@@ -16,11 +16,17 @@ Muscadine Box is a production-ready DeFi lending application featuring Muscadine
 - **Dynamic Pricing** - Live token prices from CoinGecko API with 30-second refresh
 - **Sponsored Transactions** - Gasless transactions for seamless user experience
 - **Professional Interface** - Horizontal vault design with expandable functionality
+- **ETH/WETH Auto-conversion** - Native ETH deposits automatically wrapped to WETH
 
 ### Vault Support
 - **Muscadine USDC Vaults** - `0xf7e26Fa48A568b8b0038e104DfD8ABdf0f99074F`
 - **Muscadine cbBTC Vaults** - `0xAeCc8113a7bD0CFAF7000EA7A31afFD4691ff3E9`
 - **Muscadine ETH Vaults** - `0x21e0d366272798da3A977FEBA699FCB91959d120`
+
+### Token Addresses (BaseScan Verified)
+- **USDC**: `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`
+- **cbBTC**: `0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf`
+- **WETH**: `0x4200000000000000000000000000000000000006`
 
 ## Technical Stack
 
@@ -59,12 +65,14 @@ app/
 - **Wallet Balance Tracking** - Real-time wallet balances for all supported tokens
 - **Vault Balance Calculation** - Accurate deposit amounts using OnchainKit
 - **Interest Accrual** - Real-time interest earned calculations
+- **Combined ETH/WETH Balances** - Shows total ETH value including wrapped tokens
 
 ### User Interface
-- **Total Deposits Display** - Aggregate vault deposits with interest accrued
+- **Compact Total Display** - Streamlined total deposits section
 - **Expandable Vault Interface** - Full-width expansion for detailed operations
 - **Professional Design** - Clean, modern interface with proper asset icons
 - **Responsive Layout** - Mobile-first design with adaptive layouts
+- **Smart Interest Display** - Shows accrued interest or helpful messaging
 
 ## Development
 
@@ -83,8 +91,18 @@ npm start
 ### Environment Variables
 Create `.env.local`:
 ```
-COINGECKO_API_KEY=your_coingecko_api_key
+NEXT_PUBLIC_ONCHAINKIT_API_KEY=your_onchainkit_api_key
 ```
+
+## Recent Updates
+
+### Latest Improvements
+- **USDC Price Formatting** - Displayed as $1.00 for professional appearance
+- **ETH/WETH Integration** - Native ETH deposits with automatic WETH conversion
+- **Compact UI Design** - Streamlined total deposits section
+- **Smart Interest Display** - Better messaging for interest accrual
+- **BaseScan Token Integration** - Verified token addresses for accurate data
+- **Redundant Data Removal** - Cleaner interface without duplicate information
 
 ## Security
 
