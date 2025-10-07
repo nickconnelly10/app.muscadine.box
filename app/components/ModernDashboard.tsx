@@ -554,6 +554,12 @@ export default function ModernDashboard() {
               Object.values(VAULTS_CONFIG).find(v => v.symbol === activeDeposit)?.address || ''
             }
             vaultData={portfolioData.vaults.find(v => v.symbol === activeDeposit)}
+            tokenPrice={
+              activeDeposit === 'USDC' ? tokenPrices.USDC :
+              activeDeposit === 'cbBTC' ? tokenPrices.cbBTC :
+              activeDeposit === 'WETH' ? tokenPrices.ETH :
+              1
+            }
             onBack={handleBackToPortfolio}
           />
         </div>
@@ -574,6 +580,12 @@ export default function ModernDashboard() {
               Object.values(VAULTS_CONFIG).find(v => v.symbol === activeWithdraw)?.address || ''
             }
             vaultData={portfolioData.vaults.find(v => v.symbol === activeWithdraw)}
+            tokenPrice={
+              activeWithdraw === 'USDC' ? tokenPrices.USDC :
+              activeWithdraw === 'cbBTC' ? tokenPrices.cbBTC :
+              activeWithdraw === 'WETH' ? tokenPrices.ETH :
+              1
+            }
             onBack={handleBackToPortfolio}
           />
         </div>

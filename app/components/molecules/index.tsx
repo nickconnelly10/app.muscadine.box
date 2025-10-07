@@ -1,5 +1,5 @@
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ConnectWallet } from '@coinbase/onchainkit/wallet';
 import { 
   Earn,
@@ -7,6 +7,9 @@ import {
   EarnWithdraw
 } from '@coinbase/onchainkit/earn';
 import { Button, Badge, Metric, VaultIcon } from '../atoms';
+import { useBalance, useAccount } from 'wagmi';
+import { base } from 'wagmi/chains';
+import { formatUnits } from 'viem';
 
 // Vault Card Component
 interface VaultCardProps {
@@ -161,6 +164,20 @@ export function PortfolioOverview({
   );
 }
 
+// Token address mapping
+const TOKEN_ADDRESSES: Record<string, `0x${string}`> = {
+  'USDC': '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+  'cbBTC': '0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf',
+  'WETH': '0x4200000000000000000000000000000000000006',
+};
+
+// Token decimals mapping
+const TOKEN_DECIMALS: Record<string, number> = {
+  'USDC': 6,
+  'cbBTC': 8,
+  'WETH': 18,
+};
+
 // Deposit Flow Component with OnchainKit Integration
 interface DepositFlowProps {
   vaultSymbol: string;
@@ -184,6 +201,7 @@ interface DepositFlowProps {
     monthlyEarnings: number;
     originalDeposit?: number;
   };
+  tokenPrice?: number;
   className?: string;
 }
 
@@ -193,8 +211,54 @@ export function DepositFlow({
   onBack,
   vaultAddress,
   vaultData,
+  tokenPrice = 1,
   className = ''
 }: DepositFlowProps) {
+  const { address } = useAccount();
+  const [depositAmount, setDepositAmount] = useState('');
+  const [showOnchainKit, setShowOnchainKit] = useState(false);
+  
+  // Get wallet balance
+  const tokenAddress = TOKEN_ADDRESSES[vaultSymbol];
+  const decimals = TOKEN_DECIMALS[vaultSymbol] || 18;
+  
+  const { data: balance, refetch } = useBalance({
+    address: address,
+    token: tokenAddress,
+    chainId: base.id,
+    query: { enabled: !!address }
+  });
+
+  // Refetch balance when component mounts or address changes
+  useEffect(() => {
+    if (address) {
+      refetch();
+    }
+  }, [address, refetch]);
+
+  const walletBalance = balance ? parseFloat(formatUnits(balance.value, decimals)) : 0;
+  const usdValue = depositAmount ? parseFloat(depositAmount) * tokenPrice : 0;
+
+  const handleMaxClick = () => {
+    if (walletBalance > 0) {
+      setDepositAmount(walletBalance.toString());
+    }
+  };
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow only numbers and decimal point
+    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+      setDepositAmount(value);
+    }
+  };
+
+  const handleContinue = () => {
+    if (depositAmount && parseFloat(depositAmount) > 0) {
+      setShowOnchainKit(true);
+    }
+  };
+
   return (
     <div className={`depositFlow ${className}`}>
       {/* Header */}
@@ -210,7 +274,8 @@ export function DepositFlow({
             fontSize: '1rem',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.5rem'
+            gap: '0.5rem',
+            padding: '0.5rem'
           }}
         >
           ← Back to Portfolio
@@ -267,10 +332,10 @@ export function DepositFlow({
             border: '1px solid #e2e8f0'
           }}>
             <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '500', marginBottom: '0.25rem' }}>
-              Total Deposited
+              Your Deposited
             </div>
             <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#0f172a' }}>
-              {vaultData ? vaultData.deposited : 'Loading...'}
+              {vaultData ? vaultData.deposited : '$0.00'}
             </div>
           </div>
           <div style={{ 
@@ -283,7 +348,7 @@ export function DepositFlow({
               Interest Earned
             </div>
             <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#10b981' }}>
-              {vaultData ? vaultData.earned : 'Loading...'}
+              {vaultData ? vaultData.earned : '$0.00'}
             </div>
           </div>
           <div style={{ 
@@ -293,31 +358,232 @@ export function DepositFlow({
             border: '1px solid #e2e8f0'
           }}>
             <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '500', marginBottom: '0.25rem' }}>
-              Available to Deposit
+              Wallet Balance
             </div>
             <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#6366f1' }}>
-              Check Wallet
+              {balance ? `${walletBalance.toFixed(decimals === 6 ? 2 : decimals === 8 ? 8 : 6)} ${vaultSymbol}` : 'Loading...'}
             </div>
           </div>
         </div>
       </div>
       
-      {/* OnchainKit Earn Component with comprehensive UI */}
-      <div style={{ 
-        padding: '2rem', 
-        border: '1px solid #e2e8f0', 
-        borderRadius: '12px',
-        backgroundColor: '#ffffff',
-        boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)'
-      }}>
-        <Earn vaultAddress={vaultAddress as `0x${string}`} isSponsored={false}>
-          <EarnDeposit />
-        </Earn>
-      </div>
+      {!showOnchainKit ? (
+        <>
+          {/* Amount Input Section */}
+          <div style={{ 
+            padding: '2rem', 
+            border: '1px solid #e2e8f0', 
+            borderRadius: '12px',
+            backgroundColor: '#ffffff',
+            boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+            marginBottom: '1.5rem'
+          }}>
+            <label style={{ 
+              display: 'block', 
+              marginBottom: '0.75rem',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              color: '#0f172a'
+            }}>
+              Amount to Deposit
+            </label>
+            
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.75rem',
+              marginBottom: '0.5rem'
+            }}>
+              <div style={{ 
+                flex: 1,
+                position: 'relative'
+              }}>
+                <input
+                  type="text"
+                  value={depositAmount}
+                  onChange={handleAmountChange}
+                  placeholder="0.00"
+                  style={{
+                    width: '100%',
+                    padding: '1rem',
+                    fontSize: '1.5rem',
+                    fontWeight: '600',
+                    border: '2px solid #e2e8f0',
+                    borderRadius: '8px',
+                    outline: 'none',
+                    transition: 'border-color 0.2s',
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#6366f1'}
+                  onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                />
+                <div style={{
+                  position: 'absolute',
+                  right: '1rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  fontSize: '1.25rem',
+                  fontWeight: '600',
+                  color: '#64748b'
+                }}>
+                  {vaultSymbol}
+                </div>
+              </div>
+              
+              <button
+                onClick={handleMaxClick}
+                style={{
+                  padding: '1rem 1.5rem',
+                  backgroundColor: '#6366f1',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s',
+                  whiteSpace: 'nowrap'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#6366f1'}
+              >
+                MAX
+              </button>
+            </div>
+            
+            {/* USD Conversion */}
+            <div style={{ 
+              fontSize: '0.875rem', 
+              color: '#64748b',
+              marginBottom: '1.5rem'
+            }}>
+              {depositAmount && parseFloat(depositAmount) > 0 ? (
+                <span>≈ ${usdValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD</span>
+              ) : (
+                <span>Enter an amount to see USD value</span>
+              )}
+            </div>
+
+            {/* Quick Amount Buttons */}
+            <div style={{ 
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '0.5rem',
+              marginBottom: '1.5rem'
+            }}>
+              {[25, 50, 75, 100].map(percent => (
+                <button
+                  key={percent}
+                  onClick={() => setDepositAmount((walletBalance * percent / 100).toString())}
+                  style={{
+                    padding: '0.5rem',
+                    backgroundColor: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '6px',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    color: '#475569',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#eff6ff';
+                    e.currentTarget.style.borderColor = '#6366f1';
+                    e.currentTarget.style.color = '#6366f1';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f8fafc';
+                    e.currentTarget.style.borderColor = '#e2e8f0';
+                    e.currentTarget.style.color = '#475569';
+                  }}
+                >
+                  {percent}%
+                </button>
+              ))}
+            </div>
+
+            {/* Continue Button */}
+            <button
+              onClick={handleContinue}
+              disabled={!depositAmount || parseFloat(depositAmount) <= 0 || parseFloat(depositAmount) > walletBalance}
+              style={{
+                width: '100%',
+                padding: '1rem',
+                backgroundColor: depositAmount && parseFloat(depositAmount) > 0 && parseFloat(depositAmount) <= walletBalance ? '#10b981' : '#e2e8f0',
+                color: depositAmount && parseFloat(depositAmount) > 0 && parseFloat(depositAmount) <= walletBalance ? '#ffffff' : '#94a3b8',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: depositAmount && parseFloat(depositAmount) > 0 && parseFloat(depositAmount) <= walletBalance ? 'pointer' : 'not-allowed',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                if (depositAmount && parseFloat(depositAmount) > 0 && parseFloat(depositAmount) <= walletBalance) {
+                  e.currentTarget.style.backgroundColor = '#059669';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (depositAmount && parseFloat(depositAmount) > 0 && parseFloat(depositAmount) <= walletBalance) {
+                  e.currentTarget.style.backgroundColor = '#10b981';
+                }
+              }}
+            >
+              Continue to Deposit
+            </button>
+
+            {depositAmount && parseFloat(depositAmount) > walletBalance && (
+              <div style={{
+                marginTop: '0.75rem',
+                padding: '0.75rem',
+                backgroundColor: '#fef2f2',
+                borderRadius: '6px',
+                fontSize: '0.875rem',
+                color: '#dc2626',
+                border: '1px solid #fecaca'
+              }}>
+                Insufficient balance. Maximum available: {walletBalance.toFixed(decimals === 6 ? 2 : decimals === 8 ? 8 : 6)} {vaultSymbol}
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        <>
+          {/* OnchainKit Earn Component */}
+          <div style={{ 
+            padding: '2rem', 
+            border: '1px solid #e2e8f0', 
+            borderRadius: '12px',
+            backgroundColor: '#ffffff',
+            boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+            marginBottom: '1.5rem'
+          }}>
+            <div style={{ marginBottom: '1rem' }}>
+              <button
+                onClick={() => setShowOnchainKit(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#6366f1',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.5rem 0'
+                }}
+              >
+                ← Back to Amount
+              </button>
+            </div>
+            <Earn vaultAddress={vaultAddress as `0x${string}`} isSponsored={false}>
+              <EarnDeposit />
+            </Earn>
+          </div>
+        </>
+      )}
       
       {/* Information Note */}
       <div style={{
-        marginTop: '1.5rem',
         padding: '1rem',
         backgroundColor: '#eff6ff',
         borderRadius: '8px',
@@ -354,6 +620,7 @@ interface WithdrawFlowProps {
     originalDeposit?: number;
   };
   onBack: () => void;
+  tokenPrice?: number;
   className?: string;
 }
 
@@ -363,8 +630,39 @@ export function WithdrawFlow({
   vaultAddress,
   vaultData,
   onBack,
+  tokenPrice = 1,
   className = ''
 }: WithdrawFlowProps) {
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [showOnchainKit, setShowOnchainKit] = useState(false);
+  
+  // Get vault balance using the vault ABI
+  const decimals = TOKEN_DECIMALS[vaultSymbol] || 18;
+  
+  // Available balance from vault data
+  const vaultBalance = vaultData?.depositedAmount || 0;
+  const usdValue = withdrawAmount ? parseFloat(withdrawAmount) * tokenPrice : 0;
+
+  const handleMaxClick = () => {
+    if (vaultBalance > 0) {
+      setWithdrawAmount(vaultBalance.toString());
+    }
+  };
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow only numbers and decimal point
+    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+      setWithdrawAmount(value);
+    }
+  };
+
+  const handleContinue = () => {
+    if (withdrawAmount && parseFloat(withdrawAmount) > 0) {
+      setShowOnchainKit(true);
+    }
+  };
+
   return (
     <div className={`withdrawFlow ${className}`}>
       {/* Header */}
@@ -380,7 +678,8 @@ export function WithdrawFlow({
             fontSize: '1rem',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.5rem'
+            gap: '0.5rem',
+            padding: '0.5rem'
           }}
         >
           ← Back to Portfolio
@@ -427,7 +726,7 @@ export function WithdrawFlow({
               Available Balance
             </div>
             <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#0f172a' }}>
-              {vaultData ? vaultData.deposited : 'Loading...'}
+              {vaultData ? vaultData.deposited : '$0.00'}
             </div>
           </div>
           <div style={{ 
@@ -440,7 +739,7 @@ export function WithdrawFlow({
               Interest Earned
             </div>
             <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#10b981' }}>
-              {vaultData ? vaultData.earned : 'Loading...'}
+              {vaultData ? vaultData.earned : '$0.00'}
             </div>
           </div>
           <div style={{ 
@@ -450,31 +749,232 @@ export function WithdrawFlow({
             border: '1px solid #e2e8f0'
           }}>
             <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '500', marginBottom: '0.25rem' }}>
-              Total Value
+              Amount in Vault
             </div>
-            <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#0f172a' }}>
-              {vaultData ? vaultData.deposited : 'Loading...'}
+            <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#6366f1' }}>
+              {vaultData && vaultData.depositedAmount !== undefined ? `${vaultData.depositedAmount.toFixed(decimals === 6 ? 2 : decimals === 8 ? 8 : 6)} ${vaultSymbol}` : 'Loading...'}
             </div>
           </div>
         </div>
       </div>
 
-      {/* OnchainKit Earn Component with comprehensive UI */}
-      <div style={{ 
-        padding: '2rem', 
-        border: '1px solid #e2e8f0', 
-        borderRadius: '12px',
-        backgroundColor: '#ffffff',
-        boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)'
-      }}>
-        <Earn vaultAddress={vaultAddress as `0x${string}`} isSponsored={false}>
-          <EarnWithdraw />
-        </Earn>
-      </div>
+      {!showOnchainKit ? (
+        <>
+          {/* Amount Input Section */}
+          <div style={{ 
+            padding: '2rem', 
+            border: '1px solid #e2e8f0', 
+            borderRadius: '12px',
+            backgroundColor: '#ffffff',
+            boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+            marginBottom: '1.5rem'
+          }}>
+            <label style={{ 
+              display: 'block', 
+              marginBottom: '0.75rem',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              color: '#0f172a'
+            }}>
+              Amount to Withdraw
+            </label>
+            
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.75rem',
+              marginBottom: '0.5rem'
+            }}>
+              <div style={{ 
+                flex: 1,
+                position: 'relative'
+              }}>
+                <input
+                  type="text"
+                  value={withdrawAmount}
+                  onChange={handleAmountChange}
+                  placeholder="0.00"
+                  style={{
+                    width: '100%',
+                    padding: '1rem',
+                    fontSize: '1.5rem',
+                    fontWeight: '600',
+                    border: '2px solid #e2e8f0',
+                    borderRadius: '8px',
+                    outline: 'none',
+                    transition: 'border-color 0.2s',
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#6366f1'}
+                  onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                />
+                <div style={{
+                  position: 'absolute',
+                  right: '1rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  fontSize: '1.25rem',
+                  fontWeight: '600',
+                  color: '#64748b'
+                }}>
+                  {vaultSymbol}
+                </div>
+              </div>
+              
+              <button
+                onClick={handleMaxClick}
+                style={{
+                  padding: '1rem 1.5rem',
+                  backgroundColor: '#6366f1',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s',
+                  whiteSpace: 'nowrap'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#6366f1'}
+              >
+                MAX
+              </button>
+            </div>
+            
+            {/* USD Conversion */}
+            <div style={{ 
+              fontSize: '0.875rem', 
+              color: '#64748b',
+              marginBottom: '1.5rem'
+            }}>
+              {withdrawAmount && parseFloat(withdrawAmount) > 0 ? (
+                <span>≈ ${usdValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD</span>
+              ) : (
+                <span>Enter an amount to see USD value</span>
+              )}
+            </div>
+
+            {/* Quick Amount Buttons */}
+            <div style={{ 
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '0.5rem',
+              marginBottom: '1.5rem'
+            }}>
+              {[25, 50, 75, 100].map(percent => (
+                <button
+                  key={percent}
+                  onClick={() => setWithdrawAmount((vaultBalance * percent / 100).toString())}
+                  style={{
+                    padding: '0.5rem',
+                    backgroundColor: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '6px',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    color: '#475569',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#fef3c7';
+                    e.currentTarget.style.borderColor = '#fbbf24';
+                    e.currentTarget.style.color = '#92400e';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f8fafc';
+                    e.currentTarget.style.borderColor = '#e2e8f0';
+                    e.currentTarget.style.color = '#475569';
+                  }}
+                >
+                  {percent}%
+                </button>
+              ))}
+            </div>
+
+            {/* Continue Button */}
+            <button
+              onClick={handleContinue}
+              disabled={!withdrawAmount || parseFloat(withdrawAmount) <= 0 || parseFloat(withdrawAmount) > vaultBalance}
+              style={{
+                width: '100%',
+                padding: '1rem',
+                backgroundColor: withdrawAmount && parseFloat(withdrawAmount) > 0 && parseFloat(withdrawAmount) <= vaultBalance ? '#f59e0b' : '#e2e8f0',
+                color: withdrawAmount && parseFloat(withdrawAmount) > 0 && parseFloat(withdrawAmount) <= vaultBalance ? '#ffffff' : '#94a3b8',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: withdrawAmount && parseFloat(withdrawAmount) > 0 && parseFloat(withdrawAmount) <= vaultBalance ? 'pointer' : 'not-allowed',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                if (withdrawAmount && parseFloat(withdrawAmount) > 0 && parseFloat(withdrawAmount) <= vaultBalance) {
+                  e.currentTarget.style.backgroundColor = '#d97706';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (withdrawAmount && parseFloat(withdrawAmount) > 0 && parseFloat(withdrawAmount) <= vaultBalance) {
+                  e.currentTarget.style.backgroundColor = '#f59e0b';
+                }
+              }}
+            >
+              Continue to Withdraw
+            </button>
+
+            {withdrawAmount && parseFloat(withdrawAmount) > vaultBalance && (
+              <div style={{
+                marginTop: '0.75rem',
+                padding: '0.75rem',
+                backgroundColor: '#fef2f2',
+                borderRadius: '6px',
+                fontSize: '0.875rem',
+                color: '#dc2626',
+                border: '1px solid #fecaca'
+              }}>
+                Insufficient balance. Maximum available: {vaultBalance.toFixed(decimals === 6 ? 2 : decimals === 8 ? 8 : 6)} {vaultSymbol}
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        <>
+          {/* OnchainKit Earn Component */}
+          <div style={{ 
+            padding: '2rem', 
+            border: '1px solid #e2e8f0', 
+            borderRadius: '12px',
+            backgroundColor: '#ffffff',
+            boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+            marginBottom: '1.5rem'
+          }}>
+            <div style={{ marginBottom: '1rem' }}>
+              <button
+                onClick={() => setShowOnchainKit(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#6366f1',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.5rem 0'
+                }}
+              >
+                ← Back to Amount
+              </button>
+            </div>
+            <Earn vaultAddress={vaultAddress as `0x${string}`} isSponsored={false}>
+              <EarnWithdraw />
+            </Earn>
+          </div>
+        </>
+      )}
       
       {/* Information Note */}
       <div style={{
-        marginTop: '1.5rem',
         padding: '1rem',
         backgroundColor: '#fef3c7',
         borderRadius: '8px',
