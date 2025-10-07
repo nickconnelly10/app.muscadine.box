@@ -1,6 +1,6 @@
 # Muscadine Box
 
-A professional DeFi lending platform built as a Farcaster Mini App, providing access to Muscadine vaults powered by Morpho Protocol v1 on the Base network.
+A professional DeFi lending platform built as a Farcaster Mini App, providing secure access to Muscadine vaults powered by Morpho Protocol v1 on Base.
 
 **Live URL**: [app.muscadine.box](https://app.muscadine.box)
 
@@ -49,72 +49,100 @@ Muscadine Box is a production-ready DeFi lending application featuring Muscadine
 ```
 app/
 ├── components/
-│   ├── SharedLayout.tsx          # Unified layout component
-│   └── LendingPage.tsx           # Main lending interface
-├── lending/
-│   └── page.tsx                  # Lending page entry point
-├── layout.tsx                    # Root layout with providers
-├── page.tsx                      # Main page with total deposits
-└── page.module.css               # Component styles
+│   ├── ErrorBoundary.tsx          # Error boundary component
+│   ├── ETHDepositComponent.tsx   # Custom ETH deposit handling
+│   ├── LoadingStates.tsx          # Loading components
+│   ├── LendingPage.tsx           # Main lending interface
+│   └── SharedLayout.tsx          # Layout wrapper
+├── hooks/
+│   └── useVaultData.ts           # Custom blockchain hooks
+├── lib/
+│   ├── metadata.ts               # SEO metadata generation
+│   └── middleware.ts             # Security & rate limiting
+├── api/
+│   └── webhook/
+│       └── route.ts              # Webhook handlers
+├── layout.tsx                   # Root layout
+├── rootProvider.tsx             # Global providers
+└── next.config.ts               # Next.js configuration
 ```
 
-## Key Features
+## Getting Started
 
-### Real-time Data Integration
-- **Live Token Prices** - USDC ($1.00), cbBTC (Bitcoin price), ETH (Ethereum price)
-- **Wallet Balance Tracking** - Real-time wallet balances for all supported tokens
-- **Vault Balance Calculation** - Accurate deposit amounts using OnchainKit
-- **Interest Accrual** - Real-time interest earned calculations
-- **Combined ETH/WETH Balances** - Shows total ETH value including wrapped tokens
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- Git
 
-### User Interface
-- **Compact Total Display** - Streamlined total deposits section
-- **Expandable Vault Interface** - Full-width expansion for detailed operations
-- **Professional Design** - Clean, modern interface with proper asset icons
-- **Responsive Layout** - Mobile-first design with adaptive layouts
-- **Smart Interest Display** - Shows accrued interest or helpful messaging
+### Installation
 
-## Development
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/nickconnelly10/app.muscadine.box.git
+   cd app.muscadine.box
+   ```
 
-### Setup
-```bash
-npm install
-npm run dev
-```
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-### Build
+3. **Environment Setup**
+   ```bash
+   cp .env.example .env.local
+   ```
+   Add your OnchainKit API key:
+   ```env
+   NEXT_PUBLIC_ONCHAINKIT_API_KEY=your_api_key_here
+   ```
+
+4. **Run development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open in browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+### Production Deployment
+
 ```bash
 npm run build
 npm start
 ```
 
-### Environment Variables
-Create `.env.local`:
-```
-NEXT_PUBLIC_ONCHAINKIT_API_KEY=your_onchainkit_api_key
-```
+## Security Features
 
-## Recent Updates
+- **Rate Limiting** - 100 requests per minute per IP
+- **Security Headers** - X-Frame-Options, CSP, HSTS, XSS Protection
+- **Error Boundaries** - Comprehensive error handling
+- **Input Validation** - Middleware validation for API routes
+- **CORS Protection** - Proper CORS configuration
 
-### Latest Improvements
-- **USDC Price Formatting** - Displayed as $1.00 for professional appearance
-- **ETH/WETH Integration** - Native ETH deposits with automatic WETH conversion
-- **Compact UI Design** - Streamlined total deposits section
-- **Smart Interest Display** - Better messaging for interest accrual
-- **BaseScan Token Integration** - Verified token addresses for accurate data
-- **Redundant Data Removal** - Cleaner interface without duplicate information
+## Performance Optimizations
 
-## Security
+- **React Query** - Intelligent caching with 5-minute stale time
+- **Code Splitting** - Optimized package imports
+- **Image Optimization** - WebP/AVIF support
+- **Bundle Size** - Reduced with tree shaking
+- **Loading States** - Skeleton screens for better perceived performance
 
-- **Type Safety** - Comprehensive TypeScript implementation
-- **Input Validation** - Robust validation for all user inputs
-- **Error Handling** - Graceful error handling with fallback values
-- **Gas Optimization** - Sponsored transactions eliminate user costs
+## Contributing
 
-## Deployment
-
-The application is deployed on Vercel with automatic deployments from the main branch.
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-MIT License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+For support, email support@muscadine.box or join our community discussions.
+
+---
+
+**Built with ❤️ by the Muscadine team**
