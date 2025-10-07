@@ -51,36 +51,40 @@ export default function SimpleDashboard() {
   };
 
   // Calculate portfolio totals using OnchainKit data
-  // Total balance across all vaults
-  const totalBalance = Number(usdcVault.balance || 0) + Number(cbbtcVault.balance || 0) + Number(wethVault.balance || 0);
+  // Helper to safely convert balance to number
+  const getBalanceNumber = (balance: string | number | undefined) => {
+    if (balance === undefined) return 0;
+    return typeof balance === 'string' ? parseFloat(balance) : balance;
+  };
+
+  // Total Deposited: current balance in USD across all vaults
+  const totalDeposited = 
+    getBalanceNumber(usdcVault.balance) + 
+    getBalanceNumber(cbbtcVault.balance) + 
+    getBalanceNumber(wethVault.balance);
   
-  // Calculate vault-specific interest for each vault
-  const getVaultInterest = (vault: typeof usdcVault) => {
-    const balance = Number(vault.balance || 0);
+  // Calculate projected annual return for each vault (without fees)
+  const getVaultProjectedYield = (vault: typeof usdcVault) => {
+    const balance = getBalanceNumber(vault.balance);
     const apy = vault.totalApy || 0;
     return balance * (apy / 100);
   };
   
-  // Total projected annual interest across all vaults
-  const totalProjectedAnnualInterest = 
-    getVaultInterest(usdcVault) + 
-    getVaultInterest(cbbtcVault) + 
-    getVaultInterest(wethVault);
+  // Total Return: projected annual interest across all vaults
+  const totalReturn = 
+    getVaultProjectedYield(usdcVault) + 
+    getVaultProjectedYield(cbbtcVault) + 
+    getVaultProjectedYield(wethVault);
   
-  // Calculate net return after fees for each vault
-  const getNetReturn = (vault: typeof usdcVault) => {
-    const annualInterest = getVaultInterest(vault);
-    const fee = vault.vaultFee || 0;
-    return annualInterest * (1 - fee / 100);
-  };
+  // Expected Monthly Interest
+  const expectedMonthlyInterest = totalReturn / 12;
   
-  const totalNetReturn = 
-    getNetReturn(usdcVault) + 
-    getNetReturn(cbbtcVault) + 
-    getNetReturn(wethVault);
-  
-  // Expected monthly interest: annual interest divided by 12
-  const expectedMonthly = totalProjectedAnnualInterest / 12;
+  // Calculate weighted average APY
+  const averageApy = totalDeposited > 0 
+    ? ((getBalanceNumber(usdcVault.balance) * (usdcVault.totalApy || 0) +
+        getBalanceNumber(cbbtcVault.balance) * (cbbtcVault.totalApy || 0) +
+        getBalanceNumber(wethVault.balance) * (wethVault.totalApy || 0)) / totalDeposited)
+    : 0;
 
 
   const formatCurrency = (amount: number) => {
@@ -175,14 +179,14 @@ export default function SimpleDashboard() {
                   fontWeight: '500',
                   marginBottom: '0.5rem'
                 }}>
-                  Total Balance
+                  Total Deposited
                 </div>
                 <div style={{
                   fontSize: '1.875rem',
                   fontWeight: '700',
                   color: '#0f172a'
                 }}>
-                  {formatCurrency(totalBalance)}
+                  {formatCurrency(totalDeposited)}
                 </div>
               </div>
               <div>
@@ -192,14 +196,14 @@ export default function SimpleDashboard() {
                   fontWeight: '500',
                   marginBottom: '0.5rem'
                 }}>
-                  Projected Annual Return
+                  Total Return (Annual)
                 </div>
                 <div style={{
                   fontSize: '1.875rem',
                   fontWeight: '700',
                   color: '#10b981'
                 }}>
-                  {formatCurrency(totalProjectedAnnualInterest)}
+                  {formatCurrency(totalReturn)}
                 </div>
               </div>
               <div>
@@ -209,14 +213,14 @@ export default function SimpleDashboard() {
                   fontWeight: '500',
                   marginBottom: '0.5rem'
                 }}>
-                  Net Annual Return
+                  Expected Monthly Interest
                 </div>
                 <div style={{
                   fontSize: '1.875rem',
                   fontWeight: '700',
                   color: '#10b981'
                 }}>
-                  {formatCurrency(totalNetReturn)}
+                  {formatCurrency(expectedMonthlyInterest)}
                 </div>
               </div>
               <div>
@@ -226,14 +230,14 @@ export default function SimpleDashboard() {
                   fontWeight: '500',
                   marginBottom: '0.5rem'
                 }}>
-                  Expected Monthly
+                  Average APY
                 </div>
                 <div style={{
                   fontSize: '1.875rem',
                   fontWeight: '700',
                   color: '#6366f1'
                 }}>
-                  {formatCurrency(expectedMonthly)}
+                  {averageApy.toFixed(2)}%
                 </div>
               </div>
             </div>
@@ -321,7 +325,7 @@ export default function SimpleDashboard() {
                     }}>
                       {(() => {
                         const vaultData = getVaultData(vault.address);
-                        return formatCurrency(Number(vaultData?.balance || 0));
+                        return formatCurrency(getBalanceNumber(vaultData?.balance));
                       })()}
                     </div>
                   </div>
@@ -341,7 +345,7 @@ export default function SimpleDashboard() {
                     }}>
                       {(() => {
                         const vaultData = getVaultData(vault.address);
-                        return vaultData ? formatCurrency(getVaultInterest(vaultData)) : '$0.00';
+                        return vaultData ? formatCurrency(getVaultProjectedYield(vaultData)) : '$0.00';
                       })()}
                     </div>
                   </div>
