@@ -218,11 +218,6 @@ export default function ModernDashboard() {
       
       // For demonstration: Calculate interest based on vault's share price growth
       // In reality, Morpho vaults accumulate interest over time
-      // We'll simulate this by calculating based on current vault performance
-      
-      // Get vault's current share price (assets per share)
-      const currentSharePrice = sharesAmount > 0 ? currentAssetValue / sharesAmount : 1.0;
-      
       // Calculate interest earned from share price appreciation
       // In ERC-4626 vaults, the share price increases as interest accrues
       // Initial deposits typically receive shares at ~1:1 ratio
@@ -256,17 +251,9 @@ export default function ModernDashboard() {
       
       const estimatedAPY = 0.062; // 6.2% Morpho cbBTC APY
       
-      // Calculate interest similar to USDC vault
-      const currentSharePrice = sharesAmount > 0 ? currentAssetValue / sharesAmount : 1.0;
-      const baseSharePrice = 1.0;
-      const sharePriceGrowth = Math.max(0, currentSharePrice - baseSharePrice);
-      const interestEarned = sharesAmount * sharePriceGrowth;
+      // Calculate interest earned from share price appreciation
+      const interestEarned = Math.max(0, currentAssetValue - sharesAmount);
       const interestEarnedUSD = interestEarned * tokenPrices.cbBTC;
-      
-      // Simulate realistic earned interest (1.5% of deposit)
-      const simulatedInterestRate = 0.015;
-      const simulatedEarned = usdValue * simulatedInterestRate;
-      const finalInterestEarned = Math.max(interestEarnedUSD, simulatedEarned);
       const monthlyEarnings = currentAssetValue * (estimatedAPY / 12);
 
       vaultBalances.push({
@@ -275,12 +262,12 @@ export default function ModernDashboard() {
         description: VAULTS_CONFIG.cbbtc.description,
         apy: estimatedAPY * 100,
         deposited: `$${usdValue.toFixed(2)}`,
-        earned: `$${finalInterestEarned.toFixed(2)}`,
+        earned: `$${interestEarnedUSD.toFixed(2)}`,
         status: 'active' as const,
         usdValue,
         sharesAmount,
         assetsAmount: currentAssetValue,
-        interestEarned: finalInterestEarned,
+        interestEarned: interestEarnedUSD,
         monthlyEarnings
       });
     }
@@ -293,17 +280,9 @@ export default function ModernDashboard() {
       
       const estimatedAPY = 0.078; // 7.8% Morpho ETH APY
       
-      // Calculate interest similar to other vaults
-      const currentSharePrice = sharesAmount > 0 ? currentAssetValue / sharesAmount : 1.0;
-      const baseSharePrice = 1.0;
-      const sharePriceGrowth = Math.max(0, currentSharePrice - baseSharePrice);
-      const interestEarned = sharesAmount * sharePriceGrowth;
+      // Calculate interest earned from share price appreciation
+      const interestEarned = Math.max(0, currentAssetValue - sharesAmount);
       const interestEarnedUSD = interestEarned * tokenPrices.ETH;
-      
-      // Simulate realistic earned interest (1.8% of deposit)
-      const simulatedInterestRate = 0.018;
-      const simulatedEarned = usdValue * simulatedInterestRate;
-      const finalInterestEarned = Math.max(interestEarnedUSD, simulatedEarned);
       const monthlyEarnings = currentAssetValue * (estimatedAPY / 12);
 
       vaultBalances.push({
@@ -312,12 +291,12 @@ export default function ModernDashboard() {
         description: VAULTS_CONFIG.eth.description,
         apy: estimatedAPY * 100,
         deposited: `$${usdValue.toFixed(2)}`,
-        earned: `$${finalInterestEarned.toFixed(2)}`,
+        earned: `$${interestEarnedUSD.toFixed(2)}`,
         status: 'active' as const,
         usdValue,
         sharesAmount,
         assetsAmount: currentAssetValue,
-        interestEarned: finalInterestEarned,
+        interestEarned: interestEarnedUSD,
         monthlyEarnings
       });
     }
