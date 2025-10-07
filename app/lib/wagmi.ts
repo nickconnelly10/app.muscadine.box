@@ -1,7 +1,12 @@
 "use client";
 import { http, createConfig } from "wagmi";
 import { base } from "wagmi/chains";
-import { coinbaseWallet } from "wagmi/connectors";
+import { 
+  coinbaseWallet, 
+  metaMask, 
+  walletConnect,
+  injected
+} from "wagmi/connectors";
 
 export const wagmiConfig = createConfig({
   chains: [base],
@@ -9,6 +14,27 @@ export const wagmiConfig = createConfig({
     coinbaseWallet({
       appName: "Muscadine DeFi",
       preference: "smartWalletOnly",
+    }),
+    metaMask({
+      dappMetadata: {
+        name: "Muscadine DeFi",
+        url: "https://app.muscadine.box",
+      },
+    }),
+    walletConnect({
+      projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "your-project-id",
+      metadata: {
+        name: "Muscadine DeFi",
+        description: "DeFi lending platform on Base",
+        url: "https://app.muscadine.box",
+        icons: ["https://app.muscadine.box/icon.png"],
+      },
+    }),
+    injected({
+      target: "phantom",
+    }),
+    injected({
+      target: "rabby",
     }),
   ],
   ssr: true,
