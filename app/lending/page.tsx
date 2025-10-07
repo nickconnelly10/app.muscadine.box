@@ -1,11 +1,6 @@
 "use client";
-import LendingPage from "../components/LendingPage";
-import SharedLayout from "../components/SharedLayout";
+import ModernDashboard from "../components/ModernDashboard";
 
 export default function Lending() {
-  return (
-    <SharedLayout>
-      <LendingPage />
-    </SharedLayout>
-  );
+  return <ModernDashboard />;
 }
