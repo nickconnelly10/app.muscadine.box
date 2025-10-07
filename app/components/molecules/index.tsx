@@ -20,7 +20,9 @@ interface VaultCardProps {
     description: string;
     apy: number;
     deposited: string;
+    depositedAmount?: number;
     earned: string;
+    earnedAmount?: number;
     status: 'active' | 'inactive';
   };
   _chartData: number[];
@@ -44,8 +46,8 @@ export function VaultCard({
           <div className="vaultName">{vault.name}</div>
           <div className="vaultDescription">{vault.description}</div>
         </div>
-        <Badge variant={vault.status === 'active' ? 'active' : 'inactive'}>
-          {vault.status}
+        <Badge variant="active">
+          {vault.apy.toFixed(2)}% APY
         </Badge>
       </div>
       
@@ -53,11 +55,12 @@ export function VaultCard({
         <Metric
           label="Deposited"
           value={vault.deposited}
+          change={vault.depositedAmount !== undefined ? `${vault.depositedAmount.toFixed(vault.symbol === 'USDC' ? 2 : vault.symbol === 'cbBTC' ? 8 : 6)} ${vault.symbol}` : undefined}
         />
         <Metric
-          label="Earned"
+          label="Earned Interest"
           value={vault.earned}
-          change={`+${vault.apy.toFixed(2)}% APY`}
+          change={vault.earnedAmount !== undefined ? `${vault.earnedAmount.toFixed(vault.symbol === 'USDC' ? 2 : vault.symbol === 'cbBTC' ? 8 : 6)} ${vault.symbol}` : undefined}
           changeType="positive"
         />
       </div>
@@ -621,50 +624,32 @@ export function WithdrawFlow({
         <div style={{ width: '120px' }}></div>
       </div>
       
-      {/* Vault Balance Information */}
+      {/* Vault Information */}
       <div style={{ 
         marginBottom: '1.5rem', 
-        padding: '1.5rem', 
-        backgroundColor: '#f0fdf4',
-        borderRadius: '12px',
-        border: '1px solid #bbf7d0'
+        padding: '1rem', 
+        backgroundColor: '#f8fafc',
+        borderRadius: '8px',
+        border: '1px solid #e2e8f0'
       }}>
-        <div style={{ marginBottom: '1rem' }}>
-          <div style={{ fontSize: '0.875rem', color: '#166534', marginBottom: '0.25rem' }}>
-            Your Vault Balance
-          </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#15803d' }}>
-            {vaultBalance} {vaultSymbol}
-          </div>
-          <div style={{ fontSize: '0.875rem', color: '#16a34a' }}>
-            ≈ {vaultBalanceUSD}
-          </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+          <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Your Vault Balance</span>
+          <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>
+            {vaultBalance} {vaultSymbol} ({vaultBalanceUSD})
+          </span>
         </div>
-        
-        <div style={{ 
-          paddingTop: '1rem',
-          borderTop: '1px solid #bbf7d0'
-        }}>
-          <div>
-            <div style={{ fontSize: '0.75rem', color: '#166534', marginBottom: '0.25rem' }}>
-              Current APY
-            </div>
-            <div style={{ fontSize: '1.125rem', fontWeight: '600', color: '#15803d' }}>
-              {estimatedAPY.toFixed(2)}%
-            </div>
-          </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+          <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Current APY</span>
+          <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>
+            {estimatedAPY.toFixed(2)}%
+          </span>
         </div>
-        
-        {tokenPrice > 0 && (
-          <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #bbf7d0' }}>
-            <div style={{ fontSize: '0.75rem', color: '#166534', marginBottom: '0.25rem' }}>
-              Token Price
-            </div>
-            <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#15803d' }}>
-              ${vaultSymbol === 'USDC' ? tokenPrice.toFixed(2) : tokenPrice.toLocaleString()}
-            </div>
-          </div>
-        )}
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Token Price</span>
+          <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>
+            ${vaultSymbol === 'USDC' ? tokenPrice.toFixed(2) : tokenPrice.toLocaleString()}
+          </span>
+        </div>
       </div>
       
       {/* Amount Selection */}
