@@ -433,71 +433,67 @@ export default function LendingPage() {
                 <div className={styles.assetInfo}>
                   <div className={styles.assetIcon}>
                     {vault.tokenSymbol === 'USDC' && (
-                      <img 
-                        src="https://cryptologos.cc/logos/usd-coin-usdc-logo.png"
-                        alt="USDC"
-                        width="24"
-                        height="24"
-                        className={styles.tokenLogo}
-                        onError={(e) => {
-                          // Fallback to SVG if image fails to load
-                          e.currentTarget.style.display = 'none';
-                          const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
-                          if (nextSibling) {
-                            nextSibling.style.display = 'block';
-                          }
-                        }}
-                      />
-                    )}
-                    {vault.tokenSymbol === 'USDC' && (
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{display: 'none'}}>
-                        <circle cx="12" cy="12" r="12" fill="#2775CA"/>
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 1.5c4.69 0 8.5 3.81 8.5 8.5s-3.81 8.5-8.5 8.5-8.5-3.81-8.5-8.5 3.81-8.5 8.5-8.5zm0 2.5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 1c2.76 0 5 2.24 5 5s-2.24 5-5 5-5-2.24-5-5 2.24-5 5-5zm0 1.5c-1.93 0-3.5 1.57-3.5 3.5s1.57 3.5 3.5 3.5 3.5-1.57 3.5-3.5-1.57-3.5-3.5-3.5z" fill="white"/>
-                      </svg>
+                      <>
+                        <img 
+                          src="https://cryptologos.cc/logos/usd-coin-usdc-logo.png"
+                          alt="USDC"
+                          width="40"
+                          height="40"
+                          className={styles.tokenLogo}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
+                            if (nextSibling) {
+                              nextSibling.style.display = 'block';
+                            }
+                          }}
+                        />
+                        <div className={styles.fallbackIcon} style={{display: 'none', backgroundColor: '#2775CA'}}>
+                          <span style={{color: 'white', fontSize: '16px', fontWeight: 'bold'}}>USDC</span>
+                        </div>
+                      </>
                     )}
                     {vault.tokenSymbol === 'cbBTC' && (
-                      <img 
-                        src="https://cryptologos.cc/logos/bitcoin-btc-logo.png"
-                        alt="cbBTC"
-                        width="24"
-                        height="24"
-                        className={styles.tokenLogo}
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
-                          if (nextSibling) {
-                            nextSibling.style.display = 'block';
-                          }
-                        }}
-                      />
-                    )}
-                    {vault.tokenSymbol === 'cbBTC' && (
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{display: 'none'}}>
-                        <circle cx="12" cy="12" r="12" fill="#F7931A"/>
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 1.5c4.69 0 8.5 3.81 8.5 8.5s-3.81 8.5-8.5 8.5-8.5-3.81-8.5-8.5 3.81-8.5 8.5-8.5zm0 2.5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 1c2.76 0 5 2.24 5 5s-2.24 5-5 5-5-2.24-5-5 2.24-5 5-5zm0 1.5c-1.93 0-3.5 1.57-3.5 3.5s1.57 3.5 3.5 3.5 3.5-1.57 3.5-3.5-1.57-3.5-3.5-3.5z" fill="white"/>
-                      </svg>
-                    )}
-                    {vault.tokenSymbol === 'WETH' && (
-                      <img 
-                        src="https://cryptologos.cc/logos/ethereum-eth-logo.png"
-                        alt="WETH"
-                        width="24"
-                        height="24"
-                        className={styles.tokenLogo}
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
-                          if (nextSibling) {
-                            nextSibling.style.display = 'block';
-                          }
-                        }}
-                      />
+                      <>
+                        <img 
+                          src="https://cryptologos.cc/logos/bitcoin-btc-logo.png"
+                          alt="cbBTC"
+                          width="40"
+                          height="40"
+                          className={styles.tokenLogo}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
+                            if (nextSibling) {
+                              nextSibling.style.display = 'block';
+                            }
+                          }}
+                        />
+                        <div className={styles.fallbackIcon} style={{display: 'none', backgroundColor: '#F7931A'}}>
+                          <span style={{color: 'white', fontSize: '14px', fontWeight: 'bold'}}>₿</span>
+                        </div>
+                      </>
                     )}
                     {vault.tokenSymbol === 'WETH' && (
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{display: 'none'}}>
-                        <circle cx="12" cy="12" r="12" fill="#627EEA"/>
-                        <path d="M12.498 3v6.87l5.257 2.35-5.257-9.22zm-.996 0L6.245 12.22l5.257-2.35V3zm6.257 9.9l-5.257 2.35v6.87l5.257-9.22zm-11.514 0l5.257 9.22v-6.87l-5.257-2.35z" fill="white"/>
-                      </svg>
+                      <>
+                        <img 
+                          src="https://cryptologos.cc/logos/ethereum-eth-logo.png"
+                          alt="WETH"
+                          width="40"
+                          height="40"
+                          className={styles.tokenLogo}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
+                            if (nextSibling) {
+                              nextSibling.style.display = 'block';
+                            }
+                          }}
+                        />
+                        <div className={styles.fallbackIcon} style={{display: 'none', backgroundColor: '#627EEA'}}>
+                          <span style={{color: 'white', fontSize: '16px', fontWeight: 'bold'}}>Ξ</span>
+                        </div>
+                      </>
                     )}
                   </div>
                   <div className={styles.assetName}>
