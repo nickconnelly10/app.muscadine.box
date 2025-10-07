@@ -243,8 +243,8 @@ export default function SimpleDashboard() {
         {/* Vault Cards using OnchainKit Earn */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-          gap: '2rem'
+          gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+          gap: '1.25rem'
         }}>
           {VAULTS.map((vault) => (
             <div
@@ -253,16 +253,15 @@ export default function SimpleDashboard() {
                 backgroundColor: '#ffffff',
                 borderRadius: '12px',
                 boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
-                padding: '1.5rem',
-                overflow: 'visible',
-                minWidth: '400px'
+                padding: '1.25rem',
+                overflow: 'visible'
               }}
             >
               <div style={{
                 marginBottom: '1rem'
               }}>
                 <h3 style={{
-                  fontSize: '1.25rem',
+                  fontSize: '1.125rem',
                   fontWeight: '600',
                   color: '#0f172a',
                   margin: '0 0 0.5rem'
@@ -273,20 +272,20 @@ export default function SimpleDashboard() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.5rem',
-                  marginBottom: '0.75rem'
+                  marginBottom: '0.625rem'
                 }}>
                   <span style={{
-                    fontSize: '0.875rem',
+                    fontSize: '0.8125rem',
                     color: '#64748b'
                   }}>
                     {vault.symbol}
                   </span>
                   <span style={{
-                    fontSize: '0.875rem',
+                    fontSize: '0.8125rem',
                     fontWeight: '600',
                     color: '#10b981',
                     backgroundColor: '#dcfce7',
-                    padding: '0.25rem 0.75rem',
+                    padding: '0.2rem 0.625rem',
                     borderRadius: '9999px'
                   }}>
                     {(() => {
@@ -300,8 +299,8 @@ export default function SimpleDashboard() {
                 <div style={{
                   display: 'grid',
                   gridTemplateColumns: '1fr 1fr',
-                  gap: '1rem',
-                  padding: '0.75rem',
+                  gap: '0.75rem',
+                  padding: '0.625rem',
                   backgroundColor: '#f8fafc',
                   borderRadius: '8px',
                   border: '1px solid #e2e8f0'
@@ -351,7 +350,7 @@ export default function SimpleDashboard() {
 
               {/* OnchainKit Earn Component */}
               <div style={{
-                margin: '-0.5rem -1rem -0.5rem -1rem',
+                margin: '-0.25rem -0.75rem -0.75rem -0.75rem',
                 padding: '0',
                 overflow: 'visible'
               }}>
