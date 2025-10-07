@@ -23,6 +23,24 @@ export function RootProvider({ children }: { children: ReactNode }) {
         <OnchainKitProvider
           apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY}
           chain={base}
+          config={{
+            appearance: {
+              name: 'Muscadine DeFi',
+              logo: 'https://app.muscadine.box/icon.png',
+              mode: 'light',
+              theme: 'default',
+            },
+            wallet: {
+              display: 'modal',
+              termsUrl: 'https://app.muscadine.box/terms',
+              privacyUrl: 'https://app.muscadine.box/privacy',
+              supportedWallets: {
+                rabby: true,
+                trust: true,
+                frame: true,
+              },
+            },
+          }}
           miniKit={{
             enabled: true,
             autoConnect: true,

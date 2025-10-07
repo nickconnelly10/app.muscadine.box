@@ -29,30 +29,44 @@ const VAULTS = [
 export default function SimpleDashboard() {
   const { isConnected, address } = useAccount();
 
-  // Fetch vault data from OnchainKit (for future use)
-  const _usdcVault = useMorphoVault({
+  // Fetch vault data from OnchainKit
+  const usdcVault = useMorphoVault({
     vaultAddress: VAULTS[0].address,
     recipientAddress: address
   });
 
-  const _cbbtcVault = useMorphoVault({
+  const cbbtcVault = useMorphoVault({
     vaultAddress: VAULTS[1].address,
     recipientAddress: address
   });
 
-  const _wethVault = useMorphoVault({
+  const wethVault = useMorphoVault({
     vaultAddress: VAULTS[2].address,
     recipientAddress: address
   });
 
-  // For now, use static values - can be enhanced with real OnchainKit data later
-  const totalDeposited = 40.23;
-  const totalInterestEarned = 0.00;
-  const totalNetEarned = 0.00;
-  const initialDeposited = 40.23;
+  // Debug: Log vault data to console
+  console.log('USDC Vault:', usdcVault);
+  console.log('cbBTC Vault:', cbbtcVault);
+  console.log('WETH Vault:', wethVault);
+
+  // Calculate portfolio totals from OnchainKit data
+  const totalDeposited = Number(usdcVault.deposits || 0) + Number(cbbtcVault.deposits || 0) + Number(wethVault.deposits || 0);
+  const totalInterestEarned = Number(usdcVault.rewards || 0) + Number(cbbtcVault.rewards || 0) + Number(wethVault.rewards || 0);
+  const totalNetEarned = totalInterestEarned;
+  const initialDeposited = totalDeposited - totalInterestEarned;
   
   // Calculate expected monthly interest based on current APYs
-  const expectedMonthly = 0.15;
+  const expectedMonthly = (
+    Number(usdcVault.deposits || 0) * 0.085 / 12 +
+    Number(cbbtcVault.deposits || 0) * 0.062 / 12 +
+    Number(wethVault.deposits || 0) * 0.078 / 12
+  );
+
+  // Debug: Log calculated values
+  console.log('Total Deposited:', totalDeposited);
+  console.log('Total Interest Earned:', totalInterestEarned);
+  console.log('Expected Monthly:', expectedMonthly);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
