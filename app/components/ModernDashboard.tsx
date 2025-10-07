@@ -214,11 +214,12 @@ export default function ModernDashboard() {
       const currentAssetValue = parseFloat(formatUnits(usdcConvertToAssets.data, VAULTS_CONFIG.usdc.decimals));
       const usdValue = currentAssetValue * tokenPrices.USDC;
       
-      // ERC-4626 vaults: We cannot calculate exact interest earned without deposit tracking
-      // Instead, show projected monthly earnings based on current balance and APY
+      // ERC-4626 vaults: Calculate interest earned vs shares deposited
+      // Note: This is an approximation - exact calculation requires deposit timestamp
       const estimatedAPY = 0.085; // 8.5% Morpho USDC APY
+      const interestEarned = Math.max(0, currentAssetValue - sharesAmount);
+      const interestEarnedUSD = interestEarned * tokenPrices.USDC;
       const monthlyEarnings = currentAssetValue * (estimatedAPY / 12);
-      const monthlyEarningsUSD = monthlyEarnings * tokenPrices.USDC;
 
       vaultBalances.push({
         symbol: VAULTS_CONFIG.usdc.symbol,
@@ -226,12 +227,13 @@ export default function ModernDashboard() {
         description: VAULTS_CONFIG.usdc.description,
         apy: estimatedAPY * 100,
         deposited: `$${usdValue.toFixed(2)}`,
-        earned: `$${monthlyEarningsUSD.toFixed(2)}/mo`,
+        earned: `$${interestEarnedUSD.toFixed(2)}`,
         status: 'active' as const,
         usdValue,
         sharesAmount,
         assetsAmount: currentAssetValue,
-        interestEarned: monthlyEarnings
+        interestEarned,
+        monthlyEarnings
       });
     }
 
@@ -242,8 +244,9 @@ export default function ModernDashboard() {
       const usdValue = currentAssetValue * tokenPrices.cbBTC;
       
       const estimatedAPY = 0.062; // 6.2% Morpho cbBTC APY
+      const interestEarned = Math.max(0, currentAssetValue - sharesAmount);
+      const interestEarnedUSD = interestEarned * tokenPrices.cbBTC;
       const monthlyEarnings = currentAssetValue * (estimatedAPY / 12);
-      const monthlyEarningsUSD = monthlyEarnings * tokenPrices.cbBTC;
 
       vaultBalances.push({
         symbol: VAULTS_CONFIG.cbbtc.symbol,
@@ -251,12 +254,13 @@ export default function ModernDashboard() {
         description: VAULTS_CONFIG.cbbtc.description,
         apy: estimatedAPY * 100,
         deposited: `$${usdValue.toFixed(2)}`,
-        earned: `$${monthlyEarningsUSD.toFixed(2)}/mo`,
+        earned: `$${interestEarnedUSD.toFixed(2)}`,
         status: 'active' as const,
         usdValue,
         sharesAmount,
         assetsAmount: currentAssetValue,
-        interestEarned: monthlyEarnings
+        interestEarned,
+        monthlyEarnings
       });
     }
 
@@ -267,8 +271,9 @@ export default function ModernDashboard() {
       const usdValue = currentAssetValue * tokenPrices.ETH;
       
       const estimatedAPY = 0.078; // 7.8% Morpho ETH APY
+      const interestEarned = Math.max(0, currentAssetValue - sharesAmount);
+      const interestEarnedUSD = interestEarned * tokenPrices.ETH;
       const monthlyEarnings = currentAssetValue * (estimatedAPY / 12);
-      const monthlyEarningsUSD = monthlyEarnings * tokenPrices.ETH;
 
       vaultBalances.push({
         symbol: VAULTS_CONFIG.eth.symbol,
@@ -276,12 +281,13 @@ export default function ModernDashboard() {
         description: VAULTS_CONFIG.eth.description,
         apy: estimatedAPY * 100,
         deposited: `$${usdValue.toFixed(2)}`,
-        earned: `$${monthlyEarningsUSD.toFixed(2)}/mo`,
+        earned: `$${interestEarnedUSD.toFixed(2)}`,
         status: 'active' as const,
         usdValue,
         sharesAmount,
         assetsAmount: currentAssetValue,
-        interestEarned: monthlyEarnings
+        interestEarned,
+        monthlyEarnings
       });
     }
 
@@ -290,11 +296,16 @@ export default function ModernDashboard() {
       (vault.symbol === 'USDC' ? tokenPrices.USDC : 
        vault.symbol === 'cbBTC' ? tokenPrices.cbBTC : 
        tokenPrices.ETH)), 0);
+    const totalMonthlyExpected = vaultBalances.reduce((sum, vault) => sum + (vault.monthlyEarnings * 
+      (vault.symbol === 'USDC' ? tokenPrices.USDC : 
+       vault.symbol === 'cbBTC' ? tokenPrices.cbBTC : 
+       tokenPrices.ETH)), 0);
 
     return {
       vaults: vaultBalances,
       totalValue: `$${totalValue.toFixed(2)}`,
-      totalEarned: `$${totalEarned.toFixed(2)}`
+      totalEarned: `$${totalEarned.toFixed(2)}`,
+      totalMonthlyExpected: `$${totalMonthlyExpected.toFixed(2)}/mo`
     };
   }, [
     usdcVaultBalance.data, cbbtcVaultBalance.data, ethVaultBalance.data,
@@ -496,6 +507,7 @@ export default function ModernDashboard() {
         <PortfolioOverview
           totalValue={portfolioData.totalValue}
           totalEarned={portfolioData.totalEarned}
+          totalMonthlyExpected={portfolioData.totalMonthlyExpected}
           vaults={portfolioData.vaults}
           onVaultAction={handleVaultAction}
         />
