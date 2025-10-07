@@ -50,23 +50,36 @@ export default function SimpleDashboard() {
   console.log('cbBTC Vault:', cbbtcVault);
   console.log('WETH Vault:', wethVault);
 
-  // Calculate portfolio totals from OnchainKit data
-  const totalDeposited = Number(usdcVault.deposits || 0) + Number(cbbtcVault.deposits || 0) + Number(wethVault.deposits || 0);
-  const totalInterestEarned = Number(usdcVault.rewards || 0) + Number(cbbtcVault.rewards || 0) + Number(wethVault.rewards || 0);
-  const totalNetEarned = totalInterestEarned;
+  // Calculate portfolio totals using ONLY real OnchainKit data
+  // Total Deposited: Sum of user's balance across all vaults (in USD)
+  const totalDeposited = Number(usdcVault.balance || 0) + Number(cbbtcVault.balance || 0) + Number(wethVault.balance || 0);
+  
+  // Total Interest Earned: Calculate from actual rewards data
+  const totalInterestEarned = (
+    (usdcVault.rewards?.[0]?.apy || 0) * Number(usdcVault.balance || 0) / 100 +
+    (cbbtcVault.rewards?.[0]?.apy || 0) * Number(cbbtcVault.balance || 0) / 100 +
+    (wethVault.rewards?.[0]?.apy || 0) * Number(wethVault.balance || 0) / 100
+  );
+  
+  // Net Return: Total interest earned minus vault fees
+  const totalNetEarned = totalInterestEarned * (1 - ((usdcVault.vaultFee || 0) + (cbbtcVault.vaultFee || 0) + (wethVault.vaultFee || 0)) / 100);
+  
+  // Initial Deposited: Total deposited minus interest earned
   const initialDeposited = totalDeposited - totalInterestEarned;
   
-  // Calculate expected monthly interest based on current APYs
+  // Expected Monthly Interest: Based on actual APY from OnchainKit
   const expectedMonthly = (
-    Number(usdcVault.deposits || 0) * 0.085 / 12 +
-    Number(cbbtcVault.deposits || 0) * 0.062 / 12 +
-    Number(wethVault.deposits || 0) * 0.078 / 12
+    Number(usdcVault.balance || 0) * (usdcVault.totalApy || 0) / 100 / 12 +
+    Number(cbbtcVault.balance || 0) * (cbbtcVault.totalApy || 0) / 100 / 12 +
+    Number(wethVault.balance || 0) * (wethVault.totalApy || 0) / 100 / 12
   );
 
   // Debug: Log calculated values
-  console.log('Total Deposited:', totalDeposited);
-  console.log('Total Interest Earned:', totalInterestEarned);
-  console.log('Expected Monthly:', expectedMonthly);
+  console.log('Total Deposited ($):', totalDeposited);
+  console.log('Total Interest Earned ($):', totalInterestEarned);
+  console.log('Net Return ($):', totalNetEarned);
+  console.log('Initial Deposited ($):', initialDeposited);
+  console.log('Expected Monthly ($):', expectedMonthly);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -182,7 +195,7 @@ export default function SimpleDashboard() {
                   fontWeight: '500',
                   marginBottom: '0.5rem'
                 }}>
-                  Total Earned
+                  Net Return
                 </div>
                 <div style={{
                   fontSize: '1.875rem',
