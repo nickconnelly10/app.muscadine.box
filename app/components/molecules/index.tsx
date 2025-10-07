@@ -4,13 +4,7 @@ import { ConnectWallet } from '@coinbase/onchainkit/wallet';
 import { 
   Earn,
   EarnDeposit,
-  EarnWithdraw,
-  DepositAmountInput,
-  DepositBalance,
-  DepositButton,
-  WithdrawAmountInput,
-  WithdrawBalance,
-  WithdrawButton
+  EarnWithdraw
 } from '@coinbase/onchainkit/earn';
 import { Button, Badge, Metric, VaultIcon } from '../atoms';
 
@@ -99,6 +93,7 @@ interface PortfolioOverviewProps {
     assetsAmount: number;
     interestEarned: number;
     monthlyEarnings: number;
+    originalDeposit?: number;
   }>;
   onVaultAction: (vaultSymbol: string, action: 'deposit' | 'withdraw') => void;
   className?: string;
@@ -187,6 +182,7 @@ interface DepositFlowProps {
     assetsAmount: number;
     interestEarned: number;
     monthlyEarnings: number;
+    originalDeposit?: number;
   };
   className?: string;
 }
@@ -355,6 +351,7 @@ interface WithdrawFlowProps {
     assetsAmount: number;
     interestEarned: number;
     monthlyEarnings: number;
+    originalDeposit?: number;
   };
   onBack: () => void;
   className?: string;

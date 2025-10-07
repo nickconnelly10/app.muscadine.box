@@ -271,36 +271,29 @@ export default function ModernDashboard() {
       // Use real-time APY from OnchainKit, fallback to estimated if not available
       const realAPY = usdcVaultData.totalApy || 0.085; // Fallback to 8.5% if data not available
       
-      // Calculate interest: 
-      // In ERC-4626 vaults, if share price > 1.0, it means interest has been earned
-      // User's original deposit ≈ shares (assuming 1:1 at deposit time)
-      // User's current value = convertToAssets(shares)
-      // Interest = current value - original deposit
-      // However, if vault share price > 1.0, we need to account for this
+      // CORRECTED INTEREST CALCULATION:
+      // In ERC-4626 vaults, the user's current value is convertToAssets(shares)
+      // The original deposit can be estimated by: shares / vaultSharePrice (if share price was 1.0 at deposit)
+      // But more accurately: originalDeposit = shares * (1.0 / vaultSharePrice_at_deposit_time)
+      // Since we don't know the exact deposit time, we'll use a simpler approach:
+      // If vaultSharePrice > 1.0, then interest = currentAssetValue - (sharesAmount / vaultSharePrice)
+      // This assumes the user deposited when share price was close to 1.0
       
-      // More accurate: 
-      // - If user deposited when share price was X, they got (deposit / X) shares
-      // - We don't know X, but we can estimate it was close to 1.0 for most users
-      // - Current value = shares * current_share_price
-      // - Interest = current value - (shares * 1.0) = shares * (current_share_price - 1.0)
-      
-      // Calculate interest based on vault share price
-      // If share price is very close to 1.0, we'll estimate interest based on APY and time
+      let originalDeposit: number;
       let interestEarned: number;
+      
       if (vaultSharePrice > 1.001) {
-        // Significant share price appreciation - use direct calculation
-        interestEarned = sharesAmount * (vaultSharePrice - 1.0);
+        // Vault has earned interest - estimate original deposit
+        // Original deposit ≈ sharesAmount (assuming 1:1 ratio at deposit time)
+        originalDeposit = sharesAmount;
+        interestEarned = currentAssetValue - originalDeposit;
       } else {
-        // Minimal share price change - estimate based on APY
-        // Assume vault has been running for some time and estimate interest
-        const estimatedDaysRunning = 30; // Assume 30 days
-        const dailyRate = realAPY / 365;
-        const estimatedInterestRate = dailyRate * estimatedDaysRunning;
-        interestEarned = sharesAmount * estimatedInterestRate;
+        // Minimal share price change - assume no significant interest yet
+        originalDeposit = currentAssetValue;
+        interestEarned = 0;
       }
       
       const interestEarnedUSD = interestEarned * tokenPrices.USDC;
-      
       const monthlyEarnings = usdValue * (realAPY / 12);
 
       vaultBalances.push({
@@ -317,7 +310,8 @@ export default function ModernDashboard() {
         sharesAmount,
         assetsAmount: currentAssetValue,
         interestEarned: interestEarnedUSD,
-        monthlyEarnings
+        monthlyEarnings,
+        originalDeposit: originalDeposit * tokenPrices.USDC // Store original deposit in USD
       });
     }
 
@@ -335,15 +329,19 @@ export default function ModernDashboard() {
       // Use real-time APY from OnchainKit, fallback to estimated if not available
       const realAPY = cbbtcVaultData.totalApy || 0.062; // Fallback to 6.2% if data not available
       
-      // Calculate interest based on vault share price
+      // CORRECTED INTEREST CALCULATION for cbBTC:
+      let originalDeposit: number;
       let interestEarned: number;
+      
       if (vaultSharePrice > 1.001) {
-        interestEarned = sharesAmount * (vaultSharePrice - 1.0);
+        // Vault has earned interest - estimate original deposit
+        // Original deposit ≈ sharesAmount (assuming 1:1 ratio at deposit time)
+        originalDeposit = sharesAmount;
+        interestEarned = currentAssetValue - originalDeposit;
       } else {
-        const estimatedDaysRunning = 30;
-        const dailyRate = realAPY / 365;
-        const estimatedInterestRate = dailyRate * estimatedDaysRunning;
-        interestEarned = sharesAmount * estimatedInterestRate;
+        // Minimal share price change - assume no significant interest yet
+        originalDeposit = currentAssetValue;
+        interestEarned = 0;
       }
       
       const interestEarnedUSD = interestEarned * tokenPrices.cbBTC;
@@ -363,7 +361,8 @@ export default function ModernDashboard() {
         sharesAmount,
         assetsAmount: currentAssetValue,
         interestEarned: interestEarnedUSD,
-        monthlyEarnings
+        monthlyEarnings,
+        originalDeposit: originalDeposit * tokenPrices.cbBTC // Store original deposit in USD
       });
     }
 
@@ -381,15 +380,19 @@ export default function ModernDashboard() {
       // Use real-time APY from OnchainKit, fallback to estimated if not available
       const realAPY = ethVaultData.totalApy || 0.078; // Fallback to 7.8% if data not available
       
-      // Calculate interest based on vault share price
+      // CORRECTED INTEREST CALCULATION for ETH:
+      let originalDeposit: number;
       let interestEarned: number;
+      
       if (vaultSharePrice > 1.001) {
-        interestEarned = sharesAmount * (vaultSharePrice - 1.0);
+        // Vault has earned interest - estimate original deposit
+        // Original deposit ≈ sharesAmount (assuming 1:1 ratio at deposit time)
+        originalDeposit = sharesAmount;
+        interestEarned = currentAssetValue - originalDeposit;
       } else {
-        const estimatedDaysRunning = 30;
-        const dailyRate = realAPY / 365;
-        const estimatedInterestRate = dailyRate * estimatedDaysRunning;
-        interestEarned = sharesAmount * estimatedInterestRate;
+        // Minimal share price change - assume no significant interest yet
+        originalDeposit = currentAssetValue;
+        interestEarned = 0;
       }
       
       const interestEarnedUSD = interestEarned * tokenPrices.ETH;
@@ -409,46 +412,21 @@ export default function ModernDashboard() {
         sharesAmount,
         assetsAmount: currentAssetValue,
         interestEarned: interestEarnedUSD,
-        monthlyEarnings
+        monthlyEarnings,
+        originalDeposit: originalDeposit * tokenPrices.ETH // Store original deposit in USD
       });
     }
 
     const totalValue = vaultBalances.reduce((sum, vault) => sum + vault.usdValue, 0);
     
-    // Calculate initial value more accurately
-    // For ERC-4626 vaults, we need to estimate the original deposit value
-    // Since we don't have historical data, we'll estimate based on current share price
+    // CORRECTED INITIAL VALUE CALCULATION:
+    // Now that we have the originalDeposit calculated correctly for each vault,
+    // we can simply sum them up
     const initialValue = vaultBalances.reduce((sum, vault) => {
-      // If vault has been running and earning interest, share price > 1.0
-      // We estimate original deposit by dividing current value by share price
-      const totalAssets = parseFloat(formatUnits(
-        vault.symbol === 'USDC' ? usdcTotalAssets.data || BigInt(0) : 
-        vault.symbol === 'cbBTC' ? cbbtcTotalAssets.data || BigInt(0) : 
-        ethTotalAssets.data || BigInt(0), 
-        vault.symbol === 'USDC' ? VAULTS_CONFIG.usdc.decimals :
-        vault.symbol === 'cbBTC' ? VAULTS_CONFIG.cbbtc.decimals :
-        VAULTS_CONFIG.eth.decimals
-      ));
-      
-      const totalSupply = parseFloat(formatUnits(
-        vault.symbol === 'USDC' ? usdcTotalSupply.data || BigInt(0) : 
-        vault.symbol === 'cbBTC' ? cbbtcTotalSupply.data || BigInt(0) : 
-        ethTotalSupply.data || BigInt(0), 
-        vault.symbol === 'USDC' ? VAULTS_CONFIG.usdc.decimals :
-        vault.symbol === 'cbBTC' ? VAULTS_CONFIG.cbbtc.decimals :
-        VAULTS_CONFIG.eth.decimals
-      ));
-      
-      const vaultSharePrice = totalSupply > 0 ? totalAssets / totalSupply : 1.0;
-      
-      // Estimate original deposit: current value / share price
-      // This gives us what the user originally deposited
-      const estimatedOriginalDeposit = vault.usdValue / vaultSharePrice;
-      
-      return sum + estimatedOriginalDeposit;
+      return sum + (vault as typeof vault & { originalDeposit?: number }).originalDeposit || 0;
     }, 0);
     
-    // Total earned = current value - estimated initial value
+    // Total earned = current value - initial value
     const totalEarned = Math.max(0, totalValue - initialValue);
     
     // Earned interest from share price appreciation
