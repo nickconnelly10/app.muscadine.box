@@ -516,6 +516,7 @@ interface WithdrawFlowProps {
   vaultBalance?: string;
   vaultBalanceUSD?: string;
   tokenPrice?: number;
+  gasFee?: string;
   estimatedAPY?: number;
   className?: string;
 }
@@ -528,6 +529,7 @@ export function WithdrawFlow({
   vaultBalance = '0',
   vaultBalanceUSD = '$0.00',
   tokenPrice = 0,
+  gasFee = '0.00',
   estimatedAPY = 0,
   className = ''
 }: WithdrawFlowProps) {
@@ -704,7 +706,7 @@ export function WithdrawFlow({
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
           <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Est. Gas Fee</span>
-          <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>$0.00</span>
+          <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>${gasFee}</span>
         </div>
         <div style={{ 
           display: 'flex', 

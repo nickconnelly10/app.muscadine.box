@@ -87,7 +87,7 @@ export default function ModernDashboard() {
           cbBTC: 65000,
           ETH: 3500,
         });
-        setGasPrice(0.001); // Default gas price
+        setGasPrice(0.001); // Default gas price for Base network
       }
     };
 
@@ -383,15 +383,23 @@ export default function ModernDashboard() {
       if (vault) {
         if (vault.symbol === 'USDC' && usdcWalletBalance.data) {
           const balance = parseFloat(formatUnits(usdcWalletBalance.data.value, usdcWalletBalance.data.decimals));
-          const maxAmount = Math.max(0, balance - 0.01); // Leave small amount for gas
+          // Calculate dynamic gas buffer based on current gas price and ETH price
+          const gasBufferUSD = gasPrice > 0 ? (gasPrice * 22000) / 1e9 * tokenPrices.ETH : 2.50;
+          const gasBufferTokens = gasBufferUSD / tokenPrices.USDC;
+          const maxAmount = Math.max(0, balance - gasBufferTokens);
           setDepositAmount(maxAmount.toFixed(6));
         } else if (vault.symbol === 'cbBTC' && cbbtcWalletBalance.data) {
           const balance = parseFloat(formatUnits(cbbtcWalletBalance.data.value, cbbtcWalletBalance.data.decimals));
-          const maxAmount = Math.max(0, balance - 0.00001); // Leave small amount for gas
+          // Calculate dynamic gas buffer based on current gas price and ETH price
+          const gasBufferUSD = gasPrice > 0 ? (gasPrice * 22000) / 1e9 * tokenPrices.ETH : 2.50;
+          const gasBufferTokens = gasBufferUSD / tokenPrices.cbBTC;
+          const maxAmount = Math.max(0, balance - gasBufferTokens);
           setDepositAmount(maxAmount.toFixed(8));
         } else if (vault.symbol === 'ETH' && ethWalletBalance.data) {
           const balance = parseFloat(formatUnits(ethWalletBalance.data.value, ethWalletBalance.data.decimals));
-          const maxAmount = Math.max(0, balance - 0.001); // Leave small amount for gas
+          // Calculate dynamic gas buffer based on current gas price
+          const gasBufferETH = gasPrice > 0 ? (gasPrice * 22000) / 1e9 : 0.001;
+          const maxAmount = Math.max(0, balance - gasBufferETH);
           setDepositAmount(maxAmount.toFixed(6));
         }
       }
@@ -516,7 +524,7 @@ export default function ModernDashboard() {
             }
             gasFee={
               gasPrice > 0 
-                ? ((gasPrice * 21000) / 1e9 * tokenPrices.ETH).toFixed(2) // Convert Gwei to ETH and multiply by ETH price
+                ? ((gasPrice * 22000) / 1e9 * tokenPrices.ETH).toFixed(2) // Deposit gas estimate for ERC-4626 vault
                 : "2.50"
             }
             tokenPrice={
@@ -553,6 +561,11 @@ export default function ModernDashboard() {
                   activeWithdraw === 'cbBTC' ? tokenPrices.cbBTC :
                   activeWithdraw === 'WETH' ? tokenPrices.ETH :
                   activeWithdraw === 'ETH' ? tokenPrices.ETH : 0
+                }
+                gasFee={
+                  gasPrice > 0 
+                    ? ((gasPrice * 25000) / 1e9 * tokenPrices.ETH).toFixed(2) // Withdraw typically uses more gas than deposit
+                    : "3.00" // Slightly higher fallback for withdraw
                 }
                 estimatedAPY={activeVault?.apy || 0}
                 onBack={handleBackToPortfolio}
