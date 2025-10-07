@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useAccount, useBalance, useReadContract } from 'wagmi';
 import { base } from 'wagmi/chains';
 import { formatUnits } from 'viem';
@@ -17,8 +17,7 @@ const VAULTS_CONFIG = {
     decimals: 6,
     tokenAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
     tokenName: 'USD Coin',
-    tokenSymbol: 'USDC',
-    apy: 5.2
+    tokenSymbol: 'USDC'
   },
   cbbtc: {
     address: '0xAeCc8113a7bD0CFAF7000EA7A31afFD4691ff3E9' as const,
@@ -28,8 +27,7 @@ const VAULTS_CONFIG = {
     decimals: 8,
     tokenAddress: '0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf',
     tokenName: 'Coinbase Wrapped BTC',
-    tokenSymbol: 'cbBTC',
-    apy: 4.8
+    tokenSymbol: 'cbBTC'
   },
   eth: {
     address: '0x21e0d366272798da3A977FEBA699FCB91959d120' as const,
@@ -39,23 +37,63 @@ const VAULTS_CONFIG = {
     decimals: 18,
     tokenAddress: '0x4200000000000000000000000000000000000006',
     tokenName: 'Wrapped Ether',
-    tokenSymbol: 'WETH',
-    apy: 3.9
+    tokenSymbol: 'WETH'
   }
 };
 
-// Token prices - moved outside component to prevent re-renders
-const TOKEN_PRICES = {
-  USDC: 1.00,
-  cbBTC: 65000,
-  ETH: 3500,
-};
+// Token prices will be fetched from CoinGecko API
 
 export default function ModernDashboard() {
   const { address, isConnected } = useAccount();
   const [activeDeposit, setActiveDeposit] = useState<string | null>(null);
   const [depositAmount, setDepositAmount] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
+  const [tokenPrices, setTokenPrices] = useState({
+    USDC: 1.00,
+    cbBTC: 0,
+    ETH: 0,
+  });
+  const [gasPrice, setGasPrice] = useState(0);
+
+  // Fetch real-time token prices and gas prices
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch token prices from CoinGecko
+        const priceResponse = await fetch(
+          'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd'
+        );
+        const priceData = await priceResponse.json();
+        
+        // Fetch gas price from Base network
+        const gasResponse = await fetch('https://api.basescan.org/api?module=gastracker&action=gasoracle&apikey=YourApiKey');
+        const gasData = await gasResponse.json();
+        
+        setTokenPrices({
+          USDC: 1.00, // USDC is always $1
+          cbBTC: priceData.bitcoin?.usd || 0,
+          ETH: priceData.ethereum?.usd || 0,
+        });
+        
+        // Set gas price in Gwei
+        setGasPrice(parseFloat(gasData.result?.SafeGasPrice || '0.001'));
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+        // Fallback to default values
+        setTokenPrices({
+          USDC: 1.00,
+          cbBTC: 65000,
+          ETH: 3500,
+        });
+        setGasPrice(0.001); // Default gas price
+      }
+    };
+
+    fetchData();
+    // Update data every 30 seconds
+    const interval = setInterval(fetchData, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Get wallet balances
   const usdcWalletBalance = useBalance({
@@ -150,61 +188,83 @@ export default function ModernDashboard() {
     query: { enabled: !!address && isConnected && !!ethVaultBalance.data }
   });
 
-  // Calculate portfolio data
+  // Calculate portfolio data with real APY from vault contracts
   const portfolioData = useMemo(() => {
     const vaultBalances = [];
 
-    // USDC Vault
+    // USDC Vault - Calculate real APY based on vault performance
     if (usdcVaultBalance.data && usdcConvertToAssets.data) {
-      const currentValue = parseFloat(formatUnits(usdcConvertToAssets.data, VAULTS_CONFIG.usdc.decimals));
-      const usdValue = currentValue * TOKEN_PRICES.USDC;
-      const monthlyEarnings = usdValue * (VAULTS_CONFIG.usdc.apy / 100 / 12);
+      const sharesAmount = parseFloat(formatUnits(usdcVaultBalance.data, VAULTS_CONFIG.usdc.decimals));
+      const assetsAmount = parseFloat(formatUnits(usdcConvertToAssets.data, VAULTS_CONFIG.usdc.decimals));
+      const usdValue = assetsAmount * tokenPrices.USDC;
+      
+      // Calculate real APY based on the difference between shares and assets
+      // This represents the actual yield earned over time
+      const yieldEarned = assetsAmount - sharesAmount;
+      const realAPY = sharesAmount > 0 ? (yieldEarned / sharesAmount) * 100 : 0;
+      
+      // Calculate monthly earnings based on current APY
+      const monthlyEarnings = usdValue * (realAPY / 100 / 12);
 
       vaultBalances.push({
         symbol: VAULTS_CONFIG.usdc.symbol,
         name: VAULTS_CONFIG.usdc.name,
         description: VAULTS_CONFIG.usdc.description,
-        apy: VAULTS_CONFIG.usdc.apy,
+        apy: Math.max(0, realAPY), // Ensure non-negative APY
         deposited: `$${usdValue.toFixed(2)}`,
         earned: `$${monthlyEarnings.toFixed(2)}`,
         status: 'active' as const,
-        usdValue
+        usdValue,
+        sharesAmount,
+        assetsAmount
       });
     }
 
-    // cbBTC Vault
+    // cbBTC Vault - Calculate real APY based on vault performance
     if (cbbtcVaultBalance.data && cbbtcConvertToAssets.data) {
-      const currentValue = parseFloat(formatUnits(cbbtcConvertToAssets.data, VAULTS_CONFIG.cbbtc.decimals));
-      const usdValue = currentValue * TOKEN_PRICES.cbBTC;
-      const monthlyEarnings = usdValue * (VAULTS_CONFIG.cbbtc.apy / 100 / 12);
+      const sharesAmount = parseFloat(formatUnits(cbbtcVaultBalance.data, VAULTS_CONFIG.cbbtc.decimals));
+      const assetsAmount = parseFloat(formatUnits(cbbtcConvertToAssets.data, VAULTS_CONFIG.cbbtc.decimals));
+      const usdValue = assetsAmount * tokenPrices.cbBTC;
+      
+      // Calculate real APY based on the difference between shares and assets
+      const realAPY = sharesAmount > 0 ? ((assetsAmount - sharesAmount) / sharesAmount) * 100 : 0;
+      const monthlyEarnings = usdValue * (realAPY / 100 / 12);
 
       vaultBalances.push({
         symbol: VAULTS_CONFIG.cbbtc.symbol,
         name: VAULTS_CONFIG.cbbtc.name,
         description: VAULTS_CONFIG.cbbtc.description,
-        apy: VAULTS_CONFIG.cbbtc.apy,
+        apy: Math.max(0, realAPY),
         deposited: `$${usdValue.toFixed(2)}`,
         earned: `$${monthlyEarnings.toFixed(2)}`,
         status: 'active' as const,
-        usdValue
+        usdValue,
+        sharesAmount,
+        assetsAmount
       });
     }
 
-    // ETH Vault
+    // ETH Vault - Calculate real APY based on vault performance
     if (ethVaultBalance.data && ethConvertToAssets.data) {
-      const currentValue = parseFloat(formatUnits(ethConvertToAssets.data, VAULTS_CONFIG.eth.decimals));
-      const usdValue = currentValue * TOKEN_PRICES.ETH;
-      const monthlyEarnings = usdValue * (VAULTS_CONFIG.eth.apy / 100 / 12);
+      const sharesAmount = parseFloat(formatUnits(ethVaultBalance.data, VAULTS_CONFIG.eth.decimals));
+      const assetsAmount = parseFloat(formatUnits(ethConvertToAssets.data, VAULTS_CONFIG.eth.decimals));
+      const usdValue = assetsAmount * tokenPrices.ETH;
+      
+      // Calculate real APY based on the difference between shares and assets
+      const realAPY = sharesAmount > 0 ? ((assetsAmount - sharesAmount) / sharesAmount) * 100 : 0;
+      const monthlyEarnings = usdValue * (realAPY / 100 / 12);
 
       vaultBalances.push({
         symbol: VAULTS_CONFIG.eth.symbol,
         name: VAULTS_CONFIG.eth.name,
         description: VAULTS_CONFIG.eth.description,
-        apy: VAULTS_CONFIG.eth.apy,
+        apy: Math.max(0, realAPY),
         deposited: `$${usdValue.toFixed(2)}`,
         earned: `$${monthlyEarnings.toFixed(2)}`,
         status: 'active' as const,
-        usdValue
+        usdValue,
+        sharesAmount,
+        assetsAmount
       });
     }
 
@@ -221,7 +281,8 @@ export default function ModernDashboard() {
     };
   }, [
     usdcVaultBalance.data, cbbtcVaultBalance.data, ethVaultBalance.data,
-    usdcConvertToAssets.data, cbbtcConvertToAssets.data, ethConvertToAssets.data
+    usdcConvertToAssets.data, cbbtcConvertToAssets.data, ethConvertToAssets.data,
+    tokenPrices
   ]);
 
   const handleVaultAction = (vaultSymbol: string, action: 'deposit' | 'withdraw') => {
@@ -233,15 +294,21 @@ export default function ModernDashboard() {
 
   const handleQuickAmount = (amount: string) => {
     if (amount === 'Max') {
-      // Set max available balance
+      // Set max available balance based on actual wallet balances
       const vault = Object.values(VAULTS_CONFIG).find(v => v.symbol === activeDeposit);
       if (vault) {
         if (vault.symbol === 'USDC' && usdcWalletBalance.data) {
-          setDepositAmount(formatUnits(usdcWalletBalance.data.value, usdcWalletBalance.data.decimals));
+          const balance = parseFloat(formatUnits(usdcWalletBalance.data.value, usdcWalletBalance.data.decimals));
+          const maxAmount = Math.max(0, balance - 0.01); // Leave small amount for gas
+          setDepositAmount(maxAmount.toFixed(6));
         } else if (vault.symbol === 'cbBTC' && cbbtcWalletBalance.data) {
-          setDepositAmount(formatUnits(cbbtcWalletBalance.data.value, cbbtcWalletBalance.data.decimals));
+          const balance = parseFloat(formatUnits(cbbtcWalletBalance.data.value, cbbtcWalletBalance.data.decimals));
+          const maxAmount = Math.max(0, balance - 0.00001); // Leave small amount for gas
+          setDepositAmount(maxAmount.toFixed(8));
         } else if (vault.symbol === 'ETH' && ethWalletBalance.data) {
-          setDepositAmount(formatUnits(ethWalletBalance.data.value, ethWalletBalance.data.decimals));
+          const balance = parseFloat(formatUnits(ethWalletBalance.data.value, ethWalletBalance.data.decimals));
+          const maxAmount = Math.max(0, balance - 0.001); // Leave small amount for gas
+          setDepositAmount(maxAmount.toFixed(6));
         }
       }
     } else {
@@ -264,7 +331,6 @@ export default function ModernDashboard() {
       <div className="container">
         <ModernHeader 
           totalValue="$0.00" 
-          onWalletConnect={() => {}} 
         />
         <div style={{ 
           display: 'flex', 
@@ -286,7 +352,6 @@ export default function ModernDashboard() {
       <div className="container">
         <ModernHeader 
           totalValue="$0.00" 
-          onWalletConnect={() => {}} 
         />
         <div className="portfolioOverview">
           <div className="portfolioHeader">
@@ -324,7 +389,6 @@ export default function ModernDashboard() {
     <div className="container">
       <ModernHeader 
         totalValue={portfolioData.totalValue} 
-        onWalletConnect={() => {}} 
       />
       
       {activeDeposit ? (
@@ -338,8 +402,20 @@ export default function ModernDashboard() {
             onAmountChange={setDepositAmount}
             onQuickAmount={handleQuickAmount}
             onConfirm={handleConfirmDeposit}
-            maxAmount="1000"
-            gasFee="2.50"
+            maxAmount={
+              activeDeposit === 'USDC' && usdcWalletBalance.data 
+                ? formatUnits(usdcWalletBalance.data.value, usdcWalletBalance.data.decimals)
+                : activeDeposit === 'cbBTC' && cbbtcWalletBalance.data
+                ? formatUnits(cbbtcWalletBalance.data.value, cbbtcWalletBalance.data.decimals)
+                : activeDeposit === 'ETH' && ethWalletBalance.data
+                ? formatUnits(ethWalletBalance.data.value, ethWalletBalance.data.decimals)
+                : "0"
+            }
+            gasFee={
+              gasPrice > 0 
+                ? ((gasPrice * 21000) / 1e9 * tokenPrices.ETH).toFixed(2) // Convert Gwei to ETH and multiply by ETH price
+                : "2.50"
+            }
           />
         </div>
       ) : (
