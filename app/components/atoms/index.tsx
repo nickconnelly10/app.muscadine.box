@@ -157,12 +157,12 @@ export function VaultIcon({ symbol, size = 48, className = '' }: VaultIconProps)
   const getTokenIcon = (symbol: string) => {
     switch (symbol) {
       case 'USDC':
-        return 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png';
+        return '/usdc-icon.svg';
       case 'cbBTC':
-        return 'https://cryptologos.cc/logos/bitcoin-btc-logo.png';
+        return '/cbbtc-icon.svg';
       case 'WETH':
       case 'ETH':
-        return 'https://cryptologos.cc/logos/ethereum-eth-logo.png';
+        return '/weth-icon.svg';
       default:
         return null;
     }

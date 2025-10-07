@@ -78,6 +78,7 @@ export function VaultCard({
 interface PortfolioOverviewProps {
   totalValue: string;
   totalEarned: string;
+  totalMonthlyExpected?: string;
   vaults: Array<{
     symbol: string;
     name: string;
@@ -96,7 +97,8 @@ interface PortfolioOverviewProps {
 
 export function PortfolioOverview({ 
   totalValue, 
-  totalEarned, 
+  totalEarned,
+  totalMonthlyExpected, 
   vaults, 
   onVaultAction, 
   className = '' 
@@ -107,6 +109,7 @@ export function PortfolioOverview({
         <h1 className="portfolioTitle">Portfolio Overview</h1>
         <p className="portfolioSubtitle">
           Total Value: {totalValue} • Earned: {totalEarned}
+          {totalMonthlyExpected && ` • Expected: ${totalMonthlyExpected}`}
         </p>
       </div>
       

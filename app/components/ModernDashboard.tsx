@@ -11,7 +11,7 @@ import '../styles/design-system.css';
 const VAULTS_CONFIG = {
   usdc: {
     address: '0xf7e26Fa48A568b8b0038e104DfD8ABdf0f99074F' as const,
-    name: 'Morpho USDC Vault', // Will be fetched from contract
+    name: 'Muscadine USDC Vault',
     symbol: 'USDC',
     description: 'Earn interest on USDC deposits with Morpho',
     decimals: 6,
@@ -21,7 +21,7 @@ const VAULTS_CONFIG = {
   },
   cbbtc: {
     address: '0xAeCc8113a7bD0CFAF7000EA7A31afFD4691ff3E9' as const,
-    name: 'Morpho cbBTC Vault', // Will be fetched from contract
+    name: 'Muscadine cbBTC Vault',
     symbol: 'cbBTC',
     description: 'Earn interest on cbBTC deposits with Morpho',
     decimals: 8,
@@ -31,7 +31,7 @@ const VAULTS_CONFIG = {
   },
   eth: {
     address: '0x21e0d366272798da3A977FEBA699FCB91959d120' as const,
-    name: 'Morpho WETH Vault', // Will be fetched from contract
+    name: 'Muscadine WETH Vault',
     symbol: 'WETH',
     description: 'Earn interest on WETH deposits with Morpho',
     decimals: 18,
