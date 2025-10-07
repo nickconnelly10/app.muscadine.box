@@ -42,65 +42,45 @@ export default function SimpleDashboard() {
     recipientAddress: address
   });
 
-  // Debug: Log vault status and errors
-  console.log('USDC Vault Status:', usdcVault.status, 'Error:', usdcVault.error);
-  console.log('cbBTC Vault Status:', cbbtcVault.status, 'Error:', cbbtcVault.error);
-  console.log('WETH Vault Status:', wethVault.status, 'Error:', wethVault.error);
-  
-  // Log detailed vault data for debugging
-  if (usdcVault.status === 'success') {
-    console.log('USDC Vault Data:', {
-      balance: usdcVault.balance,
-      totalApy: usdcVault.totalApy,
-      vaultName: usdcVault.vaultName,
-      asset: usdcVault.asset,
-      rewards: usdcVault.rewards
-    });
-  }
-  
-  if (cbbtcVault.status === 'success') {
-    console.log('cbBTC Vault Data:', {
-      balance: cbbtcVault.balance,
-      totalApy: cbbtcVault.totalApy,
-      vaultName: cbbtcVault.vaultName,
-      asset: cbbtcVault.asset,
-      rewards: cbbtcVault.rewards
-    });
-  }
-  
-  if (wethVault.status === 'success') {
-    console.log('WETH Vault Data:', {
-      balance: wethVault.balance,
-      totalApy: wethVault.totalApy,
-      vaultName: wethVault.vaultName,
-      asset: wethVault.asset,
-      rewards: wethVault.rewards
-    });
-  }
+  // Helper function to get vault data by address
+  const getVaultData = (vaultAddress: string) => {
+    if (vaultAddress === VAULTS[0].address) return usdcVault;
+    if (vaultAddress === VAULTS[1].address) return cbbtcVault;
+    if (vaultAddress === VAULTS[2].address) return wethVault;
+    return null;
+  };
 
-  // Calculate portfolio totals using ONLY real OnchainKit data
-  // Total Deposited: Sum of user's balance across all vaults (in USD)
-  const totalDeposited = Number(usdcVault.balance || 0) + Number(cbbtcVault.balance || 0) + Number(wethVault.balance || 0);
+  // Calculate portfolio totals using OnchainKit data
+  // Total balance across all vaults
+  const totalBalance = Number(usdcVault.balance || 0) + Number(cbbtcVault.balance || 0) + Number(wethVault.balance || 0);
   
-  // Total Interest Earned: Calculate from actual rewards data
-  const totalInterestEarned = (
-    (usdcVault.rewards?.[0]?.apy || 0) * Number(usdcVault.balance || 0) / 100 +
-    (cbbtcVault.rewards?.[0]?.apy || 0) * Number(cbbtcVault.balance || 0) / 100 +
-    (wethVault.rewards?.[0]?.apy || 0) * Number(wethVault.balance || 0) / 100
-  );
+  // Calculate vault-specific interest for each vault
+  const getVaultInterest = (vault: typeof usdcVault) => {
+    const balance = Number(vault.balance || 0);
+    const apy = vault.totalApy || 0;
+    return balance * (apy / 100);
+  };
   
-  // Net Return: Total interest earned minus vault fees
-  const totalNetEarned = totalInterestEarned * (1 - ((usdcVault.vaultFee || 0) + (cbbtcVault.vaultFee || 0) + (wethVault.vaultFee || 0)) / 100);
+  // Total projected annual interest across all vaults
+  const totalProjectedAnnualInterest = 
+    getVaultInterest(usdcVault) + 
+    getVaultInterest(cbbtcVault) + 
+    getVaultInterest(wethVault);
   
-  // Initial Deposited: Total deposited minus interest earned
-  const initialDeposited = totalDeposited - totalInterestEarned;
+  // Calculate net return after fees for each vault
+  const getNetReturn = (vault: typeof usdcVault) => {
+    const annualInterest = getVaultInterest(vault);
+    const fee = vault.vaultFee || 0;
+    return annualInterest * (1 - fee / 100);
+  };
   
-  // Expected Monthly Interest: Based on actual APY from OnchainKit
-  const expectedMonthly = (
-    Number(usdcVault.balance || 0) * (usdcVault.totalApy || 0) / 100 / 12 +
-    Number(cbbtcVault.balance || 0) * (cbbtcVault.totalApy || 0) / 100 / 12 +
-    Number(wethVault.balance || 0) * (wethVault.totalApy || 0) / 100 / 12
-  );
+  const totalNetReturn = 
+    getNetReturn(usdcVault) + 
+    getNetReturn(cbbtcVault) + 
+    getNetReturn(wethVault);
+  
+  // Expected monthly interest: annual interest divided by 12
+  const expectedMonthly = totalProjectedAnnualInterest / 12;
 
 
   const formatCurrency = (amount: number) => {
@@ -195,14 +175,14 @@ export default function SimpleDashboard() {
                   fontWeight: '500',
                   marginBottom: '0.5rem'
                 }}>
-                  Total Value
+                  Total Balance
                 </div>
                 <div style={{
                   fontSize: '1.875rem',
                   fontWeight: '700',
                   color: '#0f172a'
                 }}>
-                  {formatCurrency(totalDeposited)}
+                  {formatCurrency(totalBalance)}
                 </div>
               </div>
               <div>
@@ -212,31 +192,14 @@ export default function SimpleDashboard() {
                   fontWeight: '500',
                   marginBottom: '0.5rem'
                 }}>
-                  Initial Value
-                </div>
-                <div style={{
-                  fontSize: '1.875rem',
-                  fontWeight: '700',
-                  color: '#0f172a'
-                }}>
-                  {formatCurrency(initialDeposited)}
-                </div>
-              </div>
-              <div>
-                <div style={{
-                  fontSize: '0.875rem',
-                  color: '#64748b',
-                  fontWeight: '500',
-                  marginBottom: '0.5rem'
-                }}>
-                  Net Return
+                  Projected Annual Return
                 </div>
                 <div style={{
                   fontSize: '1.875rem',
                   fontWeight: '700',
                   color: '#10b981'
                 }}>
-                  {formatCurrency(totalNetEarned)}
+                  {formatCurrency(totalProjectedAnnualInterest)}
                 </div>
               </div>
               <div>
@@ -246,14 +209,14 @@ export default function SimpleDashboard() {
                   fontWeight: '500',
                   marginBottom: '0.5rem'
                 }}>
-                  Earned Interest
+                  Net Annual Return
                 </div>
                 <div style={{
                   fontSize: '1.875rem',
                   fontWeight: '700',
                   color: '#10b981'
                 }}>
-                  {formatCurrency(totalInterestEarned)}
+                  {formatCurrency(totalNetReturn)}
                 </div>
               </div>
               <div>
@@ -263,14 +226,14 @@ export default function SimpleDashboard() {
                   fontWeight: '500',
                   marginBottom: '0.5rem'
                 }}>
-                  Expected
+                  Expected Monthly
                 </div>
                 <div style={{
                   fontSize: '1.875rem',
                   fontWeight: '700',
                   color: '#6366f1'
                 }}>
-                  {formatCurrency(expectedMonthly)}/month
+                  {formatCurrency(expectedMonthly)}
                 </div>
               </div>
             </div>
@@ -326,9 +289,10 @@ export default function SimpleDashboard() {
                     padding: '0.25rem 0.75rem',
                     borderRadius: '9999px'
                   }}>
-                    {vault.address === VAULTS[0].address ? (usdcVault.totalApy ? `${usdcVault.totalApy.toFixed(2)}%` : 'Loading...') :
-                     vault.address === VAULTS[1].address ? (cbbtcVault.totalApy ? `${cbbtcVault.totalApy.toFixed(2)}%` : 'Loading...') :
-                     vault.address === VAULTS[2].address ? (wethVault.totalApy ? `${wethVault.totalApy.toFixed(2)}%` : 'Loading...') : 'Loading...'} APY
+                    {(() => {
+                      const vaultData = getVaultData(vault.address);
+                      return vaultData?.totalApy ? `${vaultData.totalApy.toFixed(2)}% APY` : 'Loading...';
+                    })()}
                   </span>
                 </div>
                 
@@ -349,16 +313,17 @@ export default function SimpleDashboard() {
                       fontWeight: '500',
                       marginBottom: '0.25rem'
                     }}>
-                      Total Deposited
+                      Balance
                     </div>
                     <div style={{
                       fontSize: '1rem',
                       fontWeight: '600',
                       color: '#0f172a'
                     }}>
-                      {vault.address === VAULTS[0].address ? formatCurrency(Number(usdcVault.balance || 0)) :
-                       vault.address === VAULTS[1].address ? formatCurrency(Number(cbbtcVault.balance || 0)) :
-                       vault.address === VAULTS[2].address ? formatCurrency(Number(wethVault.balance || 0)) : '$0.00'}
+                      {(() => {
+                        const vaultData = getVaultData(vault.address);
+                        return formatCurrency(Number(vaultData?.balance || 0));
+                      })()}
                     </div>
                   </div>
                   <div>
@@ -368,16 +333,17 @@ export default function SimpleDashboard() {
                       fontWeight: '500',
                       marginBottom: '0.25rem'
                     }}>
-                      Interest Earned
+                      Projected Annual
                     </div>
                     <div style={{
                       fontSize: '1rem',
                       fontWeight: '600',
                       color: '#10b981'
                     }}>
-                      {vault.address === VAULTS[0].address ? formatCurrency((usdcVault.rewards?.[0]?.apy || 0) * Number(usdcVault.balance || 0) / 100) :
-                       vault.address === VAULTS[1].address ? formatCurrency((cbbtcVault.rewards?.[0]?.apy || 0) * Number(cbbtcVault.balance || 0) / 100) :
-                       vault.address === VAULTS[2].address ? formatCurrency((wethVault.rewards?.[0]?.apy || 0) * Number(wethVault.balance || 0) / 100) : '$0.00'}
+                      {(() => {
+                        const vaultData = getVaultData(vault.address);
+                        return vaultData ? formatCurrency(getVaultInterest(vaultData)) : '$0.00';
+                      })()}
                     </div>
                   </div>
                 </div>
