@@ -268,36 +268,10 @@ export default function SimpleDashboard() {
                   fontSize: '1.125rem',
                   fontWeight: '600',
                   color: '#0f172a',
-                  margin: '0 0 0.5rem'
+                  margin: '0 0 0.875rem'
                 }}>
                   {vault.name}
                 </h3>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  marginBottom: '0.625rem'
-                }}>
-                  <span style={{
-                    fontSize: '0.8125rem',
-                    color: '#64748b'
-                  }}>
-                    {vault.symbol}
-                  </span>
-                  <span style={{
-                    fontSize: '0.8125rem',
-                    fontWeight: '600',
-                    color: '#10b981',
-                    backgroundColor: '#dcfce7',
-                    padding: '0.2rem 0.625rem',
-                    borderRadius: '9999px'
-                  }}>
-                    {(() => {
-                      const vaultData = getVaultData(vault.address);
-                      return vaultData?.totalApy ? `${vaultData.totalApy.toFixed(2)}% APY` : 'Loading...';
-                    })()}
-                  </span>
-                </div>
                 
                 {/* Custom stats section */}
                 <div style={{
