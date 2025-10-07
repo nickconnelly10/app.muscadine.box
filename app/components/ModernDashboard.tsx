@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useMemo, useEffect } from 'react';
-import { useAccount, useBalance, useReadContract } from 'wagmi';
+import { useAccount, useReadContract } from 'wagmi';
 import { base } from 'wagmi/chains';
 import { formatUnits } from 'viem';
 import { useMorphoVault } from '@coinbase/onchainkit/earn';
@@ -48,16 +48,13 @@ export default function ModernDashboard() {
   const { address, isConnected } = useAccount();
   const [activeDeposit, setActiveDeposit] = useState<string | null>(null);
   const [activeWithdraw, setActiveWithdraw] = useState<string | null>(null);
-  const [depositAmount, setDepositAmount] = useState('');
-  const [currentStep, setCurrentStep] = useState(1);
   const [tokenPrices, setTokenPrices] = useState({
     USDC: 1.00,
     cbBTC: 0,
     ETH: 0,
   });
-  const [gasPrice, setGasPrice] = useState(0);
 
-  // Fetch real-time token prices and gas prices
+  // Fetch real-time token prices
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -67,18 +64,11 @@ export default function ModernDashboard() {
         );
         const priceData = await priceResponse.json();
         
-        // Fetch gas price from Base network
-        const gasResponse = await fetch('https://api.basescan.org/api?module=gastracker&action=gasoracle&apikey=YourApiKey');
-        const gasData = await gasResponse.json();
-        
         setTokenPrices({
           USDC: 1.00, // USDC is always $1
           cbBTC: priceData.bitcoin?.usd || 0,
           ETH: priceData.ethereum?.usd || 0,
         });
-        
-        // Set gas price in Gwei
-        setGasPrice(parseFloat(gasData.result?.SafeGasPrice || '0.001'));
       } catch (error) {
         console.error('Failed to fetch data:', error);
         // Fallback to default values
@@ -87,7 +77,6 @@ export default function ModernDashboard() {
           cbBTC: 65000,
           ETH: 3500,
         });
-        setGasPrice(0.001); // Default gas price for Base network
       }
     };
 
@@ -97,26 +86,6 @@ export default function ModernDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  // Get wallet balances
-  const usdcWalletBalance = useBalance({
-    address: address,
-    token: VAULTS_CONFIG.usdc.tokenAddress as `0x${string}`,
-    chainId: base.id,
-    query: { enabled: !!address && isConnected }
-  });
-
-  const cbbtcWalletBalance = useBalance({
-    address: address,
-    token: VAULTS_CONFIG.cbbtc.tokenAddress as `0x${string}`,
-    chainId: base.id,
-    query: { enabled: !!address && isConnected }
-  });
-
-  const ethWalletBalance = useBalance({
-    address: address,
-    chainId: base.id,
-    query: { enabled: !!address && isConnected }
-  });
 
   // Get vault balances and names
   const vaultAbi = [
@@ -457,58 +426,15 @@ export default function ModernDashboard() {
     if (action === 'deposit') {
       setActiveDeposit(vaultSymbol);
       setActiveWithdraw(null);
-      setCurrentStep(1);
     } else if (action === 'withdraw') {
       setActiveWithdraw(vaultSymbol);
       setActiveDeposit(null);
     }
   };
 
-  const handleQuickAmount = (amount: string) => {
-    if (amount === 'Max') {
-      // Set max available balance based on actual wallet balances
-      const vault = Object.values(VAULTS_CONFIG).find(v => v.symbol === activeDeposit);
-      if (vault) {
-        if (vault.symbol === 'USDC' && usdcWalletBalance.data) {
-          const balance = parseFloat(formatUnits(usdcWalletBalance.data.value, usdcWalletBalance.data.decimals));
-          // Calculate dynamic gas buffer based on current gas price and ETH price
-          const gasBufferUSD = gasPrice > 0 ? (gasPrice * 22000) / 1e9 * tokenPrices.ETH : 2.50;
-          const gasBufferTokens = gasBufferUSD / tokenPrices.USDC;
-          const maxAmount = Math.max(0, balance - gasBufferTokens);
-          setDepositAmount(maxAmount.toFixed(6));
-        } else if (vault.symbol === 'cbBTC' && cbbtcWalletBalance.data) {
-          const balance = parseFloat(formatUnits(cbbtcWalletBalance.data.value, cbbtcWalletBalance.data.decimals));
-          // Calculate dynamic gas buffer based on current gas price and ETH price
-          const gasBufferUSD = gasPrice > 0 ? (gasPrice * 22000) / 1e9 * tokenPrices.ETH : 2.50;
-          const gasBufferTokens = gasBufferUSD / tokenPrices.cbBTC;
-          const maxAmount = Math.max(0, balance - gasBufferTokens);
-          setDepositAmount(maxAmount.toFixed(8));
-        } else if (vault.symbol === 'ETH' && ethWalletBalance.data) {
-          const balance = parseFloat(formatUnits(ethWalletBalance.data.value, ethWalletBalance.data.decimals));
-          // Calculate dynamic gas buffer based on current gas price
-          const gasBufferETH = gasPrice > 0 ? (gasPrice * 22000) / 1e9 : 0.001;
-          const maxAmount = Math.max(0, balance - gasBufferETH);
-          setDepositAmount(maxAmount.toFixed(6));
-        }
-      }
-    } else {
-      setDepositAmount(amount);
-    }
-  };
-
   const handleBackToPortfolio = () => {
     setActiveDeposit(null);
     setActiveWithdraw(null);
-    setDepositAmount('');
-    setCurrentStep(1);
-  };
-
-  const handleConfirmDeposit = () => {
-    // Handle deposit logic here
-    console.log(`Depositing ${depositAmount} ${activeDeposit}`);
-    setActiveDeposit(null);
-    setDepositAmount('');
-    setCurrentStep(1);
   };
 
   const isLoading = usdcVaultBalance.isLoading || cbbtcVaultBalance.isLoading || ethVaultBalance.isLoading ||
@@ -582,87 +508,42 @@ export default function ModernDashboard() {
       />
       
       {activeDeposit ? (
-        <div style={{ padding: '2rem', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ padding: '2rem', display: 'flex', justifyContent: 'center', maxWidth: '600px', margin: '0 auto' }}>
           <DepositFlow
             vaultSymbol={activeDeposit}
             vaultName={
               activeDeposit === 'USDC' ? VAULTS_CONFIG.usdc.name :
               activeDeposit === 'cbBTC' ? VAULTS_CONFIG.cbbtc.name :
-              activeDeposit === 'ETH' ? VAULTS_CONFIG.eth.name :
+              activeDeposit === 'WETH' ? VAULTS_CONFIG.eth.name :
               Object.values(VAULTS_CONFIG).find(v => v.symbol === activeDeposit)?.name || ''
             }
             vaultAddress={
               activeDeposit === 'USDC' ? VAULTS_CONFIG.usdc.address :
               activeDeposit === 'cbBTC' ? VAULTS_CONFIG.cbbtc.address :
-              activeDeposit === 'ETH' ? VAULTS_CONFIG.eth.address :
+              activeDeposit === 'WETH' ? VAULTS_CONFIG.eth.address :
               Object.values(VAULTS_CONFIG).find(v => v.symbol === activeDeposit)?.address || ''
             }
-            currentStep={currentStep}
-            totalSteps={3}
-            amount={depositAmount}
-            onAmountChange={setDepositAmount}
-            _onQuickAmount={handleQuickAmount}
-            onConfirm={handleConfirmDeposit}
             onBack={handleBackToPortfolio}
-            maxAmount={
-              activeDeposit === 'USDC' && usdcWalletBalance.data 
-                ? formatUnits(usdcWalletBalance.data.value, usdcWalletBalance.data.decimals)
-                : activeDeposit === 'cbBTC' && cbbtcWalletBalance.data
-                ? formatUnits(cbbtcWalletBalance.data.value, cbbtcWalletBalance.data.decimals)
-                : activeDeposit === 'ETH' && ethWalletBalance.data
-                ? formatUnits(ethWalletBalance.data.value, ethWalletBalance.data.decimals)
-                : "0"
-            }
-            gasFee={
-              gasPrice > 0 
-                ? ((gasPrice * 22000) / 1e9 * tokenPrices.ETH).toFixed(2) // Deposit gas estimate for ERC-4626 vault
-                : "2.50"
-            }
-            tokenPrice={
-              activeDeposit === 'USDC' ? tokenPrices.USDC :
-              activeDeposit === 'cbBTC' ? tokenPrices.cbBTC :
-              activeDeposit === 'ETH' ? tokenPrices.ETH : 0
-            }
-            ethBalance={
-              ethWalletBalance.data 
-                ? formatUnits(ethWalletBalance.data.value, ethWalletBalance.data.decimals)
-                : "0"
-            }
-            ethPrice={tokenPrices.ETH}
           />
         </div>
       ) : activeWithdraw ? (
-        <div style={{ padding: '2rem', display: 'flex', justifyContent: 'center' }}>
-          {(() => {
-            const activeVault = portfolioData.vaults.find(v => v.symbol === activeWithdraw);
-            return (
-              <WithdrawFlow
-                vaultSymbol={activeWithdraw}
-                vaultName={
-                  activeWithdraw === 'USDC' ? VAULTS_CONFIG.usdc.name :
-                  activeWithdraw === 'cbBTC' ? VAULTS_CONFIG.cbbtc.name :
-                  activeWithdraw === 'WETH' ? VAULTS_CONFIG.eth.name :
-                  Object.values(VAULTS_CONFIG).find(v => v.symbol === activeWithdraw)?.name || ''
-                }
-                vaultAddress={Object.values(VAULTS_CONFIG).find(v => v.symbol === activeWithdraw)?.address || ''}
-                vaultBalance={activeVault?.assetsAmount.toFixed(6) || '0'}
-                vaultBalanceUSD={`$${activeVault?.usdValue.toFixed(2) || '0.00'}`}
-                tokenPrice={
-                  activeWithdraw === 'USDC' ? tokenPrices.USDC :
-                  activeWithdraw === 'cbBTC' ? tokenPrices.cbBTC :
-                  activeWithdraw === 'WETH' ? tokenPrices.ETH :
-                  activeWithdraw === 'ETH' ? tokenPrices.ETH : 0
-                }
-                gasFee={
-                  gasPrice > 0 
-                    ? ((gasPrice * 25000) / 1e9 * tokenPrices.ETH).toFixed(2) // Withdraw typically uses more gas than deposit
-                    : "3.00" // Slightly higher fallback for withdraw
-                }
-                estimatedAPY={activeVault?.apy || 0}
-                onBack={handleBackToPortfolio}
-              />
-            );
-          })()}
+        <div style={{ padding: '2rem', display: 'flex', justifyContent: 'center', maxWidth: '600px', margin: '0 auto' }}>
+          <WithdrawFlow
+            vaultSymbol={activeWithdraw}
+            vaultName={
+              activeWithdraw === 'USDC' ? VAULTS_CONFIG.usdc.name :
+              activeWithdraw === 'cbBTC' ? VAULTS_CONFIG.cbbtc.name :
+              activeWithdraw === 'WETH' ? VAULTS_CONFIG.eth.name :
+              Object.values(VAULTS_CONFIG).find(v => v.symbol === activeWithdraw)?.name || ''
+            }
+            vaultAddress={
+              activeWithdraw === 'USDC' ? VAULTS_CONFIG.usdc.address :
+              activeWithdraw === 'cbBTC' ? VAULTS_CONFIG.cbbtc.address :
+              activeWithdraw === 'WETH' ? VAULTS_CONFIG.eth.address :
+              Object.values(VAULTS_CONFIG).find(v => v.symbol === activeWithdraw)?.address || ''
+            }
+            onBack={handleBackToPortfolio}
+          />
         </div>
       ) : (
         <PortfolioOverview

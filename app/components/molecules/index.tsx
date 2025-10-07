@@ -164,129 +164,24 @@ export function PortfolioOverview({
   );
 }
 
-// Deposit Flow Component with Enhanced UI and OnchainKit Integration
+// Deposit Flow Component with OnchainKit Integration
 interface DepositFlowProps {
   vaultSymbol: string;
   vaultName: string;
-  currentStep: number;
-  totalSteps: number;
-  amount: string;
-  onAmountChange: (amount: string) => void;
-  _onQuickAmount: (amount: string) => void;
-  onConfirm: () => void;
   onBack: () => void;
-  maxAmount: string;
-  gasFee: string;
-  tokenPrice: number;
-  vaultAddress?: string;
-  ethBalance?: string;
-  ethPrice?: number;
+  vaultAddress: string;
   className?: string;
 }
 
 export function DepositFlow({
-  vaultSymbol,
+  vaultSymbol: _vaultSymbol,
   vaultName,
-  currentStep,
-  totalSteps,
-  amount,
-  onAmountChange,
-  _onQuickAmount,
-  onConfirm,
   onBack,
-  maxAmount,
-  gasFee,
-  tokenPrice,
   vaultAddress,
-  ethBalance = '0',
-  ethPrice = 0,
   className = ''
 }: DepositFlowProps) {
-  const [dollarAmount, setDollarAmount] = React.useState('');
-  const [showOnchainKit, setShowOnchainKit] = React.useState(false);
-  const [depositType, setDepositType] = React.useState<'token' | 'eth'>('token');
-  
-  // Convert dollar amount to token amount
-  const convertDollarToToken = (dollars: string) => {
-    if (!dollars) return '';
-    const dollarValue = parseFloat(dollars);
-    if (isNaN(dollarValue)) return '';
-    if (depositType === 'eth' && ethPrice > 0) {
-      // For ETH deposits, convert USD to ETH
-      return (dollarValue / ethPrice).toFixed(8);
-    } else if (tokenPrice > 0) {
-      // For token deposits, convert USD to token
-      return (dollarValue / tokenPrice).toFixed(8);
-    }
-    return '';
-  };
-  
-  // Convert token amount to dollar amount
-  const convertTokenToDollar = (tokens: string) => {
-    if (!tokens) return '';
-    const tokenValue = parseFloat(tokens);
-    if (isNaN(tokenValue)) return '';
-    if (depositType === 'eth' && ethPrice > 0) {
-      // For ETH deposits, convert ETH to USD
-      return (tokenValue * ethPrice).toFixed(2);
-    } else if (tokenPrice > 0) {
-      // For token deposits, convert token to USD
-      return (tokenValue * tokenPrice).toFixed(2);
-    }
-    return '';
-  };
-  
-  const handleDollarChange = (dollars: string) => {
-    setDollarAmount(dollars);
-    const tokenAmount = convertDollarToToken(dollars);
-    onAmountChange(tokenAmount);
-  };
-  
-  const handleTokenChange = (tokens: string) => {
-    onAmountChange(tokens);
-    const dollarAmount = convertTokenToDollar(tokens);
-    setDollarAmount(dollarAmount);
-  };
-  
-  const handleMaxClick = () => {
-    if (depositType === 'eth' && ethPrice > 0) {
-      const maxDollars = parseFloat(ethBalance) * ethPrice;
-      handleDollarChange(maxDollars.toFixed(2));
-    } else {
-      const maxDollars = parseFloat(maxAmount) * tokenPrice;
-      handleDollarChange(maxDollars.toFixed(2));
-    }
-  };
-  
-  const total = parseFloat(amount) ? 
-    (depositType === 'eth' && ethPrice > 0 
-      ? (parseFloat(amount) * ethPrice + parseFloat(gasFee))
-      : tokenPrice > 0 
-        ? (parseFloat(amount) * tokenPrice + parseFloat(gasFee))
-        : parseFloat(gasFee)
-    ).toFixed(2) : 
-    parseFloat(gasFee).toFixed(2);
-  
-  const amountUSD = amount ? 
-    (depositType === 'eth' && ethPrice > 0 
-      ? (parseFloat(amount) * ethPrice).toFixed(2)
-      : tokenPrice > 0 
-        ? (parseFloat(amount) * tokenPrice).toFixed(2)
-        : '0.00'
-    ) : '0.00';
-  
   return (
     <div className={`depositFlow ${className}`}>
-      {/* Step Indicator */}
-      <div className="stepIndicator">
-        {Array.from({ length: totalSteps }, (_, index) => (
-          <div
-            key={index}
-            className={`step ${index < currentStep ? 'stepCompleted' : index === currentStep ? 'stepActive' : ''}`}
-          />
-        ))}
-      </div>
-      
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <button 
@@ -306,327 +201,64 @@ export function DepositFlow({
           ← Back to Portfolio
         </button>
         <h2 style={{ textAlign: 'center', fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>
-          Deposit {vaultName}
+          Deposit to {vaultName}
         </h2>
         <div style={{ width: '120px' }}></div>
       </div>
       
-      {!showOnchainKit ? (
-        <>
-          {/* Deposit Type Selector for WETH Vault */}
-          {vaultSymbol === 'WETH' && (
-            <div style={{ marginBottom: '1.5rem' }}>
-              <div style={{ fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>
-                Deposit Type
-              </div>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button
-                  onClick={() => setDepositType('token')}
-                  style={{
-                    flex: 1,
-                    padding: '0.75rem',
-                    border: `1px solid ${depositType === 'token' ? '#6366f1' : '#e2e8f0'}`,
-                    borderRadius: '8px',
-                    background: depositType === 'token' ? '#eef2ff' : 'white',
-                    color: depositType === 'token' ? '#6366f1' : '#64748b',
-                    cursor: 'pointer',
-                    fontSize: '0.875rem',
-                    fontWeight: '500'
-                  }}
-                >
-                  WETH
-                </button>
-                <button
-                  onClick={() => setDepositType('eth')}
-                  style={{
-                    flex: 1,
-                    padding: '0.75rem',
-                    border: `1px solid ${depositType === 'eth' ? '#6366f1' : '#e2e8f0'}`,
-                    borderRadius: '8px',
-                    background: depositType === 'eth' ? '#eef2ff' : 'white',
-                    color: depositType === 'eth' ? '#6366f1' : '#64748b',
-                    cursor: 'pointer',
-                    fontSize: '0.875rem',
-                    fontWeight: '500'
-                  }}
-                >
-                  ETH (Auto-convert to WETH)
-                </button>
-              </div>
-            </div>
-          )}
-          
-          {/* Vault Information */}
-          <div style={{ 
-            marginBottom: '1.5rem', 
-            padding: '1rem', 
-            backgroundColor: '#f8fafc',
-            borderRadius: '8px',
-            border: '1px solid #e2e8f0'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '0.875rem', color: '#64748b' }}>
-                Available Balance ({depositType === 'eth' ? 'ETH' : vaultSymbol})
-              </span>
-              <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>
-                {depositType === 'eth' 
-                  ? `${parseFloat(ethBalance).toFixed(6)} ETH ($${(parseFloat(ethBalance) * ethPrice).toFixed(2)})`
-                  : `${parseFloat(maxAmount).toFixed(6)} ${vaultSymbol} ($${(parseFloat(maxAmount) * tokenPrice).toFixed(2)})`
-                }
-              </span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '0.875rem', color: '#64748b' }}>
-                {depositType === 'eth' ? 'ETH Price' : 'Token Price'}
-              </span>
-              <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>
-                ${depositType === 'eth' ? ethPrice.toLocaleString() : tokenPrice.toLocaleString()}
-              </span>
-            </div>
+      {/* OnchainKit Earn Component */}
+      <div style={{ 
+        padding: '2rem', 
+        border: '1px solid #e2e8f0', 
+        borderRadius: '12px',
+        backgroundColor: '#ffffff',
+        boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)'
+      }}>
+        <Earn vaultAddress={vaultAddress as `0x${string}`} isSponsored={false}>
+          <div style={{ marginBottom: '1.5rem' }}>
+            <DepositBalance />
           </div>
-          
-          {/* Dollar Amount Input */}
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
-              Dollar Amount (USD)
-            </label>
-            <input
-              type="number"
-              className="amountInput"
-              placeholder="0.00"
-              value={dollarAmount}
-              onChange={(e) => handleDollarChange(e.target.value)}
-              step="0.01"
-              min="0"
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                fontSize: '1rem',
-                border: '1px solid #e2e8f0',
-                borderRadius: '8px',
-                outline: 'none'
-              }}
-            />
+          <div style={{ marginBottom: '1.5rem' }}>
+            <DepositAmountInput />
           </div>
-          
-          {/* Token Amount Input */}
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
-              {depositType === 'eth' ? 'ETH Amount' : `${vaultSymbol} Amount`}
-            </label>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <input
-                type="number"
-                className="amountInput"
-                placeholder="0.000000"
-                value={amount}
-                onChange={(e) => handleTokenChange(e.target.value)}
-                step="0.000001"
-                min="0"
-                style={{
-                  flex: 1,
-                  padding: '0.75rem',
-                  fontSize: '1rem',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px',
-                  outline: 'none'
-                }}
-              />
-              <button
-                onClick={handleMaxClick}
-                style={{
-                  padding: '0.75rem 1rem',
-                  border: '1px solid #6366f1',
-                  borderRadius: '8px',
-                  background: '#eef2ff',
-                  color: '#6366f1',
-                  cursor: 'pointer',
-                  fontSize: '0.875rem',
-                  fontWeight: '600',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                Max
-              </button>
-            </div>
-          </div>
-          
-          {/* Transaction Preview */}
-          <div className="transactionPreview" style={{
-            marginBottom: '1.5rem',
-            padding: '1rem',
-            backgroundColor: '#f8fafc',
-            borderRadius: '8px',
-            border: '1px solid #e2e8f0'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Amount</span>
-              <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>
-                {amount || '0'} {depositType === 'eth' ? 'ETH' : vaultSymbol} (${amountUSD})
-              </span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Est. Gas Fee</span>
-              <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>${gasFee}</span>
-            </div>
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              paddingTop: '0.5rem',
-              borderTop: '1px solid #e2e8f0'
-            }}>
-              <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>Total Cost</span>
-              <span style={{ fontSize: '0.875rem', fontWeight: '700', color: '#6366f1' }}>
-                ${total}
-              </span>
-            </div>
-          </div>
-          
-          {/* Action Buttons */}
-          {vaultAddress ? (
-            <Button 
-              variant="primary" 
-              size="lg" 
-              fullWidth 
-              onClick={() => setShowOnchainKit(true)}
-              disabled={!amount || parseFloat(amount) <= 0}
-            >
-              Continue to Deposit
-            </Button>
-          ) : (
-            <Button 
-              variant="primary" 
-              size="lg" 
-              fullWidth 
-              onClick={onConfirm}
-              disabled={!amount || parseFloat(amount) <= 0}
-            >
-              Confirm Deposit
-            </Button>
-          )}
-        </>
-      ) : (
-        <>
-          {/* OnchainKit Integration for actual deposit */}
-          <div style={{ marginBottom: '1rem' }}>
-            <button
-              onClick={() => setShowOnchainKit(false)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#6366f1',
-                cursor: 'pointer',
-                fontSize: '0.875rem',
-                marginBottom: '1rem'
-              }}
-            >
-              ← Edit Amount
-            </button>
-          </div>
-          <div style={{ 
-            padding: '2rem', 
-            border: '1px solid #e2e8f0', 
-            borderRadius: '12px',
-            backgroundColor: '#f8fafc'
-          }}>
-            <Earn vaultAddress={vaultAddress as `0x${string}`}>
-              <DepositBalance />
-              <DepositAmountInput />
-              <DepositButton />
-            </Earn>
-          </div>
-        </>
-      )}
+          <DepositButton />
+        </Earn>
+      </div>
+      
+      {/* Information Note */}
+      <div style={{
+        marginTop: '1.5rem',
+        padding: '1rem',
+        backgroundColor: '#eff6ff',
+        borderRadius: '8px',
+        border: '1px solid #bfdbfe',
+        fontSize: '0.875rem',
+        color: '#1e40af'
+      }}>
+        <strong>Note:</strong> Deposits will start earning interest immediately. Your funds are secured in Morpho vaults on Base.
+      </div>
     </div>
   );
 }
 
-// Withdraw Flow Component with Enhanced Information and OnchainKit Integration
+// Withdraw Flow Component with OnchainKit Integration
 interface WithdrawFlowProps {
   vaultSymbol: string;
   vaultName: string;
   vaultAddress: string;
   onBack: () => void;
-  vaultBalance?: string;
-  vaultBalanceUSD?: string;
-  tokenPrice?: number;
-  gasFee?: string;
-  estimatedAPY?: number;
-  currentStep?: number;
-  totalSteps?: number;
   className?: string;
 }
 
 export function WithdrawFlow({
-  vaultSymbol,
+  vaultSymbol: _vaultSymbol,
   vaultName,
   vaultAddress,
   onBack,
-  vaultBalance = '0',
-  vaultBalanceUSD = '$0.00',
-  tokenPrice = 0,
-  gasFee = '0.00',
-  estimatedAPY = 0,
-  currentStep = 1,
-  totalSteps = 3,
   className = ''
 }: WithdrawFlowProps) {
-  const [dollarAmount, setDollarAmount] = React.useState('');
-  const [tokenAmount, setTokenAmount] = React.useState('');
-  const [showOnchainKit, setShowOnchainKit] = React.useState(false);
-  
-  // Convert dollar amount to token amount
-  const convertDollarToToken = (dollars: string) => {
-    if (!dollars || !tokenPrice) return '';
-    const dollarValue = parseFloat(dollars);
-    if (isNaN(dollarValue)) return '';
-    return (dollarValue / tokenPrice).toFixed(8);
-  };
-  
-  // Convert token amount to dollar amount
-  const convertTokenToDollar = (tokens: string) => {
-    if (!tokens || !tokenPrice) return '';
-    const tokenValue = parseFloat(tokens);
-    if (isNaN(tokenValue)) return '';
-    return (tokenValue * tokenPrice).toFixed(2);
-  };
-  
-  const handleDollarChange = (dollars: string) => {
-    setDollarAmount(dollars);
-    const tokenAmt = convertDollarToToken(dollars);
-    setTokenAmount(tokenAmt);
-  };
-  
-  const handleTokenChange = (tokens: string) => {
-    setTokenAmount(tokens);
-    const dollarAmt = convertTokenToDollar(tokens);
-    setDollarAmount(dollarAmt);
-  };
-  
-  const handleMaxClick = () => {
-    setTokenAmount(vaultBalance);
-    const dollarAmt = convertTokenToDollar(vaultBalance);
-    setDollarAmount(dollarAmt);
-  };
-
-  const amountUSD = tokenAmount ? 
-    (tokenPrice > 0 
-      ? (parseFloat(tokenAmount) * tokenPrice).toFixed(2)
-      : '0.00'
-    ) : '0.00';
-  
   return (
     <div className={`withdrawFlow ${className}`}>
-      {/* Step Indicator */}
-      <div className="stepIndicator">
-        {Array.from({ length: totalSteps }, (_, index) => (
-          <div
-            key={index}
-            className={`step ${index < currentStep ? 'stepCompleted' : index === currentStep ? 'stepActive' : ''}`}
-          />
-        ))}
-      </div>
-
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <button 
@@ -646,195 +278,43 @@ export function WithdrawFlow({
           ← Back to Portfolio
         </button>
         <h2 style={{ textAlign: 'center', fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>
-          Withdraw {vaultName}
+          Withdraw from {vaultName}
         </h2>
         <div style={{ width: '120px' }}></div>
       </div>
 
-      {!showOnchainKit ? (
-        <>
-          {/* Vault Information */}
-          <div style={{ 
-            marginBottom: '1.5rem', 
-            padding: '1rem', 
-            backgroundColor: '#f8fafc',
-            borderRadius: '8px',
-            border: '1px solid #e2e8f0'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Your Vault Balance</span>
-              <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>
-                {parseFloat(vaultBalance).toFixed(6)} {vaultSymbol} ({vaultBalanceUSD})
-              </span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Current APY</span>
-              <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>
-                {estimatedAPY.toFixed(2)}%
-              </span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Token Price</span>
-              <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>
-                ${vaultSymbol === 'USDC' ? tokenPrice.toFixed(2) : tokenPrice.toLocaleString()}
-              </span>
-            </div>
+      {/* OnchainKit Earn Component */}
+      <div style={{ 
+        padding: '2rem', 
+        border: '1px solid #e2e8f0', 
+        borderRadius: '12px',
+        backgroundColor: '#ffffff',
+        boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)'
+      }}>
+        <Earn vaultAddress={vaultAddress as `0x${string}`} isSponsored={false}>
+          <div style={{ marginBottom: '1.5rem' }}>
+            <WithdrawBalance />
           </div>
-          
-          {/* Dollar Amount Input */}
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
-              Dollar Amount (USD)
-            </label>
-            <input
-              type="number"
-              className="amountInput"
-              placeholder="0.00"
-              value={dollarAmount}
-              onChange={(e) => handleDollarChange(e.target.value)}
-              step="0.01"
-              min="0"
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                fontSize: '1rem',
-                border: '1px solid #e2e8f0',
-                borderRadius: '8px',
-                outline: 'none'
-              }}
-            />
+          <div style={{ marginBottom: '1.5rem' }}>
+            <WithdrawAmountInput />
           </div>
-          
-          {/* Token Amount Input */}
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
-              {vaultSymbol} Amount
-            </label>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <input
-                type="number"
-                className="amountInput"
-                placeholder="0.000000"
-                value={tokenAmount}
-                onChange={(e) => handleTokenChange(e.target.value)}
-                step="0.000001"
-                min="0"
-                style={{
-                  flex: 1,
-                  padding: '0.75rem',
-                  fontSize: '1rem',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px',
-                  outline: 'none'
-                }}
-              />
-              <button
-                onClick={handleMaxClick}
-                style={{
-                  padding: '0.75rem 1rem',
-                  border: '1px solid #6366f1',
-                  borderRadius: '8px',
-                  background: '#eef2ff',
-                  color: '#6366f1',
-                  cursor: 'pointer',
-                  fontSize: '0.875rem',
-                  fontWeight: '600',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                Max
-              </button>
-            </div>
-          </div>
-          
-          {/* Transaction Preview */}
-          <div className="transactionPreview" style={{
-            marginBottom: '1.5rem',
-            padding: '1rem',
-            backgroundColor: '#f8fafc',
-            borderRadius: '8px',
-            border: '1px solid #e2e8f0'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Amount</span>
-              <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>
-                {tokenAmount || '0'} {vaultSymbol} (${amountUSD})
-              </span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Est. Gas Fee</span>
-              <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>${gasFee}</span>
-            </div>
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              paddingTop: '0.5rem',
-              borderTop: '1px solid #e2e8f0'
-            }}>
-              <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>You Will Receive</span>
-              <span style={{ fontSize: '0.875rem', fontWeight: '700', color: '#6366f1' }}>
-                ${amountUSD}
-              </span>
-            </div>
-          </div>
-
-          {/* Continue to Withdraw Button */}
-          <Button 
-            variant="primary" 
-            size="lg" 
-            fullWidth 
-            onClick={() => setShowOnchainKit(true)}
-            disabled={!tokenAmount || parseFloat(tokenAmount) <= 0}
-          >
-            Continue to Withdraw
-          </Button>
-          
-          {/* Information Note */}
-          <div style={{
-            marginTop: '1rem',
-            padding: '1rem',
-            backgroundColor: '#eff6ff',
-            borderRadius: '8px',
-            border: '1px solid #bfdbfe',
-            fontSize: '0.875rem',
-            color: '#1e40af'
-          }}>
-            <strong>Note:</strong> Withdrawing will remove your funds from the vault and stop earning interest. 
-            You can deposit again anytime to resume earning.
-          </div>
-        </>
-      ) : (
-        <>
-          {/* OnchainKit Integration for actual withdraw */}
-          <div style={{ marginBottom: '1rem' }}>
-            <button
-              onClick={() => setShowOnchainKit(false)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#6366f1',
-                cursor: 'pointer',
-                fontSize: '0.875rem',
-                marginBottom: '1rem'
-              }}
-            >
-              ← Edit Amount
-            </button>
-          </div>
-          <div style={{ 
-            padding: '2rem', 
-            border: '1px solid #e2e8f0', 
-            borderRadius: '12px',
-            backgroundColor: '#f8fafc'
-          }}>
-            <Earn vaultAddress={vaultAddress as `0x${string}`}>
-              <WithdrawBalance />
-              <WithdrawAmountInput />
-              <WithdrawButton />
-            </Earn>
-          </div>
-        </>
-      )}
+          <WithdrawButton />
+        </Earn>
+      </div>
+      
+      {/* Information Note */}
+      <div style={{
+        marginTop: '1.5rem',
+        padding: '1rem',
+        backgroundColor: '#eff6ff',
+        borderRadius: '8px',
+        border: '1px solid #bfdbfe',
+        fontSize: '0.875rem',
+        color: '#1e40af'
+      }}>
+        <strong>Note:</strong> Withdrawing will remove your funds from the vault and stop earning interest. 
+        You can deposit again anytime to resume earning.
+      </div>
     </div>
   );
 }
