@@ -8,17 +8,17 @@ import '@coinbase/onchainkit/styles.css';
 const VAULTS = [
   {
     address: '0xf7e26Fa48A568b8b0038e104DfD8ABdf0f99074F' as `0x${string}`,
-    name: 'USDC Vault',
+    name: 'Muscadine USDC Vault',
     symbol: 'USDC',
   },
   {
     address: '0xAeCc8113a7bD0CFAF7000EA7A31afFD4691ff3E9' as `0x${string}`,
-    name: 'cbBTC Vault',
+    name: 'Muscadine cbBTC Vault',
     symbol: 'cbBTC',
   },
   {
     address: '0x21e0d366272798da3A977FEBA699FCB91959d120' as `0x${string}`,
-    name: 'WETH Vault',
+    name: 'Muscadine WETH Vault',
     symbol: 'WETH',
   },
 ];
@@ -48,6 +48,16 @@ export default function SimpleDashboard() {
   console.log('WETH Vault Status:', wethVault.status, 'Error:', wethVault.error);
   
   // Log detailed vault data for debugging
+  if (usdcVault.status === 'success') {
+    console.log('USDC Vault Data:', {
+      balance: usdcVault.balance,
+      totalApy: usdcVault.totalApy,
+      vaultName: usdcVault.vaultName,
+      asset: usdcVault.asset,
+      rewards: usdcVault.rewards
+    });
+  }
+  
   if (cbbtcVault.status === 'success') {
     console.log('cbBTC Vault Data:', {
       balance: cbbtcVault.balance,
@@ -55,6 +65,16 @@ export default function SimpleDashboard() {
       vaultName: cbbtcVault.vaultName,
       asset: cbbtcVault.asset,
       rewards: cbbtcVault.rewards
+    });
+  }
+  
+  if (wethVault.status === 'success') {
+    console.log('WETH Vault Data:', {
+      balance: wethVault.balance,
+      totalApy: wethVault.totalApy,
+      vaultName: wethVault.vaultName,
+      asset: wethVault.asset,
+      rewards: wethVault.rewards
     });
   }
 
@@ -276,7 +296,8 @@ export default function SimpleDashboard() {
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.5rem'
+                  gap: '0.5rem',
+                  marginBottom: '0.75rem'
                 }}>
                   <span style={{
                     fontSize: '0.875rem',
@@ -296,6 +317,56 @@ export default function SimpleDashboard() {
                      vault.address === VAULTS[1].address ? (cbbtcVault.totalApy ? `${cbbtcVault.totalApy.toFixed(2)}%` : 'Loading...') :
                      vault.address === VAULTS[2].address ? (wethVault.totalApy ? `${wethVault.totalApy.toFixed(2)}%` : 'Loading...') : 'Loading...'} APY
                   </span>
+                </div>
+                
+                {/* Custom stats section */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '1rem',
+                  padding: '0.75rem',
+                  backgroundColor: '#f8fafc',
+                  borderRadius: '8px',
+                  border: '1px solid #e2e8f0'
+                }}>
+                  <div>
+                    <div style={{
+                      fontSize: '0.75rem',
+                      color: '#64748b',
+                      fontWeight: '500',
+                      marginBottom: '0.25rem'
+                    }}>
+                      Total Deposited
+                    </div>
+                    <div style={{
+                      fontSize: '1rem',
+                      fontWeight: '600',
+                      color: '#0f172a'
+                    }}>
+                      {vault.address === VAULTS[0].address ? formatCurrency(Number(usdcVault.balance || 0)) :
+                       vault.address === VAULTS[1].address ? formatCurrency(Number(cbbtcVault.balance || 0)) :
+                       vault.address === VAULTS[2].address ? formatCurrency(Number(wethVault.balance || 0)) : '$0.00'}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{
+                      fontSize: '0.75rem',
+                      color: '#64748b',
+                      fontWeight: '500',
+                      marginBottom: '0.25rem'
+                    }}>
+                      Interest Earned
+                    </div>
+                    <div style={{
+                      fontSize: '1rem',
+                      fontWeight: '600',
+                      color: '#10b981'
+                    }}>
+                      {vault.address === VAULTS[0].address ? formatCurrency((usdcVault.rewards?.[0]?.apy || 0) * Number(usdcVault.balance || 0) / 100) :
+                       vault.address === VAULTS[1].address ? formatCurrency((cbbtcVault.rewards?.[0]?.apy || 0) * Number(cbbtcVault.balance || 0) / 100) :
+                       vault.address === VAULTS[2].address ? formatCurrency((wethVault.rewards?.[0]?.apy || 0) * Number(wethVault.balance || 0) / 100) : '$0.00'}
+                    </div>
+                  </div>
                 </div>
               </div>
 
