@@ -227,8 +227,6 @@ export function DepositFlow({
     }
   };
   
-  const quickDollarAmounts = ['100', '1000', '10000'];
-  
   const total = parseFloat(amount) ? 
     (depositType === 'eth' && ethPrice > 0 
       ? (parseFloat(amount) * ethPrice + parseFloat(gasFee))
@@ -385,63 +383,41 @@ export function DepositFlow({
             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
               {depositType === 'eth' ? 'ETH Amount' : `${vaultSymbol} Amount`}
             </label>
-            <input
-              type="number"
-              className="amountInput"
-              placeholder="0.000000"
-              value={amount}
-              onChange={(e) => handleTokenChange(e.target.value)}
-              step="0.000001"
-              min="0"
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                fontSize: '1rem',
-                border: '1px solid #e2e8f0',
-                borderRadius: '8px',
-                outline: 'none'
-              }}
-            />
-          </div>
-          
-          {/* Quick Dollar Amounts */}
-          <div className="quickAmounts" style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
-            {quickDollarAmounts.map((dollarAmt) => (
-              <button
-                key={dollarAmt}
-                className="quickButton"
-                onClick={() => handleDollarChange(dollarAmt)}
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <input
+                type="number"
+                className="amountInput"
+                placeholder="0.000000"
+                value={amount}
+                onChange={(e) => handleTokenChange(e.target.value)}
+                step="0.000001"
+                min="0"
                 style={{
                   flex: 1,
-                  padding: '0.5rem',
+                  padding: '0.75rem',
+                  fontSize: '1rem',
                   border: '1px solid #e2e8f0',
-                  borderRadius: '6px',
-                  background: 'white',
+                  borderRadius: '8px',
+                  outline: 'none'
+                }}
+              />
+              <button
+                onClick={handleMaxClick}
+                style={{
+                  padding: '0.75rem 1rem',
+                  border: '1px solid #6366f1',
+                  borderRadius: '8px',
+                  background: '#eef2ff',
+                  color: '#6366f1',
                   cursor: 'pointer',
                   fontSize: '0.875rem',
-                  fontWeight: '500'
+                  fontWeight: '600',
+                  whiteSpace: 'nowrap'
                 }}
               >
-                ${dollarAmt}
+                Max
               </button>
-            ))}
-            <button
-              className="quickButton"
-              onClick={handleMaxClick}
-              style={{
-                flex: 1,
-                padding: '0.5rem',
-                border: '1px solid #6366f1',
-                borderRadius: '6px',
-                background: '#eef2ff',
-                color: '#6366f1',
-                cursor: 'pointer',
-                fontSize: '0.875rem',
-                fontWeight: '600'
-              }}
-            >
-              Max
-            </button>
+            </div>
           </div>
           
           {/* Transaction Preview */}
@@ -596,8 +572,6 @@ export function WithdrawFlow({
     setDollarAmount(dollarAmt);
   };
   
-  const quickDollarAmounts = ['100', '500', '1000'];
-  
   return (
     <div className={`withdrawFlow ${className}`}>
       {/* Header */}
@@ -708,60 +682,40 @@ export function WithdrawFlow({
               <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
                 {vaultSymbol} Amount
               </label>
-              <input
-                type="number"
-                placeholder="0.000000"
-                value={tokenAmount}
-                onChange={(e) => handleTokenChange(e.target.value)}
-                step="0.000001"
-                min="0"
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  fontSize: '1rem',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px',
-                  outline: 'none'
-                }}
-              />
-            </div>
-            
-            {/* Quick Amount Buttons */}
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-              {quickDollarAmounts.map((dollarAmt) => (
-                <button
-                  key={dollarAmt}
-                  onClick={() => handleDollarChange(dollarAmt)}
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input
+                  type="number"
+                  placeholder="0.000000"
+                  value={tokenAmount}
+                  onChange={(e) => handleTokenChange(e.target.value)}
+                  step="0.000001"
+                  min="0"
                   style={{
                     flex: 1,
-                    padding: '0.5rem',
+                    padding: '0.75rem',
+                    fontSize: '1rem',
                     border: '1px solid #e2e8f0',
-                    borderRadius: '6px',
-                    background: 'white',
+                    borderRadius: '8px',
+                    outline: 'none'
+                  }}
+                />
+                <button
+                  onClick={handleMaxClick}
+                  style={{
+                    padding: '0.75rem 1rem',
+                    border: '1px solid #6366f1',
+                    borderRadius: '8px',
+                    background: '#eef2ff',
+                    color: '#6366f1',
                     cursor: 'pointer',
                     fontSize: '0.875rem',
-                    fontWeight: '500'
+                    fontWeight: '600',
+                    whiteSpace: 'nowrap'
                   }}
                 >
-                  ${dollarAmt}
+                  Max
                 </button>
-              ))}
-              <button
-                onClick={handleMaxClick}
-                style={{
-                  flex: 1,
-                  padding: '0.5rem',
-                  border: '1px solid #6366f1',
-                  borderRadius: '6px',
-                  background: '#eef2ff',
-                  color: '#6366f1',
-                  cursor: 'pointer',
-                  fontSize: '0.875rem',
-                  fontWeight: '600'
-                }}
-              >
-                Max
-              </button>
+              </div>
             </div>
             
             {/* Amount Preview */}
