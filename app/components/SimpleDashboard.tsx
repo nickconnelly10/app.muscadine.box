@@ -4,25 +4,22 @@ import { ConnectWallet } from '@coinbase/onchainkit/wallet';
 import { Earn, useMorphoVault } from '@coinbase/onchainkit/earn';
 import '@coinbase/onchainkit/styles.css';
 
-// Vault configurations
+// Vault configurations - no static values
 const VAULTS = [
   {
     address: '0xf7e26Fa48A568b8b0038e104DfD8ABdf0f99074F' as `0x${string}`,
     name: 'USDC Vault',
     symbol: 'USDC',
-    apy: '8.5%',
   },
   {
     address: '0xAeCc8113a7bD0CFAF7000EA7A31afFD4691ff3E9' as `0x${string}`,
     name: 'cbBTC Vault',
     symbol: 'cbBTC',
-    apy: '6.2%',
   },
   {
     address: '0x21e0d366272798da3A977FEBA699FCB91959d120' as `0x${string}`,
     name: 'WETH Vault',
     symbol: 'WETH',
-    apy: '7.8%',
   },
 ];
 
@@ -44,11 +41,6 @@ export default function SimpleDashboard() {
     vaultAddress: VAULTS[2].address,
     recipientAddress: address
   });
-
-  // Debug: Log vault data to console
-  console.log('USDC Vault:', usdcVault);
-  console.log('cbBTC Vault:', cbbtcVault);
-  console.log('WETH Vault:', wethVault);
 
   // Calculate portfolio totals using ONLY real OnchainKit data
   // Total Deposited: Sum of user's balance across all vaults (in USD)
@@ -74,12 +66,6 @@ export default function SimpleDashboard() {
     Number(wethVault.balance || 0) * (wethVault.totalApy || 0) / 100 / 12
   );
 
-  // Debug: Log calculated values
-  console.log('Total Deposited ($):', totalDeposited);
-  console.log('Total Interest Earned ($):', totalInterestEarned);
-  console.log('Net Return ($):', totalNetEarned);
-  console.log('Initial Deposited ($):', initialDeposited);
-  console.log('Expected Monthly ($):', expectedMonthly);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -290,7 +276,9 @@ export default function SimpleDashboard() {
                     padding: '0.25rem 0.75rem',
                     borderRadius: '9999px'
                   }}>
-                    {vault.apy} APY
+                    {vault.address === VAULTS[0].address ? (usdcVault.totalApy ? `${usdcVault.totalApy.toFixed(2)}%` : 'Loading...') :
+                     vault.address === VAULTS[1].address ? (cbbtcVault.totalApy ? `${cbbtcVault.totalApy.toFixed(2)}%` : 'Loading...') :
+                     vault.address === VAULTS[2].address ? (wethVault.totalApy ? `${wethVault.totalApy.toFixed(2)}%` : 'Loading...') : 'Loading...'} APY
                   </span>
                 </div>
               </div>
