@@ -316,6 +316,12 @@ export default function ModernDashboard() {
     }
   };
 
+  const handleBackToPortfolio = () => {
+    setActiveDeposit(null);
+    setDepositAmount('');
+    setCurrentStep(1);
+  };
+
   const handleConfirmDeposit = () => {
     // Handle deposit logic here
     console.log(`Depositing ${depositAmount} ${activeDeposit}`);
@@ -402,6 +408,7 @@ export default function ModernDashboard() {
             onAmountChange={setDepositAmount}
             onQuickAmount={handleQuickAmount}
             onConfirm={handleConfirmDeposit}
+            onBack={handleBackToPortfolio}
             maxAmount={
               activeDeposit === 'USDC' && usdcWalletBalance.data 
                 ? formatUnits(usdcWalletBalance.data.value, usdcWalletBalance.data.decimals)

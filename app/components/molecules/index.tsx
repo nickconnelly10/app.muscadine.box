@@ -156,6 +156,7 @@ interface DepositFlowProps {
   onAmountChange: (amount: string) => void;
   onQuickAmount: (amount: string) => void;
   onConfirm: () => void;
+  onBack: () => void;
   maxAmount: string;
   gasFee: string;
   className?: string;
@@ -170,6 +171,7 @@ export function DepositFlow({
   onAmountChange,
   onQuickAmount,
   onConfirm,
+  onBack,
   maxAmount,
   gasFee,
   className = ''
@@ -189,9 +191,28 @@ export function DepositFlow({
         ))}
       </div>
       
-      <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', fontSize: '1.25rem', fontWeight: '600' }}>
-        Deposit {vaultName}
-      </h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <button 
+          onClick={onBack}
+          className="backButton"
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#6366f1',
+            cursor: 'pointer',
+            fontSize: '1rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}
+        >
+          ← Back to Portfolio
+        </button>
+        <h2 style={{ textAlign: 'center', fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>
+          Deposit {vaultName}
+        </h2>
+        <div style={{ width: '120px' }}></div> {/* Spacer for centering */}
+      </div>
       
       <input
         type="number"
@@ -251,7 +272,7 @@ export function ModernHeader({ totalValue, className = '' }: ModernHeaderProps) 
   return (
     <header className={`modernHeader ${className}`}>
       <div className="brandSection">
-        <div className="brandText">Muscadine</div>
+        <a href="https://app.muscadine.box" className="brandText">Muscadine</a>
       </div>
       
       <div className="userSection">
