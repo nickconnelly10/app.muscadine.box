@@ -465,17 +465,32 @@ export default function ModernDashboard() {
         </div>
       ) : activeWithdraw ? (
         <div style={{ padding: '2rem', display: 'flex', justifyContent: 'center' }}>
-          <WithdrawFlow
-            vaultSymbol={activeWithdraw}
-            vaultName={
-              activeWithdraw === 'USDC' ? VAULTS_CONFIG.usdc.name :
-              activeWithdraw === 'cbBTC' ? VAULTS_CONFIG.cbbtc.name :
-              activeWithdraw === 'WETH' ? VAULTS_CONFIG.eth.name :
-              Object.values(VAULTS_CONFIG).find(v => v.symbol === activeWithdraw)?.name || ''
-            }
-            vaultAddress={Object.values(VAULTS_CONFIG).find(v => v.symbol === activeWithdraw)?.address || ''}
-            onBack={handleBackToPortfolio}
-          />
+          {(() => {
+            const activeVault = portfolioData.vaults.find(v => v.symbol === activeWithdraw);
+            return (
+              <WithdrawFlow
+                vaultSymbol={activeWithdraw}
+                vaultName={
+                  activeWithdraw === 'USDC' ? VAULTS_CONFIG.usdc.name :
+                  activeWithdraw === 'cbBTC' ? VAULTS_CONFIG.cbbtc.name :
+                  activeWithdraw === 'WETH' ? VAULTS_CONFIG.eth.name :
+                  Object.values(VAULTS_CONFIG).find(v => v.symbol === activeWithdraw)?.name || ''
+                }
+                vaultAddress={Object.values(VAULTS_CONFIG).find(v => v.symbol === activeWithdraw)?.address || ''}
+                vaultBalance={activeVault?.assetsAmount.toFixed(6) || '0'}
+                vaultBalanceUSD={`$${activeVault?.usdValue.toFixed(2) || '0.00'}`}
+                tokenPrice={
+                  activeWithdraw === 'USDC' ? tokenPrices.USDC :
+                  activeWithdraw === 'cbBTC' ? tokenPrices.cbBTC :
+                  activeWithdraw === 'WETH' ? tokenPrices.ETH :
+                  activeWithdraw === 'ETH' ? tokenPrices.ETH : 0
+                }
+                estimatedAPY={activeVault?.apy || 0}
+                projectedMonthlyEarnings={activeVault?.earned || '$0.00/mo'}
+                onBack={handleBackToPortfolio}
+              />
+            );
+          })()}
         </div>
       ) : (
         <PortfolioOverview
