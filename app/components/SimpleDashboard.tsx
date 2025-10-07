@@ -4,7 +4,7 @@ import { ConnectWallet } from '@coinbase/onchainkit/wallet';
 import { Earn, useMorphoVault } from '@coinbase/onchainkit/earn';
 import '@coinbase/onchainkit/styles.css';
 
-// Vault configurations - no static values
+// Vault configurations - using verified addresses
 const VAULTS = [
   {
     address: '0xf7e26Fa48A568b8b0038e104DfD8ABdf0f99074F' as `0x${string}`,
@@ -41,6 +41,22 @@ export default function SimpleDashboard() {
     vaultAddress: VAULTS[2].address,
     recipientAddress: address
   });
+
+  // Debug: Log vault status and errors
+  console.log('USDC Vault Status:', usdcVault.status, 'Error:', usdcVault.error);
+  console.log('cbBTC Vault Status:', cbbtcVault.status, 'Error:', cbbtcVault.error);
+  console.log('WETH Vault Status:', wethVault.status, 'Error:', wethVault.error);
+  
+  // Log detailed vault data for debugging
+  if (cbbtcVault.status === 'success') {
+    console.log('cbBTC Vault Data:', {
+      balance: cbbtcVault.balance,
+      totalApy: cbbtcVault.totalApy,
+      vaultName: cbbtcVault.vaultName,
+      asset: cbbtcVault.asset,
+      rewards: cbbtcVault.rewards
+    });
+  }
 
   // Calculate portfolio totals using ONLY real OnchainKit data
   // Total Deposited: Sum of user's balance across all vaults (in USD)
