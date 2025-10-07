@@ -5,10 +5,7 @@ import {
   Earn,
   DepositAmountInput,
   DepositBalance,
-  DepositButton,
-  WithdrawAmountInput,
-  WithdrawBalance,
-  WithdrawButton
+  DepositButton
 } from '@coinbase/onchainkit/earn';
 import { Button, Badge, Metric, VaultIcon } from '../atoms';
 
@@ -526,7 +523,7 @@ interface WithdrawFlowProps {
 export function WithdrawFlow({
   vaultSymbol,
   vaultName,
-  vaultAddress,
+  vaultAddress: _vaultAddress,
   onBack,
   vaultBalance = '0',
   vaultBalanceUSD = '$0.00',
@@ -705,6 +702,10 @@ export function WithdrawFlow({
             {tokenAmount || '0'} {vaultSymbol} (${dollarAmount})
           </span>
         </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+          <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Est. Gas Fee</span>
+          <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>$0.00</span>
+        </div>
         <div style={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
@@ -718,19 +719,27 @@ export function WithdrawFlow({
         </div>
       </div>
       
-      {/* OnchainKit Withdraw Interface */}
-      <div style={{ 
-        padding: '2rem', 
-        border: '1px solid #e2e8f0', 
-        borderRadius: '12px',
-        backgroundColor: '#f8fafc'
-      }}>
-        <Earn vaultAddress={vaultAddress as `0x${string}`}>
-          <WithdrawBalance />
-          <WithdrawAmountInput />
-          <WithdrawButton />
-        </Earn>
-      </div>
+      {/* Continue to Withdraw Button */}
+      <button
+        onClick={() => {
+          // This would trigger the actual OnchainKit withdraw flow
+          console.log('Continue to withdraw:', { tokenAmount, dollarAmount, vaultSymbol });
+        }}
+        style={{
+          width: '100%',
+          padding: '1rem',
+          fontSize: '1rem',
+          fontWeight: '600',
+          color: 'white',
+          backgroundColor: '#6366f1',
+          border: 'none',
+          borderRadius: '12px',
+          cursor: 'pointer',
+          marginTop: '1rem'
+        }}
+      >
+        Continue to Withdraw
+      </button>
       
       {/* Information Note */}
       <div style={{
