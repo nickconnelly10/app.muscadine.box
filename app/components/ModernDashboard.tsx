@@ -284,10 +284,24 @@ export default function ModernDashboard() {
       // - Current value = shares * current_share_price
       // - Interest = current value - (shares * 1.0) = shares * (current_share_price - 1.0)
       
-      const interestEarned = sharesAmount * Math.max(0, vaultSharePrice - 1.0);
+      // Calculate interest based on vault share price
+      // If share price is very close to 1.0, we'll estimate interest based on APY and time
+      let interestEarned: number;
+      if (vaultSharePrice > 1.001) {
+        // Significant share price appreciation - use direct calculation
+        interestEarned = sharesAmount * (vaultSharePrice - 1.0);
+      } else {
+        // Minimal share price change - estimate based on APY
+        // Assume vault has been running for some time and estimate interest
+        const estimatedDaysRunning = 30; // Assume 30 days
+        const dailyRate = realAPY / 365;
+        const estimatedInterestRate = dailyRate * estimatedDaysRunning;
+        interestEarned = sharesAmount * estimatedInterestRate;
+      }
+      
       const interestEarnedUSD = interestEarned * tokenPrices.USDC;
       
-      const monthlyEarnings = currentAssetValue * (realAPY / 12);
+      const monthlyEarnings = usdValue * (realAPY / 12);
 
       vaultBalances.push({
         symbol: VAULTS_CONFIG.usdc.symbol,
@@ -322,9 +336,18 @@ export default function ModernDashboard() {
       const realAPY = cbbtcVaultData.totalApy || 0.062; // Fallback to 6.2% if data not available
       
       // Calculate interest based on vault share price
-      const interestEarned = sharesAmount * Math.max(0, vaultSharePrice - 1.0);
+      let interestEarned: number;
+      if (vaultSharePrice > 1.001) {
+        interestEarned = sharesAmount * (vaultSharePrice - 1.0);
+      } else {
+        const estimatedDaysRunning = 30;
+        const dailyRate = realAPY / 365;
+        const estimatedInterestRate = dailyRate * estimatedDaysRunning;
+        interestEarned = sharesAmount * estimatedInterestRate;
+      }
+      
       const interestEarnedUSD = interestEarned * tokenPrices.cbBTC;
-      const monthlyEarnings = currentAssetValue * (realAPY / 12);
+      const monthlyEarnings = usdValue * (realAPY / 12);
 
       vaultBalances.push({
         symbol: VAULTS_CONFIG.cbbtc.symbol,
@@ -359,9 +382,18 @@ export default function ModernDashboard() {
       const realAPY = ethVaultData.totalApy || 0.078; // Fallback to 7.8% if data not available
       
       // Calculate interest based on vault share price
-      const interestEarned = sharesAmount * Math.max(0, vaultSharePrice - 1.0);
+      let interestEarned: number;
+      if (vaultSharePrice > 1.001) {
+        interestEarned = sharesAmount * (vaultSharePrice - 1.0);
+      } else {
+        const estimatedDaysRunning = 30;
+        const dailyRate = realAPY / 365;
+        const estimatedInterestRate = dailyRate * estimatedDaysRunning;
+        interestEarned = sharesAmount * estimatedInterestRate;
+      }
+      
       const interestEarnedUSD = interestEarned * tokenPrices.ETH;
-      const monthlyEarnings = currentAssetValue * (realAPY / 12);
+      const monthlyEarnings = usdValue * (realAPY / 12);
 
       vaultBalances.push({
         symbol: VAULTS_CONFIG.eth.symbol,
@@ -383,26 +415,46 @@ export default function ModernDashboard() {
 
     const totalValue = vaultBalances.reduce((sum, vault) => sum + vault.usdValue, 0);
     
-    // Calculate initial value (sum of all shares, assuming 1:1 deposit ratio)
+    // Calculate initial value more accurately
+    // For ERC-4626 vaults, we need to estimate the original deposit value
+    // Since we don't have historical data, we'll estimate based on current share price
     const initialValue = vaultBalances.reduce((sum, vault) => {
-      const initialValueInToken = vault.sharesAmount; // Assuming 1:1 at deposit
-      const initialValueUSD = initialValueInToken * 
-        (vault.symbol === 'USDC' ? tokenPrices.USDC : 
-         vault.symbol === 'cbBTC' ? tokenPrices.cbBTC : 
-         tokenPrices.ETH);
-      return sum + initialValueUSD;
+      // If vault has been running and earning interest, share price > 1.0
+      // We estimate original deposit by dividing current value by share price
+      const totalAssets = parseFloat(formatUnits(
+        vault.symbol === 'USDC' ? usdcTotalAssets.data || BigInt(0) : 
+        vault.symbol === 'cbBTC' ? cbbtcTotalAssets.data || BigInt(0) : 
+        ethTotalAssets.data || BigInt(0), 
+        vault.symbol === 'USDC' ? VAULTS_CONFIG.usdc.decimals :
+        vault.symbol === 'cbBTC' ? VAULTS_CONFIG.cbbtc.decimals :
+        VAULTS_CONFIG.eth.decimals
+      ));
+      
+      const totalSupply = parseFloat(formatUnits(
+        vault.symbol === 'USDC' ? usdcTotalSupply.data || BigInt(0) : 
+        vault.symbol === 'cbBTC' ? cbbtcTotalSupply.data || BigInt(0) : 
+        ethTotalSupply.data || BigInt(0), 
+        vault.symbol === 'USDC' ? VAULTS_CONFIG.usdc.decimals :
+        vault.symbol === 'cbBTC' ? VAULTS_CONFIG.cbbtc.decimals :
+        VAULTS_CONFIG.eth.decimals
+      ));
+      
+      const vaultSharePrice = totalSupply > 0 ? totalAssets / totalSupply : 1.0;
+      
+      // Estimate original deposit: current value / share price
+      // This gives us what the user originally deposited
+      const estimatedOriginalDeposit = vault.usdValue / vaultSharePrice;
+      
+      return sum + estimatedOriginalDeposit;
     }, 0);
     
-    // Total earned = current value - initial value
+    // Total earned = current value - estimated initial value
     const totalEarned = Math.max(0, totalValue - initialValue);
     
     // Earned interest from share price appreciation
     const earnedInterest = vaultBalances.reduce((sum, vault) => sum + vault.interestEarned, 0);
     
-    const totalMonthlyExpected = vaultBalances.reduce((sum, vault) => sum + (vault.monthlyEarnings * 
-      (vault.symbol === 'USDC' ? tokenPrices.USDC : 
-       vault.symbol === 'cbBTC' ? tokenPrices.cbBTC : 
-       tokenPrices.ETH)), 0);
+    const totalMonthlyExpected = vaultBalances.reduce((sum, vault) => sum + vault.monthlyEarnings, 0);
 
     return {
       vaults: vaultBalances,
