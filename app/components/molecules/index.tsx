@@ -2,6 +2,10 @@
 import React, { useState } from 'react';
 import { ConnectWallet } from '@coinbase/onchainkit/wallet';
 import { 
+  Earn,
+  DepositAmountInput,
+  DepositBalance,
+  DepositButton,
   WithdrawAmountInput,
   WithdrawBalance,
   WithdrawButton
@@ -121,7 +125,7 @@ export function PortfolioOverview({
   );
 }
 
-// Deposit Flow Component
+// Deposit Flow Component with OnchainKit Integration
 interface DepositFlowProps {
   vaultSymbol: string;
   vaultName: string;
@@ -135,71 +139,30 @@ interface DepositFlowProps {
   maxAmount: string;
   gasFee: string;
   tokenPrice: number;
+  vaultAddress?: string;
   className?: string;
 }
 
 export function DepositFlow({
-  vaultSymbol,
+  vaultSymbol: _vaultSymbol,
   vaultName,
-  currentStep,
-  totalSteps,
-  amount,
-  onAmountChange,
+  currentStep: _currentStep,
+  totalSteps: _totalSteps,
+  amount: _amount,
+  onAmountChange: _onAmountChange,
   _onQuickAmount,
-  onConfirm,
+  onConfirm: _onConfirm,
   onBack,
-  maxAmount,
-  gasFee,
-  tokenPrice,
+  maxAmount: _maxAmount,
+  gasFee: _gasFee,
+  tokenPrice: _tokenPrice,
+  vaultAddress,
   className = ''
 }: DepositFlowProps) {
-  const [dollarAmount, setDollarAmount] = useState('');
-  
-  // Convert dollar amount to token amount
-  const convertDollarToToken = (dollars: string) => {
-    if (!dollars || !tokenPrice) return '';
-    const dollarValue = parseFloat(dollars);
-    if (isNaN(dollarValue)) return '';
-    return (dollarValue / tokenPrice).toFixed(6);
-  };
-  
-  // Convert token amount to dollar amount
-  const convertTokenToDollar = (tokens: string) => {
-    if (!tokens || !tokenPrice) return '';
-    const tokenValue = parseFloat(tokens);
-    if (isNaN(tokenValue)) return '';
-    return (tokenValue * tokenPrice).toFixed(2);
-  };
-  
-  const handleDollarChange = (dollars: string) => {
-    setDollarAmount(dollars);
-    const tokenAmount = convertDollarToToken(dollars);
-    onAmountChange(tokenAmount);
-  };
-  
-  const handleTokenChange = (tokens: string) => {
-    onAmountChange(tokens);
-    const dollarAmount = convertTokenToDollar(tokens);
-    setDollarAmount(dollarAmount);
-  };
-  
-  const quickDollarAmounts = ['100', '500', '1000', 'Max'];
-  
-  const total = parseFloat(amount) && tokenPrice ? 
-    (parseFloat(amount) * tokenPrice + parseFloat(gasFee)).toFixed(2) : 
-    parseFloat(gasFee).toFixed(2);
-  
+  // If vault address is provided, use OnchainKit's Earn components
+  // Otherwise, show message to implement custom deposit logic
   return (
     <div className={`depositFlow ${className}`}>
-      <div className="stepIndicator">
-        {Array.from({ length: totalSteps }, (_, index) => (
-          <div
-            key={index}
-            className={`step ${index < currentStep ? 'stepCompleted' : index === currentStep ? 'stepActive' : ''}`}
-          />
-        ))}
-      </div>
-      
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <button 
           onClick={onBack}
@@ -220,102 +183,53 @@ export function DepositFlow({
         <h2 style={{ textAlign: 'center', fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>
           Deposit {vaultName}
         </h2>
-        <div style={{ width: '120px' }}></div> {/* Spacer for centering */}
+        <div style={{ width: '120px' }}></div>
       </div>
       
-      {/* Dollar Amount Input */}
-      <div style={{ marginBottom: '1rem' }}>
-        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
-          Dollar Amount (USD)
-        </label>
-        <input
-          type="number"
-          className="amountInput"
-          placeholder="0.00"
-          value={dollarAmount}
-          onChange={(e) => handleDollarChange(e.target.value)}
-          step="0.01"
-          min="0"
-        />
-      </div>
-      
-      {/* Token Amount Input */}
-      <div style={{ marginBottom: '1rem' }}>
-        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
-          {vaultSymbol} Amount
-        </label>
-        <input
-          type="number"
-          className="amountInput"
-          placeholder="0.000000"
-          value={amount}
-          onChange={(e) => handleTokenChange(e.target.value)}
-          step="0.000001"
-          min="0"
-        />
-      </div>
-      
-      {/* Quick Dollar Amounts */}
-      <div className="quickAmounts">
-        {quickDollarAmounts.map((dollarAmount) => (
-          <button
-            key={dollarAmount}
-            className="quickButton"
-            onClick={() => {
-              if (dollarAmount === 'Max') {
-                const maxDollars = parseFloat(maxAmount) * tokenPrice;
-                handleDollarChange(maxDollars.toFixed(2));
-              } else {
-                handleDollarChange(dollarAmount);
-              }
-            }}
-          >
-            ${dollarAmount}
-          </button>
-        ))}
-      </div>
-      
-      <div className="transactionPreview">
-        <div className="previewRow">
-          <span className="previewLabel">Amount</span>
-          <span className="previewValue">{amount} {vaultSymbol}</span>
+      {vaultAddress ? (
+        <div style={{ 
+          padding: '2rem', 
+          border: '1px solid #e2e8f0', 
+          borderRadius: '12px',
+          backgroundColor: '#f8fafc'
+        }}>
+          <Earn vaultAddress={vaultAddress as `0x${string}`}>
+            <DepositBalance />
+            <DepositAmountInput />
+            <DepositButton />
+          </Earn>
         </div>
-        <div className="previewRow">
-          <span className="previewLabel">Gas Fee</span>
-          <span className="previewValue">${gasFee}</span>
+      ) : (
+        <div style={{ 
+          padding: '2rem', 
+          textAlign: 'center',
+          border: '1px solid #e2e8f0', 
+          borderRadius: '12px',
+          backgroundColor: '#f8fafc'
+        }}>
+          <p>Deposit functionality requires vault address configuration.</p>
+          <Button variant="secondary" onClick={onBack}>
+            Back to Portfolio
+          </Button>
         </div>
-        <div className="previewRow">
-          <span className="previewLabel">Total</span>
-          <span className="previewValue">${total}</span>
-        </div>
-      </div>
-      
-      <Button 
-        variant="primary" 
-        size="lg" 
-        fullWidth 
-        onClick={onConfirm}
-        disabled={!amount || parseFloat(amount) <= 0}
-      >
-        Confirm Deposit
-      </Button>
+      )}
     </div>
   );
 }
 
 // Withdraw Flow Component
 interface WithdrawFlowProps {
-  _vaultSymbol: string;
+  vaultSymbol: string;
   vaultName: string;
-  _vaultAddress: string;
+  vaultAddress: string;
   onBack: () => void;
   className?: string;
 }
 
 export function WithdrawFlow({
-  _vaultSymbol,
+  vaultSymbol: _vaultSymbol,
   vaultName,
-  _vaultAddress,
+  vaultAddress,
   onBack,
   className = ''
 }: WithdrawFlowProps) {
@@ -350,9 +264,13 @@ export function WithdrawFlow({
         borderRadius: '12px',
         backgroundColor: '#f8fafc'
       }}>
-        <WithdrawBalance />
-        <WithdrawAmountInput />
-        <WithdrawButton />
+        <Earn
+          vaultAddress={vaultAddress as `0x${string}`}
+        >
+          <WithdrawBalance />
+          <WithdrawAmountInput />
+          <WithdrawButton />
+        </Earn>
       </div>
     </div>
   );

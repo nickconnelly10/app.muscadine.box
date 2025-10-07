@@ -1,4 +1,5 @@
 "use client";
+import Image from 'next/image';
 import { 
   Earn, 
   DepositAmountInput,
@@ -434,11 +435,11 @@ export default function LendingPage() {
                   <div className={styles.assetIcon}>
                     {vault.tokenSymbol === 'USDC' && (
                       <>
-                        <img 
+                        <Image 
                           src="https://cryptologos.cc/logos/usd-coin-usdc-logo.png"
                           alt="USDC"
-                          width="40"
-                          height="40"
+                          width={40}
+                          height={40}
                           className={styles.tokenLogo}
                           onError={(e) => {
                             e.currentTarget.style.display = 'none';
@@ -455,11 +456,11 @@ export default function LendingPage() {
                     )}
                     {vault.tokenSymbol === 'cbBTC' && (
                       <>
-                        <img 
+                        <Image 
                           src="https://cryptologos.cc/logos/bitcoin-btc-logo.png"
                           alt="cbBTC"
-                          width="40"
-                          height="40"
+                          width={40}
+                          height={40}
                           className={styles.tokenLogo}
                           onError={(e) => {
                             e.currentTarget.style.display = 'none';
@@ -476,11 +477,11 @@ export default function LendingPage() {
                     )}
                     {vault.tokenSymbol === 'WETH' && (
                       <>
-                        <img 
+                        <Image 
                           src="https://cryptologos.cc/logos/ethereum-eth-logo.png"
                           alt="WETH"
-                          width="40"
-                          height="40"
+                          width={40}
+                          height={40}
                           className={styles.tokenLogo}
                           onError={(e) => {
                             e.currentTarget.style.display = 'none';

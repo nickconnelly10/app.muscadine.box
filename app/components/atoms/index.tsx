@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import Image from 'next/image';
 
 // Button Component
 interface ButtonProps {
@@ -183,9 +184,11 @@ export function VaultIcon({ symbol, size = 48, className = '' }: VaultIconProps)
           justifyContent: 'center'
         }}
       >
-        <img
+        <Image
           src={iconUrl}
           alt={symbol}
+          width={size}
+          height={size}
           style={{
             width: '100%',
             height: '100%',

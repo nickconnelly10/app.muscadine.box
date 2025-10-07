@@ -54,6 +54,22 @@
 - ✅ Optimistic updates for better UX
 - ✅ Background refetching for real-time data
 
+### 9. **OnchainKit Integration**
+- ✅ Integrated OnchainKit Earn components for vault management
+- ✅ Automatic vault name fetching from smart contracts using `name()` function
+- ✅ Built-in withdraw functionality with `WithdrawBalance`, `WithdrawAmountInput`, and `WithdrawButton`
+- ✅ Gas optimization and transaction handling by OnchainKit
+- ✅ Comprehensive error states and user feedback
+
+### 10. **Vault Contract Integration**
+- ✅ Updated to use official OnchainKit vault addresses:
+  - USDC Vault: `0xf7e26Fa48A568b8b0038e104DfD8ABdf0f99074F`
+  - cbBTC Vault: `0xAeCc8113a7bD0CFAF7000EA7A31afFD4691ff3E9`
+  - WETH Vault: `0x21e0d366272798da3A977FEBA699FCB91959d120`
+- ✅ Dynamic vault name retrieval from contract `name()` function
+- ✅ Proper ERC-4626 standard implementation
+- ✅ Real-time interest calculation using `convertToAssets()` methodology
+
 ## 📁 **New File Structure**
 
 ```

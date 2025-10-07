@@ -221,53 +221,60 @@ export function useVaultBalances(vaults: Record<string, VaultConfig>, tokenPrice
     },
   });
 
-  // Calculate vault balances
+  // Calculate vault balances with corrected interest calculation
   const vaultBalances: VaultBalance[] = [];
 
   if (usdcVaultBalance.data && usdcConvertToAssets.data) {
+    const sharesAmount = parseFloat(formatUnits(usdcVaultBalance.data, vaults.usdc.decimals));
     const currentValue = parseFloat(formatUnits(usdcConvertToAssets.data, vaults.usdc.decimals));
     const usdValue = currentValue * tokenPrices.USDC;
-    const estimatedInterest = currentValue * 0.05; // 5% APY estimate
-    const interestUsd = estimatedInterest * tokenPrices.USDC;
+    
+    // Correct interest calculation: current value - original deposit (shares)
+    const actualInterest = Math.max(0, currentValue - sharesAmount);
+    const interestUsd = actualInterest * tokenPrices.USDC;
 
     vaultBalances.push({
       vault: vaults.usdc,
       balance: currentValue,
       formatted: currentValue.toFixed(6),
       usdValue: usdValue,
-      interest: estimatedInterest,
+      interest: actualInterest,
       interestUsd: interestUsd,
     });
   }
 
   if (cbbtcVaultBalance.data && cbbtcConvertToAssets.data) {
+    const sharesAmount = parseFloat(formatUnits(cbbtcVaultBalance.data, vaults.cbbtc.decimals));
     const currentValue = parseFloat(formatUnits(cbbtcConvertToAssets.data, vaults.cbbtc.decimals));
     const usdValue = currentValue * tokenPrices.cbBTC;
-    const estimatedInterest = currentValue * 0.05; // 5% APY estimate
-    const interestUsd = estimatedInterest * tokenPrices.cbBTC;
+    
+    const actualInterest = Math.max(0, currentValue - sharesAmount);
+    const interestUsd = actualInterest * tokenPrices.cbBTC;
 
     vaultBalances.push({
       vault: vaults.cbbtc,
       balance: currentValue,
       formatted: currentValue.toFixed(6),
       usdValue: usdValue,
-      interest: estimatedInterest,
+      interest: actualInterest,
       interestUsd: interestUsd,
     });
   }
 
   if (ethVaultBalance.data && ethConvertToAssets.data) {
+    const sharesAmount = parseFloat(formatUnits(ethVaultBalance.data, vaults.eth.decimals));
     const currentValue = parseFloat(formatUnits(ethConvertToAssets.data, vaults.eth.decimals));
     const usdValue = currentValue * tokenPrices.ETH;
-    const estimatedInterest = currentValue * 0.05; // 5% APY estimate
-    const interestUsd = estimatedInterest * tokenPrices.ETH;
+    
+    const actualInterest = Math.max(0, currentValue - sharesAmount);
+    const interestUsd = actualInterest * tokenPrices.ETH;
 
     vaultBalances.push({
       vault: vaults.eth,
       balance: currentValue,
       formatted: currentValue.toFixed(6),
       usdValue: usdValue,
-      interest: estimatedInterest,
+      interest: actualInterest,
       interestUsd: interestUsd,
     });
   }
