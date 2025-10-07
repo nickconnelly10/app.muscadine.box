@@ -575,6 +575,7 @@ export default function ModernDashboard() {
               activeDeposit === 'WETH' ? VAULTS_CONFIG.eth.address :
               Object.values(VAULTS_CONFIG).find(v => v.symbol === activeDeposit)?.address || ''
             }
+            vaultData={portfolioData.vaults.find(v => v.symbol === activeDeposit)}
             onBack={handleBackToPortfolio}
           />
         </div>
@@ -594,6 +595,7 @@ export default function ModernDashboard() {
               activeWithdraw === 'WETH' ? VAULTS_CONFIG.eth.address :
               Object.values(VAULTS_CONFIG).find(v => v.symbol === activeWithdraw)?.address || ''
             }
+            vaultData={portfolioData.vaults.find(v => v.symbol === activeWithdraw)}
             onBack={handleBackToPortfolio}
           />
         </div>

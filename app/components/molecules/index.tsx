@@ -3,6 +3,8 @@ import React from 'react';
 import { ConnectWallet } from '@coinbase/onchainkit/wallet';
 import { 
   Earn,
+  EarnDeposit,
+  EarnWithdraw,
   DepositAmountInput,
   DepositBalance,
   DepositButton,
@@ -170,14 +172,31 @@ interface DepositFlowProps {
   vaultName: string;
   onBack: () => void;
   vaultAddress: string;
+  vaultData?: {
+    symbol: string;
+    name: string;
+    description: string;
+    apy: number;
+    deposited: string;
+    depositedAmount?: number;
+    earned: string;
+    earnedAmount?: number;
+    status: 'active' | 'inactive';
+    usdValue: number;
+    sharesAmount: number;
+    assetsAmount: number;
+    interestEarned: number;
+    monthlyEarnings: number;
+  };
   className?: string;
 }
 
 export function DepositFlow({
-  vaultSymbol: _vaultSymbol,
+  vaultSymbol,
   vaultName,
   onBack,
   vaultAddress,
+  vaultData,
   className = ''
 }: DepositFlowProps) {
   return (
@@ -206,7 +225,88 @@ export function DepositFlow({
         <div style={{ width: '120px' }}></div>
       </div>
       
-      {/* OnchainKit Earn Component */}
+      {/* Vault Information Card */}
+      <div style={{ 
+        padding: '1.5rem', 
+        border: '1px solid #e2e8f0', 
+        borderRadius: '12px',
+        backgroundColor: '#f8fafc',
+        marginBottom: '1.5rem',
+        boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+          <VaultIcon symbol={vaultSymbol} />
+          <div>
+            <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: '600', color: '#0f172a' }}>
+              {vaultName}
+            </h3>
+            <p style={{ margin: 0, fontSize: '0.875rem', color: '#64748b' }}>
+              Earn interest on {vaultSymbol} deposits with Morpho
+            </p>
+          </div>
+        </div>
+        
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+          gap: '1rem'
+        }}>
+          <div style={{ 
+            padding: '0.75rem', 
+            backgroundColor: '#ffffff', 
+            borderRadius: '8px',
+            border: '1px solid #e2e8f0'
+          }}>
+            <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '500', marginBottom: '0.25rem' }}>
+              Current APY
+            </div>
+            <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#10b981' }}>
+              {vaultData ? `${vaultData.apy.toFixed(2)}%` : 'Loading...'}
+            </div>
+          </div>
+          <div style={{ 
+            padding: '0.75rem', 
+            backgroundColor: '#ffffff', 
+            borderRadius: '8px',
+            border: '1px solid #e2e8f0'
+          }}>
+            <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '500', marginBottom: '0.25rem' }}>
+              Total Deposited
+            </div>
+            <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#0f172a' }}>
+              {vaultData ? vaultData.deposited : 'Loading...'}
+            </div>
+          </div>
+          <div style={{ 
+            padding: '0.75rem', 
+            backgroundColor: '#ffffff', 
+            borderRadius: '8px',
+            border: '1px solid #e2e8f0'
+          }}>
+            <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '500', marginBottom: '0.25rem' }}>
+              Interest Earned
+            </div>
+            <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#10b981' }}>
+              {vaultData ? vaultData.earned : 'Loading...'}
+            </div>
+          </div>
+          <div style={{ 
+            padding: '0.75rem', 
+            backgroundColor: '#ffffff', 
+            borderRadius: '8px',
+            border: '1px solid #e2e8f0'
+          }}>
+            <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '500', marginBottom: '0.25rem' }}>
+              Available to Deposit
+            </div>
+            <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#6366f1' }}>
+              Check Wallet
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* OnchainKit Earn Component with comprehensive UI */}
       <div style={{ 
         padding: '2rem', 
         border: '1px solid #e2e8f0', 
@@ -215,13 +315,7 @@ export function DepositFlow({
         boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)'
       }}>
         <Earn vaultAddress={vaultAddress as `0x${string}`} isSponsored={false}>
-          <div style={{ marginBottom: '1.5rem' }}>
-            <DepositBalance />
-          </div>
-          <div style={{ marginBottom: '1.5rem' }}>
-            <DepositAmountInput />
-          </div>
-          <DepositButton />
+          <EarnDeposit />
         </Earn>
       </div>
       
@@ -246,14 +340,31 @@ interface WithdrawFlowProps {
   vaultSymbol: string;
   vaultName: string;
   vaultAddress: string;
+  vaultData?: {
+    symbol: string;
+    name: string;
+    description: string;
+    apy: number;
+    deposited: string;
+    depositedAmount?: number;
+    earned: string;
+    earnedAmount?: number;
+    status: 'active' | 'inactive';
+    usdValue: number;
+    sharesAmount: number;
+    assetsAmount: number;
+    interestEarned: number;
+    monthlyEarnings: number;
+  };
   onBack: () => void;
   className?: string;
 }
 
 export function WithdrawFlow({
-  vaultSymbol: _vaultSymbol,
+  vaultSymbol,
   vaultName,
   vaultAddress,
+  vaultData,
   onBack,
   className = ''
 }: WithdrawFlowProps) {
@@ -283,7 +394,75 @@ export function WithdrawFlow({
         <div style={{ width: '120px' }}></div>
       </div>
 
-      {/* OnchainKit Earn Component */}
+      {/* Vault Information Card */}
+      <div style={{ 
+        padding: '1.5rem', 
+        border: '1px solid #e2e8f0', 
+        borderRadius: '12px',
+        backgroundColor: '#f8fafc',
+        marginBottom: '1.5rem',
+        boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+          <VaultIcon symbol={vaultSymbol} />
+          <div>
+            <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: '600', color: '#0f172a' }}>
+              {vaultName}
+            </h3>
+            <p style={{ margin: 0, fontSize: '0.875rem', color: '#64748b' }}>
+              Withdraw your {vaultSymbol} deposits from Morpho vault
+            </p>
+          </div>
+        </div>
+        
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+          gap: '1rem'
+        }}>
+          <div style={{ 
+            padding: '0.75rem', 
+            backgroundColor: '#ffffff', 
+            borderRadius: '8px',
+            border: '1px solid #e2e8f0'
+          }}>
+            <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '500', marginBottom: '0.25rem' }}>
+              Available Balance
+            </div>
+            <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#0f172a' }}>
+              {vaultData ? vaultData.deposited : 'Loading...'}
+            </div>
+          </div>
+          <div style={{ 
+            padding: '0.75rem', 
+            backgroundColor: '#ffffff', 
+            borderRadius: '8px',
+            border: '1px solid #e2e8f0'
+          }}>
+            <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '500', marginBottom: '0.25rem' }}>
+              Interest Earned
+            </div>
+            <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#10b981' }}>
+              {vaultData ? vaultData.earned : 'Loading...'}
+            </div>
+          </div>
+          <div style={{ 
+            padding: '0.75rem', 
+            backgroundColor: '#ffffff', 
+            borderRadius: '8px',
+            border: '1px solid #e2e8f0'
+          }}>
+            <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '500', marginBottom: '0.25rem' }}>
+              Total Value
+            </div>
+            <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#0f172a' }}>
+              {vaultData ? vaultData.deposited : 'Loading...'}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* OnchainKit Earn Component with comprehensive UI */}
       <div style={{ 
         padding: '2rem', 
         border: '1px solid #e2e8f0', 
@@ -292,13 +471,7 @@ export function WithdrawFlow({
         boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)'
       }}>
         <Earn vaultAddress={vaultAddress as `0x${string}`} isSponsored={false}>
-          <div style={{ marginBottom: '1.5rem' }}>
-            <WithdrawBalance />
-          </div>
-          <div style={{ marginBottom: '1.5rem' }}>
-            <WithdrawAmountInput />
-          </div>
-          <WithdrawButton />
+          <EarnWithdraw />
         </Earn>
       </div>
       
@@ -306,11 +479,11 @@ export function WithdrawFlow({
       <div style={{
         marginTop: '1.5rem',
         padding: '1rem',
-        backgroundColor: '#eff6ff',
+        backgroundColor: '#fef3c7',
         borderRadius: '8px',
-        border: '1px solid #bfdbfe',
+        border: '1px solid #fbbf24',
         fontSize: '0.875rem',
-        color: '#1e40af'
+        color: '#92400e'
       }}>
         <strong>Note:</strong> Withdrawing will remove your funds from the vault and stop earning interest. 
         You can deposit again anytime to resume earning.
