@@ -80,7 +80,9 @@ export function VaultCard({
 // Portfolio Overview Component
 interface PortfolioOverviewProps {
   totalValue: string;
+  initialValue: string;
   totalEarned: string;
+  earnedInterest: string;
   totalMonthlyExpected?: string;
   vaults: Array<{
     symbol: string;
@@ -102,7 +104,9 @@ interface PortfolioOverviewProps {
 
 export function PortfolioOverview({ 
   totalValue, 
+  initialValue,
   totalEarned,
+  earnedInterest,
   totalMonthlyExpected, 
   vaults, 
   onVaultAction, 
@@ -112,10 +116,37 @@ export function PortfolioOverview({
     <div className={`portfolioOverview ${className}`}>
       <div className="portfolioHeader">
         <h1 className="portfolioTitle">Portfolio Overview</h1>
-        <p className="portfolioSubtitle">
-          Total Value: {totalValue} • Earned: {totalEarned}
-          {totalMonthlyExpected && ` • Expected: ${totalMonthlyExpected}`}
-        </p>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '1rem',
+          marginTop: '1rem',
+          padding: '1.5rem',
+          backgroundColor: '#f8fafc',
+          borderRadius: '12px',
+          border: '1px solid #e2e8f0'
+        }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <span style={{ fontSize: '0.875rem', color: '#64748b', fontWeight: '500' }}>Total Value</span>
+            <span style={{ fontSize: '1.5rem', fontWeight: '700', color: '#0f172a' }}>{totalValue}</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <span style={{ fontSize: '0.875rem', color: '#64748b', fontWeight: '500' }}>Initial Value</span>
+            <span style={{ fontSize: '1.5rem', fontWeight: '700', color: '#0f172a' }}>{initialValue}</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <span style={{ fontSize: '0.875rem', color: '#64748b', fontWeight: '500' }}>Total Earned</span>
+            <span style={{ fontSize: '1.5rem', fontWeight: '700', color: '#10b981' }}>{totalEarned}</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <span style={{ fontSize: '0.875rem', color: '#64748b', fontWeight: '500' }}>Earned Interest</span>
+            <span style={{ fontSize: '1.5rem', fontWeight: '700', color: '#10b981' }}>{earnedInterest}</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <span style={{ fontSize: '0.875rem', color: '#64748b', fontWeight: '500' }}>Expected</span>
+            <span style={{ fontSize: '1.5rem', fontWeight: '700', color: '#6366f1' }}>{totalMonthlyExpected}/month</span>
+          </div>
+        </div>
       </div>
       
       <div className="portfolioGrid">

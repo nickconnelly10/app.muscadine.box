@@ -413,10 +413,23 @@ export default function ModernDashboard() {
     }
 
     const totalValue = vaultBalances.reduce((sum, vault) => sum + vault.usdValue, 0);
-    const totalEarned = vaultBalances.reduce((sum, vault) => sum + (vault.interestEarned * 
-      (vault.symbol === 'USDC' ? tokenPrices.USDC : 
-       vault.symbol === 'cbBTC' ? tokenPrices.cbBTC : 
-       tokenPrices.ETH)), 0);
+    
+    // Calculate initial value (sum of all shares, assuming 1:1 deposit ratio)
+    const initialValue = vaultBalances.reduce((sum, vault) => {
+      const initialValueInToken = vault.sharesAmount; // Assuming 1:1 at deposit
+      const initialValueUSD = initialValueInToken * 
+        (vault.symbol === 'USDC' ? tokenPrices.USDC : 
+         vault.symbol === 'cbBTC' ? tokenPrices.cbBTC : 
+         tokenPrices.ETH);
+      return sum + initialValueUSD;
+    }, 0);
+    
+    // Total earned = current value - initial value
+    const totalEarned = Math.max(0, totalValue - initialValue);
+    
+    // Earned interest from share price appreciation
+    const earnedInterest = vaultBalances.reduce((sum, vault) => sum + vault.interestEarned, 0);
+    
     const totalMonthlyExpected = vaultBalances.reduce((sum, vault) => sum + (vault.monthlyEarnings * 
       (vault.symbol === 'USDC' ? tokenPrices.USDC : 
        vault.symbol === 'cbBTC' ? tokenPrices.cbBTC : 
@@ -425,8 +438,10 @@ export default function ModernDashboard() {
     return {
       vaults: vaultBalances,
       totalValue: `$${totalValue.toFixed(2)}`,
+      initialValue: `$${initialValue.toFixed(2)}`,
       totalEarned: `$${totalEarned.toFixed(2)}`,
-      totalMonthlyExpected: `$${totalMonthlyExpected.toFixed(2)}/mo`
+      earnedInterest: `$${earnedInterest.toFixed(2)}`,
+      totalMonthlyExpected: `$${totalMonthlyExpected.toFixed(2)}`
     };
   }, [
     usdcVaultBalance.data, cbbtcVaultBalance.data, ethVaultBalance.data,
@@ -652,7 +667,9 @@ export default function ModernDashboard() {
       ) : (
         <PortfolioOverview
           totalValue={portfolioData.totalValue}
+          initialValue={portfolioData.initialValue}
           totalEarned={portfolioData.totalEarned}
+          earnedInterest={portfolioData.earnedInterest}
           totalMonthlyExpected={portfolioData.totalMonthlyExpected}
           vaults={portfolioData.vaults}
           onVaultAction={handleVaultAction}
