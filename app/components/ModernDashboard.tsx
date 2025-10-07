@@ -223,22 +223,13 @@ export default function ModernDashboard() {
       // Get vault's current share price (assets per share)
       const currentSharePrice = sharesAmount > 0 ? currentAssetValue / sharesAmount : 1.0;
       
-      // Estimate interest earned based on vault's yield accumulation
-      // Morpho vaults typically have share prices > 1.0 due to yield accumulation
-      const baseSharePrice = 1.0; // Most ERC-4626 vaults start at 1:1
-      const sharePriceGrowth = Math.max(0, currentSharePrice - baseSharePrice);
-      
       // Calculate interest earned from share price appreciation
-      const interestEarned = sharesAmount * sharePriceGrowth;
+      // In ERC-4626 vaults, the share price increases as interest accrues
+      // Initial deposits typically receive shares at ~1:1 ratio
+      // Current value is higher than shares due to accumulated interest
+      const interestEarned = Math.max(0, currentAssetValue - sharesAmount);
       const interestEarnedUSD = interestEarned * tokenPrices.USDC;
       
-      // If vault is new or no significant growth, show estimated earnings
-      // This simulates what users would see in a real vault
-      const simulatedInterestRate = 0.02; // 2% of deposit as earned interest
-      const simulatedEarned = usdValue * simulatedInterestRate;
-      
-      // Use the higher of actual or simulated interest
-      const finalInterestEarned = Math.max(interestEarnedUSD, simulatedEarned);
       const monthlyEarnings = currentAssetValue * (estimatedAPY / 12);
 
       vaultBalances.push({
@@ -247,12 +238,12 @@ export default function ModernDashboard() {
         description: VAULTS_CONFIG.usdc.description,
         apy: estimatedAPY * 100,
         deposited: `$${usdValue.toFixed(2)}`,
-        earned: `$${finalInterestEarned.toFixed(2)}`,
+        earned: `$${interestEarnedUSD.toFixed(2)}`,
         status: 'active' as const,
         usdValue,
         sharesAmount,
         assetsAmount: currentAssetValue,
-        interestEarned: finalInterestEarned,
+        interestEarned: interestEarnedUSD,
         monthlyEarnings
       });
     }
@@ -512,6 +503,12 @@ export default function ModernDashboard() {
               activeDeposit === 'cbBTC' ? tokenPrices.cbBTC :
               activeDeposit === 'ETH' ? tokenPrices.ETH : 0
             }
+            ethBalance={
+              ethWalletBalance.data 
+                ? formatUnits(ethWalletBalance.data.value, ethWalletBalance.data.decimals)
+                : "0"
+            }
+            ethPrice={tokenPrices.ETH}
           />
         </div>
       ) : activeWithdraw ? (
@@ -537,7 +534,6 @@ export default function ModernDashboard() {
                   activeWithdraw === 'ETH' ? tokenPrices.ETH : 0
                 }
                 estimatedAPY={activeVault?.apy || 0}
-                projectedMonthlyEarnings={activeVault?.earned || '$0.00/mo'}
                 onBack={handleBackToPortfolio}
               />
             );

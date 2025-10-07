@@ -145,6 +145,8 @@ interface DepositFlowProps {
   gasFee: string;
   tokenPrice: number;
   vaultAddress?: string;
+  ethBalance?: string;
+  ethPrice?: number;
   className?: string;
 }
 
@@ -162,25 +164,42 @@ export function DepositFlow({
   gasFee,
   tokenPrice,
   vaultAddress,
+  ethBalance = '0',
+  ethPrice = 0,
   className = ''
 }: DepositFlowProps) {
   const [dollarAmount, setDollarAmount] = React.useState('');
   const [showOnchainKit, setShowOnchainKit] = React.useState(false);
+  const [depositType, setDepositType] = React.useState<'token' | 'eth'>('token');
   
   // Convert dollar amount to token amount
   const convertDollarToToken = (dollars: string) => {
-    if (!dollars || !tokenPrice) return '';
+    if (!dollars) return '';
     const dollarValue = parseFloat(dollars);
     if (isNaN(dollarValue)) return '';
-    return (dollarValue / tokenPrice).toFixed(8);
+    if (depositType === 'eth' && ethPrice > 0) {
+      // For ETH deposits, convert USD to ETH
+      return (dollarValue / ethPrice).toFixed(8);
+    } else if (tokenPrice > 0) {
+      // For token deposits, convert USD to token
+      return (dollarValue / tokenPrice).toFixed(8);
+    }
+    return '';
   };
   
   // Convert token amount to dollar amount
   const convertTokenToDollar = (tokens: string) => {
-    if (!tokens || !tokenPrice) return '';
+    if (!tokens) return '';
     const tokenValue = parseFloat(tokens);
     if (isNaN(tokenValue)) return '';
-    return (tokenValue * tokenPrice).toFixed(2);
+    if (depositType === 'eth' && ethPrice > 0) {
+      // For ETH deposits, convert ETH to USD
+      return (tokenValue * ethPrice).toFixed(2);
+    } else if (tokenPrice > 0) {
+      // For token deposits, convert token to USD
+      return (tokenValue * tokenPrice).toFixed(2);
+    }
+    return '';
   };
   
   const handleDollarChange = (dollars: string) => {
@@ -196,17 +215,33 @@ export function DepositFlow({
   };
   
   const handleMaxClick = () => {
-    const maxDollars = parseFloat(maxAmount) * tokenPrice;
-    handleDollarChange(maxDollars.toFixed(2));
+    if (depositType === 'eth' && ethPrice > 0) {
+      const maxDollars = parseFloat(ethBalance) * ethPrice;
+      handleDollarChange(maxDollars.toFixed(2));
+    } else {
+      const maxDollars = parseFloat(maxAmount) * tokenPrice;
+      handleDollarChange(maxDollars.toFixed(2));
+    }
   };
   
-  const quickDollarAmounts = ['100', '500', '1000'];
+  const quickDollarAmounts = ['100', '1000', '10000'];
   
-  const total = parseFloat(amount) && tokenPrice ? 
-    (parseFloat(amount) * tokenPrice + parseFloat(gasFee)).toFixed(2) : 
+  const total = parseFloat(amount) ? 
+    (depositType === 'eth' && ethPrice > 0 
+      ? (parseFloat(amount) * ethPrice + parseFloat(gasFee))
+      : tokenPrice > 0 
+        ? (parseFloat(amount) * tokenPrice + parseFloat(gasFee))
+        : parseFloat(gasFee)
+    ).toFixed(2) : 
     parseFloat(gasFee).toFixed(2);
   
-  const amountUSD = amount && tokenPrice ? (parseFloat(amount) * tokenPrice).toFixed(2) : '0.00';
+  const amountUSD = amount ? 
+    (depositType === 'eth' && ethPrice > 0 
+      ? (parseFloat(amount) * ethPrice).toFixed(2)
+      : tokenPrice > 0 
+        ? (parseFloat(amount) * tokenPrice).toFixed(2)
+        : '0.00'
+    ) : '0.00';
   
   return (
     <div className={`depositFlow ${className}`}>
@@ -246,6 +281,49 @@ export function DepositFlow({
       
       {!showOnchainKit ? (
         <>
+          {/* Deposit Type Selector for WETH Vault */}
+          {vaultSymbol === 'WETH' && (
+            <div style={{ marginBottom: '1.5rem' }}>
+              <div style={{ fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>
+                Deposit Type
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  onClick={() => setDepositType('token')}
+                  style={{
+                    flex: 1,
+                    padding: '0.75rem',
+                    border: `1px solid ${depositType === 'token' ? '#6366f1' : '#e2e8f0'}`,
+                    borderRadius: '8px',
+                    background: depositType === 'token' ? '#eef2ff' : 'white',
+                    color: depositType === 'token' ? '#6366f1' : '#64748b',
+                    cursor: 'pointer',
+                    fontSize: '0.875rem',
+                    fontWeight: '500'
+                  }}
+                >
+                  WETH
+                </button>
+                <button
+                  onClick={() => setDepositType('eth')}
+                  style={{
+                    flex: 1,
+                    padding: '0.75rem',
+                    border: `1px solid ${depositType === 'eth' ? '#6366f1' : '#e2e8f0'}`,
+                    borderRadius: '8px',
+                    background: depositType === 'eth' ? '#eef2ff' : 'white',
+                    color: depositType === 'eth' ? '#6366f1' : '#64748b',
+                    cursor: 'pointer',
+                    fontSize: '0.875rem',
+                    fontWeight: '500'
+                  }}
+                >
+                  ETH (Auto-convert to WETH)
+                </button>
+              </div>
+            </div>
+          )}
+          
           {/* Vault Information */}
           <div style={{ 
             marginBottom: '1.5rem', 
@@ -255,15 +333,22 @@ export function DepositFlow({
             border: '1px solid #e2e8f0'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Available Balance</span>
+              <span style={{ fontSize: '0.875rem', color: '#64748b' }}>
+                Available Balance ({depositType === 'eth' ? 'ETH' : vaultSymbol})
+              </span>
               <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>
-                {parseFloat(maxAmount).toFixed(6)} {vaultSymbol} (${(parseFloat(maxAmount) * tokenPrice).toFixed(2)})
+                {depositType === 'eth' 
+                  ? `${parseFloat(ethBalance).toFixed(6)} ETH ($${(parseFloat(ethBalance) * ethPrice).toFixed(2)})`
+                  : `${parseFloat(maxAmount).toFixed(6)} ${vaultSymbol} ($${(parseFloat(maxAmount) * tokenPrice).toFixed(2)})`
+                }
               </span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Token Price</span>
+              <span style={{ fontSize: '0.875rem', color: '#64748b' }}>
+                {depositType === 'eth' ? 'ETH Price' : 'Token Price'}
+              </span>
               <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>
-                ${tokenPrice.toLocaleString()}
+                ${depositType === 'eth' ? ethPrice.toLocaleString() : tokenPrice.toLocaleString()}
               </span>
             </div>
           </div>
@@ -295,7 +380,7 @@ export function DepositFlow({
           {/* Token Amount Input */}
           <div style={{ marginBottom: '1rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
-              {vaultSymbol} Amount
+              {depositType === 'eth' ? 'ETH Amount' : `${vaultSymbol} Amount`}
             </label>
             <input
               type="number"
@@ -367,7 +452,7 @@ export function DepositFlow({
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
               <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Amount</span>
               <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>
-                {amount || '0'} {vaultSymbol} (${amountUSD})
+                {amount || '0'} {depositType === 'eth' ? 'ETH' : vaultSymbol} (${amountUSD})
               </span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
@@ -456,7 +541,6 @@ interface WithdrawFlowProps {
   vaultBalanceUSD?: string;
   tokenPrice?: number;
   estimatedAPY?: number;
-  projectedMonthlyEarnings?: string;
   className?: string;
 }
 
@@ -469,9 +553,48 @@ export function WithdrawFlow({
   vaultBalanceUSD = '$0.00',
   tokenPrice = 0,
   estimatedAPY = 0,
-  projectedMonthlyEarnings = '$0.00',
   className = ''
 }: WithdrawFlowProps) {
+  const [showCustomAmount, setShowCustomAmount] = React.useState(false);
+  const [dollarAmount, setDollarAmount] = React.useState('');
+  const [tokenAmount, setTokenAmount] = React.useState('');
+  
+  // Convert dollar amount to token amount
+  const convertDollarToToken = (dollars: string) => {
+    if (!dollars || !tokenPrice) return '';
+    const dollarValue = parseFloat(dollars);
+    if (isNaN(dollarValue)) return '';
+    return (dollarValue / tokenPrice).toFixed(8);
+  };
+  
+  // Convert token amount to dollar amount
+  const convertTokenToDollar = (tokens: string) => {
+    if (!tokens || !tokenPrice) return '';
+    const tokenValue = parseFloat(tokens);
+    if (isNaN(tokenValue)) return '';
+    return (tokenValue * tokenPrice).toFixed(2);
+  };
+  
+  const handleDollarChange = (dollars: string) => {
+    setDollarAmount(dollars);
+    const tokenAmt = convertDollarToToken(dollars);
+    setTokenAmount(tokenAmt);
+  };
+  
+  const handleTokenChange = (tokens: string) => {
+    setTokenAmount(tokens);
+    const dollarAmt = convertTokenToDollar(tokens);
+    setDollarAmount(dollarAmt);
+  };
+  
+  const handleMaxClick = () => {
+    setTokenAmount(vaultBalance);
+    const dollarAmt = convertTokenToDollar(vaultBalance);
+    setDollarAmount(dollarAmt);
+  };
+  
+  const quickDollarAmounts = ['100', '500', '1000'];
+  
   return (
     <div className={`withdrawFlow ${className}`}>
       {/* Header */}
@@ -519,9 +642,6 @@ export function WithdrawFlow({
         </div>
         
         <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: '1fr 1fr', 
-          gap: '1rem',
           paddingTop: '1rem',
           borderTop: '1px solid #bbf7d0'
         }}>
@@ -533,14 +653,6 @@ export function WithdrawFlow({
               {estimatedAPY.toFixed(2)}%
             </div>
           </div>
-          <div>
-            <div style={{ fontSize: '0.75rem', color: '#166534', marginBottom: '0.25rem' }}>
-              Projected Earnings
-            </div>
-            <div style={{ fontSize: '1.125rem', fontWeight: '600', color: '#15803d' }}>
-              {projectedMonthlyEarnings}
-            </div>
-          </div>
         </div>
         
         {tokenPrice > 0 && (
@@ -549,8 +661,140 @@ export function WithdrawFlow({
               Token Price
             </div>
             <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#15803d' }}>
-              ${tokenPrice.toLocaleString()}
+              ${vaultSymbol === 'USDC' ? tokenPrice.toFixed(2) : tokenPrice.toLocaleString()}
             </div>
+          </div>
+        )}
+      </div>
+      
+      {/* Amount Selection */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: '600', margin: 0 }}>Withdrawal Amount</h3>
+          <button
+            onClick={() => setShowCustomAmount(!showCustomAmount)}
+            style={{
+              padding: '0.5rem 1rem',
+              border: '1px solid #6366f1',
+              borderRadius: '6px',
+              background: showCustomAmount ? '#eef2ff' : 'white',
+              color: '#6366f1',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              fontWeight: '500'
+            }}
+          >
+            {showCustomAmount ? 'Use OnchainKit' : 'Custom Amount'}
+          </button>
+        </div>
+        
+        {showCustomAmount && (
+          <div style={{ 
+            padding: '1.5rem', 
+            backgroundColor: '#f8fafc',
+            borderRadius: '8px',
+            border: '1px solid #e2e8f0'
+          }}>
+            {/* Dollar Amount Input */}
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
+                Dollar Amount (USD)
+              </label>
+              <input
+                type="number"
+                placeholder="0.00"
+                value={dollarAmount}
+                onChange={(e) => handleDollarChange(e.target.value)}
+                step="0.01"
+                min="0"
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  fontSize: '1rem',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px',
+                  outline: 'none'
+                }}
+              />
+            </div>
+            
+            {/* Token Amount Input */}
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
+                {vaultSymbol} Amount
+              </label>
+              <input
+                type="number"
+                placeholder="0.000000"
+                value={tokenAmount}
+                onChange={(e) => handleTokenChange(e.target.value)}
+                step="0.000001"
+                min="0"
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  fontSize: '1rem',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px',
+                  outline: 'none'
+                }}
+              />
+            </div>
+            
+            {/* Quick Amount Buttons */}
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+              {quickDollarAmounts.map((dollarAmt) => (
+                <button
+                  key={dollarAmt}
+                  onClick={() => handleDollarChange(dollarAmt)}
+                  style={{
+                    flex: 1,
+                    padding: '0.5rem',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '6px',
+                    background: 'white',
+                    cursor: 'pointer',
+                    fontSize: '0.875rem',
+                    fontWeight: '500'
+                  }}
+                >
+                  ${dollarAmt}
+                </button>
+              ))}
+              <button
+                onClick={handleMaxClick}
+                style={{
+                  flex: 1,
+                  padding: '0.5rem',
+                  border: '1px solid #6366f1',
+                  borderRadius: '6px',
+                  background: '#eef2ff',
+                  color: '#6366f1',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: '600'
+                }}
+              >
+                Max
+              </button>
+            </div>
+            
+            {/* Amount Preview */}
+            {tokenAmount && (
+              <div style={{ 
+                padding: '1rem',
+                backgroundColor: '#f0fdf4',
+                borderRadius: '6px',
+                border: '1px solid #bbf7d0'
+              }}>
+                <div style={{ fontSize: '0.875rem', color: '#166534', marginBottom: '0.25rem' }}>
+                  Withdrawal Preview
+                </div>
+                <div style={{ fontSize: '1rem', fontWeight: '600', color: '#15803d' }}>
+                  {tokenAmount} {vaultSymbol} (${dollarAmount})
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
