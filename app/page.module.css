@@ -7,9 +7,27 @@
 
 .headerWrapper {
   display: flex;
-  justify-content: flex-end;
-  padding: 1rem;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
   z-index: 10;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 95%;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #1f2937;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .mainContentBox {
@@ -17,9 +35,9 @@
   backdrop-filter: blur(10px);
   border-radius: 16px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
-  margin: 2rem auto;
-  max-width: 1200px;
-  width: 90%;
+  margin: 1rem auto;
+  max-width: 1600px;
+  width: 95%;
   min-height: 600px;
   display: flex;
   flex-direction: column;
@@ -502,10 +520,38 @@
 }
 
 /* Responsive design */
+@media (max-width: 1200px) {
+  .vaultRowMain {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .assetInfo {
+    justify-content: center;
+  }
+  
+  .networkTags {
+    justify-content: center;
+  }
+  
+  .financialMetrics {
+    text-align: center;
+  }
+  
+  .vaultTotals {
+    text-align: center;
+  }
+  
+  .supplyBorrowSection {
+    align-items: center;
+  }
+}
+
 @media (max-width: 768px) {
   .mainContentBox {
-    margin: 1rem;
-    width: calc(100% - 2rem);
+    margin: 0.5rem;
+    width: calc(100% - 1rem);
   }
   
   .tab {
@@ -1583,7 +1629,8 @@
 }
 
 .vaultRowMain {
-  display: flex;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr 2fr 0.5fr;
   align-items: center;
   padding: 1.5rem;
   cursor: pointer;
@@ -1600,7 +1647,6 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  min-width: 200px;
 }
 
 .assetIcon {
@@ -1639,7 +1685,7 @@
 .networkTags {
   display: flex;
   gap: 0.5rem;
-  min-width: 120px;
+  justify-content: center;
 }
 
 .coreTag {
@@ -1674,7 +1720,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  min-width: 150px;
   text-align: center;
 }
 
@@ -1717,7 +1762,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  min-width: 200px;
   text-align: right;
 }
 
@@ -1797,7 +1841,7 @@
   font-size: 1rem;
   color: #6b7280;
   transition: transform 0.2s ease;
-  margin-left: auto;
+  text-align: center;
 }
 
 /* Expanded Content */
@@ -1886,6 +1930,41 @@
   padding: 1.5rem;
   border: 1px solid #e5e7eb;
   margin-top: 1rem;
+}
+
+/* Custom Balance Display for ETH Vault */
+.customBalanceDisplay {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #e2e8f0;
+}
+
+.customBalanceDisplay .balanceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.customBalanceDisplay .balanceRow:last-child {
+  margin-bottom: 0;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e2e8f0;
+  font-weight: 600;
+}
+
+.customBalanceDisplay .balanceLabel {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.customBalanceDisplay .balanceValue {
+  font-size: 0.875rem;
+  color: #1f2937;
+  font-weight: 600;
 }
 
 /* Total Deposits Display Styles */
