@@ -195,11 +195,12 @@ export default function SimpleDashboard() {
                 backgroundColor: '#ffffff',
                 borderRadius: '12px',
                 boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
-                padding: '2rem'
+                padding: '1.5rem',
+                overflow: 'hidden'
               }}
             >
               <div style={{
-                marginBottom: '1.5rem'
+                marginBottom: '1rem'
               }}>
                 <h3 style={{
                   fontSize: '1.25rem',
@@ -234,10 +235,15 @@ export default function SimpleDashboard() {
               </div>
 
               {/* OnchainKit Earn Component */}
-              <Earn
-                vaultAddress={vault.address}
-                isSponsored={false}
-              />
+              <div style={{
+                margin: '-0.5rem -0.5rem -0.5rem -0.5rem',
+                padding: '0'
+              }}>
+                <Earn
+                  vaultAddress={vault.address}
+                  isSponsored={false}
+                />
+              </div>
             </div>
           ))}
         </div>
