@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withMiddleware } from "@/app/lib/middleware";
 
-export async function POST(request: NextRequest) {
+async function handleWebhook(request: NextRequest) {
   try {
     const body = await request.json();
     
@@ -29,7 +30,9 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
-  // Health check endpoint
+async function handleHealthCheck(_request: NextRequest) {
   return NextResponse.json({ status: "ok" });
 }
+
+export const POST = withMiddleware(handleWebhook);
+export const GET = withMiddleware(handleHealthCheck);
