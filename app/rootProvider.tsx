@@ -1,50 +1,36 @@
 "use client";
 import { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { WagmiProvider } from "wagmi";
 import { base } from "wagmi/chains";
 import { OnchainKitProvider } from "@coinbase/onchainkit";
+import { wagmiConfig } from "./lib/wagmi";
 import "@coinbase/onchainkit/styles.css";
 
-// Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 10, // 10 minutes
-      retry: (failureCount, error) => {
-        // Don't retry on 4xx errors
-        if (error instanceof Error && error.message.includes('4')) {
-          return false;
-        }
-        return failureCount < 3;
-      },
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 10,
     },
   },
 });
 
 export function RootProvider({ children }: { children: ReactNode }) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <OnchainKitProvider
-        apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY}
-        chain={base}
-        config={{
-          appearance: {
-            mode: "auto",
-          },
-          wallet: {
-            display: "modal",
-            preference: "all",
-          },
-        }}
-        miniKit={{
-          enabled: true,
-          autoConnect: true,
-          notificationProxyUrl: undefined,
-        }}
-      >
-        {children}
-      </OnchainKitProvider>
-    </QueryClientProvider>
+    <WagmiProvider config={wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+        <OnchainKitProvider
+          apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY}
+          chain={base}
+          miniKit={{
+            enabled: true,
+            autoConnect: true,
+          }}
+        >
+          {children}
+        </OnchainKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }
