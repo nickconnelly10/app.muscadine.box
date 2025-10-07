@@ -534,7 +534,6 @@ export function WithdrawFlow({
   estimatedAPY = 0,
   className = ''
 }: WithdrawFlowProps) {
-  const [showCustomAmount, setShowCustomAmount] = React.useState(false);
   const [dollarAmount, setDollarAmount] = React.useState('');
   const [tokenAmount, setTokenAmount] = React.useState('');
   
@@ -626,116 +625,97 @@ export function WithdrawFlow({
         </div>
       </div>
       
-      {/* Amount Selection */}
-      <div style={{ marginBottom: '1.5rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: '600', margin: 0 }}>Withdrawal Amount</h3>
-          <button
-            onClick={() => setShowCustomAmount(!showCustomAmount)}
+      {/* Dollar Amount Input */}
+      <div style={{ marginBottom: '1rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
+          Dollar Amount (USD)
+        </label>
+        <input
+          type="number"
+          className="amountInput"
+          placeholder="0.00"
+          value={dollarAmount}
+          onChange={(e) => handleDollarChange(e.target.value)}
+          step="0.01"
+          min="0"
+          style={{
+            width: '100%',
+            padding: '0.75rem',
+            fontSize: '1rem',
+            border: '1px solid #e2e8f0',
+            borderRadius: '8px',
+            outline: 'none'
+          }}
+        />
+      </div>
+      
+      {/* Token Amount Input */}
+      <div style={{ marginBottom: '1rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
+          {vaultSymbol} Amount
+        </label>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <input
+            type="number"
+            className="amountInput"
+            placeholder="0.000000"
+            value={tokenAmount}
+            onChange={(e) => handleTokenChange(e.target.value)}
+            step="0.000001"
+            min="0"
             style={{
-              padding: '0.5rem 1rem',
+              flex: 1,
+              padding: '0.75rem',
+              fontSize: '1rem',
+              border: '1px solid #e2e8f0',
+              borderRadius: '8px',
+              outline: 'none'
+            }}
+          />
+          <button
+            onClick={handleMaxClick}
+            style={{
+              padding: '0.75rem 1rem',
               border: '1px solid #6366f1',
-              borderRadius: '6px',
-              background: showCustomAmount ? '#eef2ff' : 'white',
+              borderRadius: '8px',
+              background: '#eef2ff',
               color: '#6366f1',
               cursor: 'pointer',
               fontSize: '0.875rem',
-              fontWeight: '500'
+              fontWeight: '600',
+              whiteSpace: 'nowrap'
             }}
           >
-            {showCustomAmount ? 'Use OnchainKit' : 'Custom Amount'}
+            Max
           </button>
         </div>
-        
-        {showCustomAmount && (
-          <div style={{ 
-            padding: '1.5rem', 
-            backgroundColor: '#f8fafc',
-            borderRadius: '8px',
-            border: '1px solid #e2e8f0'
-          }}>
-            {/* Dollar Amount Input */}
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
-                Dollar Amount (USD)
-              </label>
-              <input
-                type="number"
-                placeholder="0.00"
-                value={dollarAmount}
-                onChange={(e) => handleDollarChange(e.target.value)}
-                step="0.01"
-                min="0"
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  fontSize: '1rem',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px',
-                  outline: 'none'
-                }}
-              />
-            </div>
-            
-            {/* Token Amount Input */}
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
-                {vaultSymbol} Amount
-              </label>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <input
-                  type="number"
-                  placeholder="0.000000"
-                  value={tokenAmount}
-                  onChange={(e) => handleTokenChange(e.target.value)}
-                  step="0.000001"
-                  min="0"
-                  style={{
-                    flex: 1,
-                    padding: '0.75rem',
-                    fontSize: '1rem',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px',
-                    outline: 'none'
-                  }}
-                />
-                <button
-                  onClick={handleMaxClick}
-                  style={{
-                    padding: '0.75rem 1rem',
-                    border: '1px solid #6366f1',
-                    borderRadius: '8px',
-                    background: '#eef2ff',
-                    color: '#6366f1',
-                    cursor: 'pointer',
-                    fontSize: '0.875rem',
-                    fontWeight: '600',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  Max
-                </button>
-              </div>
-            </div>
-            
-            {/* Amount Preview */}
-            {tokenAmount && (
-              <div style={{ 
-                padding: '1rem',
-                backgroundColor: '#f0fdf4',
-                borderRadius: '6px',
-                border: '1px solid #bbf7d0'
-              }}>
-                <div style={{ fontSize: '0.875rem', color: '#166534', marginBottom: '0.25rem' }}>
-                  Withdrawal Preview
-                </div>
-                <div style={{ fontSize: '1rem', fontWeight: '600', color: '#15803d' }}>
-                  {tokenAmount} {vaultSymbol} (${dollarAmount})
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+      </div>
+      
+      {/* Transaction Preview */}
+      <div className="transactionPreview" style={{
+        marginBottom: '1.5rem',
+        padding: '1rem',
+        backgroundColor: '#f8fafc',
+        borderRadius: '8px',
+        border: '1px solid #e2e8f0'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+          <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Amount</span>
+          <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>
+            {tokenAmount || '0'} {vaultSymbol} (${dollarAmount})
+          </span>
+        </div>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          paddingTop: '0.5rem',
+          borderTop: '1px solid #e2e8f0'
+        }}>
+          <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>Total Withdrawal</span>
+          <span style={{ fontSize: '0.875rem', fontWeight: '700', color: '#6366f1' }}>
+            ${dollarAmount}
+          </span>
+        </div>
       </div>
       
       {/* OnchainKit Withdraw Interface */}
