@@ -10,6 +10,7 @@ import {
   YieldDetails,
   VaultDetails
 } from "@coinbase/onchainkit/earn";
+import { ETHDepositComponent } from "./ETHDepositComponent";
 import { useState, useMemo, useEffect } from "react";
 import { useAccount, useReadContract, useBalance } from "wagmi";
 import { base } from "wagmi/chains";
@@ -431,20 +432,69 @@ export default function LendingPage() {
                 {/* Asset Identification */}
                 <div className={styles.assetInfo}>
                   <div className={styles.assetIcon}>
-                    {vault.symbol === 'USDC' && (
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {vault.tokenSymbol === 'USDC' && (
+                      <img 
+                        src="https://cryptologos.cc/logos/usd-coin-usdc-logo.png"
+                        alt="USDC"
+                        width="24"
+                        height="24"
+                        className={styles.tokenLogo}
+                        onError={(e) => {
+                          // Fallback to SVG if image fails to load
+                          e.currentTarget.style.display = 'none';
+                          const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
+                          if (nextSibling) {
+                            nextSibling.style.display = 'block';
+                          }
+                        }}
+                      />
+                    )}
+                    {vault.tokenSymbol === 'USDC' && (
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{display: 'none'}}>
                         <circle cx="12" cy="12" r="12" fill="#2775CA"/>
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1V9h1v1zm0-2h-1V7h1v1zm0-2h-1V5h1v1zm2 10h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1V9h1v1zm0-2h-1V7h1v1zm0-2h-1V5h1v1zm2 10h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1V9h1v1zm0-2h-1V7h1v1zm0-2h-1V5h1v1z" fill="white"/>
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 1.5c4.69 0 8.5 3.81 8.5 8.5s-3.81 8.5-8.5 8.5-8.5-3.81-8.5-8.5 3.81-8.5 8.5-8.5zm0 2.5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 1c2.76 0 5 2.24 5 5s-2.24 5-5 5-5-2.24-5-5 2.24-5 5-5zm0 1.5c-1.93 0-3.5 1.57-3.5 3.5s1.57 3.5 3.5 3.5 3.5-1.57 3.5-3.5-1.57-3.5-3.5-3.5z" fill="white"/>
                       </svg>
                     )}
-                    {vault.symbol === 'cbBTC' && (
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {vault.tokenSymbol === 'cbBTC' && (
+                      <img 
+                        src="https://cryptologos.cc/logos/bitcoin-btc-logo.png"
+                        alt="cbBTC"
+                        width="24"
+                        height="24"
+                        className={styles.tokenLogo}
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
+                          if (nextSibling) {
+                            nextSibling.style.display = 'block';
+                          }
+                        }}
+                      />
+                    )}
+                    {vault.tokenSymbol === 'cbBTC' && (
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{display: 'none'}}>
                         <circle cx="12" cy="12" r="12" fill="#F7931A"/>
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1V9h1v1zm0-2h-1V7h1v1zm0-2h-1V5h1v1zm2 10h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1V9h1v1zm0-2h-1V7h1v1zm0-2h-1V5h1v1zm2 10h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1v-1h1v1zm0-2h-1V9h1v1zm0-2h-1V7h1v1zm0-2h-1V5h1v1z" fill="white"/>
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 1.5c4.69 0 8.5 3.81 8.5 8.5s-3.81 8.5-8.5 8.5-8.5-3.81-8.5-8.5 3.81-8.5 8.5-8.5zm0 2.5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 1c2.76 0 5 2.24 5 5s-2.24 5-5 5-5-2.24-5-5 2.24-5 5-5zm0 1.5c-1.93 0-3.5 1.57-3.5 3.5s1.57 3.5 3.5 3.5 3.5-1.57 3.5-3.5-1.57-3.5-3.5-3.5z" fill="white"/>
                       </svg>
                     )}
-                    {vault.symbol === 'ETH' && (
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {vault.tokenSymbol === 'WETH' && (
+                      <img 
+                        src="https://cryptologos.cc/logos/ethereum-eth-logo.png"
+                        alt="WETH"
+                        width="24"
+                        height="24"
+                        className={styles.tokenLogo}
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
+                          if (nextSibling) {
+                            nextSibling.style.display = 'block';
+                          }
+                        }}
+                      />
+                    )}
+                    {vault.tokenSymbol === 'WETH' && (
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{display: 'none'}}>
                         <circle cx="12" cy="12" r="12" fill="#627EEA"/>
                         <path d="M12.498 3v6.87l5.257 2.35-5.257-9.22zm-.996 0L6.245 12.22l5.257-2.35V3zm6.257 9.9l-5.257 2.35v6.87l5.257-9.22zm-11.514 0l5.257 9.22v-6.87l-5.257-2.35z" fill="white"/>
                       </svg>
@@ -596,50 +646,24 @@ export default function LendingPage() {
                         <div className={styles.actionContent}>
                           {activeTabs[key] === 'deposit' ? (
                             <>
-                              {/* Custom balance display for ETH vault */}
+                              {/* Use custom ETH deposit component for ETH vault */}
                               {vault.tokenSymbol === 'WETH' ? (
-                                <div className={styles.customBalanceDisplay}>
-                                  <div className={styles.balanceRow}>
-                                    <span className={styles.balanceLabel}>Available ETH:</span>
-                                    <span className={styles.balanceValue}>
-                                      {ethWalletBalance.data ? 
-                                        parseFloat(formatUnits(ethWalletBalance.data.value, ethWalletBalance.data.decimals)).toFixed(6) 
-                                        : '0.000000'} ETH
-                                    </span>
-                                  </div>
-                                  <div className={styles.balanceRow}>
-                                    <span className={styles.balanceLabel}>Available WETH:</span>
-                                    <span className={styles.balanceValue}>
-                                      {wethWalletBalance.data ? 
-                                        parseFloat(formatUnits(wethWalletBalance.data.value, wethWalletBalance.data.decimals)).toFixed(6) 
-                                        : '0.000000'} WETH
-                                    </span>
-                                  </div>
-                                  <div className={styles.balanceRow}>
-                                    <span className={styles.balanceLabel}>Total Available:</span>
-                                    <span className={styles.balanceValue}>
-                                      {(() => {
-                                        let ethBalance = 0;
-                                        let wethBalance = 0;
-                                        
-                                        if (ethWalletBalance.data) {
-                                          ethBalance = parseFloat(formatUnits(ethWalletBalance.data.value, ethWalletBalance.data.decimals));
-                                        }
-                                        
-                                        if (wethWalletBalance.data) {
-                                          wethBalance = parseFloat(formatUnits(wethWalletBalance.data.value, wethWalletBalance.data.decimals));
-                                        }
-                                        
-                                        return (ethBalance + wethBalance).toFixed(6);
-                                      })()} ETH
-                                    </span>
-                                  </div>
-                                </div>
+                                <ETHDepositComponent
+                                  vaultAddress={vault.address}
+                                  onSuccess={(receipt) => {
+                                    console.log("ETH deposit successful:", receipt);
+                                  }}
+                                  onError={(error) => {
+                                    console.error("ETH deposit error:", error);
+                                  }}
+                                />
                               ) : (
-                                <DepositBalance />
+                                <>
+                                  <DepositBalance />
+                                  <DepositAmountInput className={styles.amountInput} />
+                                  <DepositButton className={styles.actionButton} />
+                                </>
                               )}
-                              <DepositAmountInput className={styles.amountInput} />
-                              <DepositButton className={styles.actionButton} />
                             </>
                           ) : (
                             <>

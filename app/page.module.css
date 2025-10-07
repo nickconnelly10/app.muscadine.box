@@ -16,6 +16,29 @@
   width: 95%;
 }
 
+.headerLeft {
+  display: flex;
+  align-items: center;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.brandTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.brandTitle:hover {
+  color: #3b82f6;
+}
+
 .userInfo {
   display: flex;
   align-items: center;
@@ -1664,6 +1687,13 @@
   height: 100%;
 }
 
+.tokenLogo {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .assetName {
   display: flex;
   flex-direction: column;
@@ -1930,6 +1960,50 @@
   padding: 1.5rem;
   border: 1px solid #e5e7eb;
   margin-top: 1rem;
+}
+
+/* ETH Deposit Component Styles */
+.amountInputContainer {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.amountInputContainer .amountInput {
+  flex: 1;
+}
+
+.maxButton {
+  padding: 0.75rem 1rem;
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.maxButton:hover:not(:disabled) {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.maxButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.errorMessage {
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  text-align: center;
+  padding: 0.5rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
 }
 
 /* Custom Balance Display for ETH Vault */

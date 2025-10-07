@@ -17,12 +17,19 @@ export default function SharedLayout({ children }: SharedLayoutProps) {
   return (
     <div className={styles.container}>
       <header className={styles.headerWrapper}>
-        <Wallet />
-        {user && (
-          <div className={styles.userInfo}>
-            <span>Welcome, {user.displayName || `User ${user.fid}`}</span>
-          </div>
-        )}
+        <div className={styles.headerLeft}>
+          <Link href="https://muscadine.box" className={styles.brandTitle}>
+            Muscadine
+          </Link>
+        </div>
+        <div className={styles.headerRight}>
+          <Wallet />
+          {user && (
+            <div className={styles.userInfo}>
+              <span>Welcome, {user.displayName || `User ${user.fid}`}</span>
+            </div>
+          )}
+        </div>
       </header>
 
           <div className={styles.mainContentBox}>
