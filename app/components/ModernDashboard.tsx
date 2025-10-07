@@ -135,6 +135,20 @@ export default function ModernDashboard() {
       outputs: [{ name: '', type: 'uint256' }],
     },
     {
+      name: 'totalAssets',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ name: '', type: 'uint256' }],
+    },
+    {
+      name: 'totalSupply',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ name: '', type: 'uint256' }],
+    },
+    {
       name: 'name',
       type: 'function',
       stateMutability: 'view',
@@ -205,6 +219,55 @@ export default function ModernDashboard() {
     query: { enabled: !!address && isConnected && !!ethVaultBalance.data }
   });
 
+  // Get totalAssets and totalSupply for each vault to calculate share price
+  const usdcTotalAssets = useReadContract({
+    address: VAULTS_CONFIG.usdc.address,
+    abi: vaultAbi,
+    functionName: 'totalAssets',
+    chainId: base.id,
+    query: { enabled: isConnected }
+  });
+
+  const usdcTotalSupply = useReadContract({
+    address: VAULTS_CONFIG.usdc.address,
+    abi: vaultAbi,
+    functionName: 'totalSupply',
+    chainId: base.id,
+    query: { enabled: isConnected }
+  });
+
+  const cbbtcTotalAssets = useReadContract({
+    address: VAULTS_CONFIG.cbbtc.address,
+    abi: vaultAbi,
+    functionName: 'totalAssets',
+    chainId: base.id,
+    query: { enabled: isConnected }
+  });
+
+  const cbbtcTotalSupply = useReadContract({
+    address: VAULTS_CONFIG.cbbtc.address,
+    abi: vaultAbi,
+    functionName: 'totalSupply',
+    chainId: base.id,
+    query: { enabled: isConnected }
+  });
+
+  const ethTotalAssets = useReadContract({
+    address: VAULTS_CONFIG.eth.address,
+    abi: vaultAbi,
+    functionName: 'totalAssets',
+    chainId: base.id,
+    query: { enabled: isConnected }
+  });
+
+  const ethTotalSupply = useReadContract({
+    address: VAULTS_CONFIG.eth.address,
+    abi: vaultAbi,
+    functionName: 'totalSupply',
+    chainId: base.id,
+    query: { enabled: isConnected }
+  });
+
   // Get real-time vault data from OnchainKit
   const usdcVaultData = useMorphoVault({
     vaultAddress: VAULTS_CONFIG.usdc.address,
@@ -226,30 +289,33 @@ export default function ModernDashboard() {
     const vaultBalances = [];
 
     // USDC Vault - Calculate realistic interest based on vault performance
-    if (usdcVaultBalance.data && usdcConvertToAssets.data) {
+    if (usdcVaultBalance.data && usdcConvertToAssets.data && usdcTotalAssets.data && usdcTotalSupply.data) {
       const sharesAmount = parseFloat(formatUnits(usdcVaultBalance.data, VAULTS_CONFIG.usdc.decimals));
       const currentAssetValue = parseFloat(formatUnits(usdcConvertToAssets.data, VAULTS_CONFIG.usdc.decimals));
       const usdValue = currentAssetValue * tokenPrices.USDC;
       
+      // Calculate actual vault share price from totalAssets / totalSupply
+      const totalAssets = parseFloat(formatUnits(usdcTotalAssets.data, VAULTS_CONFIG.usdc.decimals));
+      const totalSupply = parseFloat(formatUnits(usdcTotalSupply.data, VAULTS_CONFIG.usdc.decimals));
+      const vaultSharePrice = totalSupply > 0 ? totalAssets / totalSupply : 1.0;
+      
       // Use real-time APY from OnchainKit, fallback to estimated if not available
       const realAPY = usdcVaultData.totalApy || 0.085; // Fallback to 8.5% if data not available
       
-      // For demonstration: Calculate interest based on vault's share price growth
-      // In reality, Morpho vaults accumulate interest over time
-      // Calculate interest earned from share price appreciation
-      // In ERC-4626 vaults, the share price increases as interest accrues
-      // Initial deposits typically receive shares at ~1:1 ratio
-      // Current value is higher than shares due to accumulated interest
+      // Calculate interest: 
+      // In ERC-4626 vaults, if share price > 1.0, it means interest has been earned
+      // User's original deposit ≈ shares (assuming 1:1 at deposit time)
+      // User's current value = convertToAssets(shares)
+      // Interest = current value - original deposit
+      // However, if vault share price > 1.0, we need to account for this
       
-      // More accurate calculation: estimate original deposit based on current share price
-      // If vault has been running for a while, share price > 1.0 indicates interest earned
-      const currentSharePrice = sharesAmount > 0 ? currentAssetValue / sharesAmount : 1.0;
+      // More accurate: 
+      // - If user deposited when share price was X, they got (deposit / X) shares
+      // - We don't know X, but we can estimate it was close to 1.0 for most users
+      // - Current value = shares * current_share_price
+      // - Interest = current value - (shares * 1.0) = shares * (current_share_price - 1.0)
       
-      // Estimate original deposit: assume shares were bought at vault inception (1:1 ratio)
-      // This is more accurate than comparing shares vs assets directly
-      const estimatedOriginalDeposit = sharesAmount; // Original deposit = shares at 1:1
-      const estimatedCurrentValue = sharesAmount * currentSharePrice; // Current value with interest
-      const interestEarned = Math.max(0, estimatedCurrentValue - estimatedOriginalDeposit);
+      const interestEarned = sharesAmount * Math.max(0, vaultSharePrice - 1.0);
       const interestEarnedUSD = interestEarned * tokenPrices.USDC;
       
       const monthlyEarnings = currentAssetValue * (realAPY / 12);
@@ -273,19 +339,21 @@ export default function ModernDashboard() {
     }
 
     // cbBTC Vault - Calculate realistic interest based on vault performance
-    if (cbbtcVaultBalance.data && cbbtcConvertToAssets.data) {
+    if (cbbtcVaultBalance.data && cbbtcConvertToAssets.data && cbbtcTotalAssets.data && cbbtcTotalSupply.data) {
       const sharesAmount = parseFloat(formatUnits(cbbtcVaultBalance.data, VAULTS_CONFIG.cbbtc.decimals));
       const currentAssetValue = parseFloat(formatUnits(cbbtcConvertToAssets.data, VAULTS_CONFIG.cbbtc.decimals));
       const usdValue = currentAssetValue * tokenPrices.cbBTC;
       
+      // Calculate actual vault share price from totalAssets / totalSupply
+      const totalAssets = parseFloat(formatUnits(cbbtcTotalAssets.data, VAULTS_CONFIG.cbbtc.decimals));
+      const totalSupply = parseFloat(formatUnits(cbbtcTotalSupply.data, VAULTS_CONFIG.cbbtc.decimals));
+      const vaultSharePrice = totalSupply > 0 ? totalAssets / totalSupply : 1.0;
+      
       // Use real-time APY from OnchainKit, fallback to estimated if not available
       const realAPY = cbbtcVaultData.totalApy || 0.062; // Fallback to 6.2% if data not available
       
-      // Calculate interest earned from share price appreciation
-      const currentSharePrice = sharesAmount > 0 ? currentAssetValue / sharesAmount : 1.0;
-      const estimatedOriginalDeposit = sharesAmount;
-      const estimatedCurrentValue = sharesAmount * currentSharePrice;
-      const interestEarned = Math.max(0, estimatedCurrentValue - estimatedOriginalDeposit);
+      // Calculate interest based on vault share price
+      const interestEarned = sharesAmount * Math.max(0, vaultSharePrice - 1.0);
       const interestEarnedUSD = interestEarned * tokenPrices.cbBTC;
       const monthlyEarnings = currentAssetValue * (realAPY / 12);
 
@@ -308,19 +376,21 @@ export default function ModernDashboard() {
     }
 
     // ETH Vault - Calculate realistic interest based on vault performance
-    if (ethVaultBalance.data && ethConvertToAssets.data) {
+    if (ethVaultBalance.data && ethConvertToAssets.data && ethTotalAssets.data && ethTotalSupply.data) {
       const sharesAmount = parseFloat(formatUnits(ethVaultBalance.data, VAULTS_CONFIG.eth.decimals));
       const currentAssetValue = parseFloat(formatUnits(ethConvertToAssets.data, VAULTS_CONFIG.eth.decimals));
       const usdValue = currentAssetValue * tokenPrices.ETH;
       
+      // Calculate actual vault share price from totalAssets / totalSupply
+      const totalAssets = parseFloat(formatUnits(ethTotalAssets.data, VAULTS_CONFIG.eth.decimals));
+      const totalSupply = parseFloat(formatUnits(ethTotalSupply.data, VAULTS_CONFIG.eth.decimals));
+      const vaultSharePrice = totalSupply > 0 ? totalAssets / totalSupply : 1.0;
+      
       // Use real-time APY from OnchainKit, fallback to estimated if not available
       const realAPY = ethVaultData.totalApy || 0.078; // Fallback to 7.8% if data not available
       
-      // Calculate interest earned from share price appreciation
-      const currentSharePrice = sharesAmount > 0 ? currentAssetValue / sharesAmount : 1.0;
-      const estimatedOriginalDeposit = sharesAmount;
-      const estimatedCurrentValue = sharesAmount * currentSharePrice;
-      const interestEarned = Math.max(0, estimatedCurrentValue - estimatedOriginalDeposit);
+      // Calculate interest based on vault share price
+      const interestEarned = sharesAmount * Math.max(0, vaultSharePrice - 1.0);
       const interestEarnedUSD = interestEarned * tokenPrices.ETH;
       const monthlyEarnings = currentAssetValue * (realAPY / 12);
 
@@ -361,6 +431,9 @@ export default function ModernDashboard() {
   }, [
     usdcVaultBalance.data, cbbtcVaultBalance.data, ethVaultBalance.data,
     usdcConvertToAssets.data, cbbtcConvertToAssets.data, ethConvertToAssets.data,
+    usdcTotalAssets.data, usdcTotalSupply.data,
+    cbbtcTotalAssets.data, cbbtcTotalSupply.data,
+    ethTotalAssets.data, ethTotalSupply.data,
     tokenPrices,
     usdcVaultData.totalApy, cbbtcVaultData.totalApy, ethVaultData.totalApy
   ]);
@@ -423,7 +496,10 @@ export default function ModernDashboard() {
     setCurrentStep(1);
   };
 
-  const isLoading = usdcVaultBalance.isLoading || cbbtcVaultBalance.isLoading || ethVaultBalance.isLoading;
+  const isLoading = usdcVaultBalance.isLoading || cbbtcVaultBalance.isLoading || ethVaultBalance.isLoading ||
+    usdcTotalAssets.isLoading || usdcTotalSupply.isLoading ||
+    cbbtcTotalAssets.isLoading || cbbtcTotalSupply.isLoading ||
+    ethTotalAssets.isLoading || ethTotalSupply.isLoading;
 
   if (!isConnected) {
     return (

@@ -84,25 +84,42 @@ export function useVaultBalances(vaults: Record<string, VaultConfig>, tokenPrice
     query: { enabled: !!address && isConnected }
   });
 
+  // Define vault ABI with all necessary functions
+  const vaultAbi = [
+    {
+      name: 'balanceOf',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [{ name: 'account', type: 'address' }],
+      outputs: [{ name: '', type: 'uint256' }],
+    },
+    {
+      name: 'convertToAssets',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [{ name: 'shares', type: 'uint256' }],
+      outputs: [{ name: '', type: 'uint256' }],
+    },
+    {
+      name: 'totalAssets',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ name: '', type: 'uint256' }],
+    },
+    {
+      name: 'totalSupply',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ name: '', type: 'uint256' }],
+    },
+  ] as const;
+
   // Get vault balances
   const usdcVaultBalance = useReadContract({
     address: vaults.usdc.address as `0x${string}`,
-    abi: [
-      {
-        name: 'balanceOf',
-        type: 'function',
-        stateMutability: 'view',
-        inputs: [{ name: 'account', type: 'address' }],
-        outputs: [{ name: '', type: 'uint256' }],
-      },
-      {
-        name: 'convertToAssets',
-        type: 'function',
-        stateMutability: 'view',
-        inputs: [{ name: 'shares', type: 'uint256' }],
-        outputs: [{ name: '', type: 'uint256' }],
-      },
-    ],
+    abi: vaultAbi,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
     chainId: base.id,
@@ -113,22 +130,7 @@ export function useVaultBalances(vaults: Record<string, VaultConfig>, tokenPrice
 
   const cbbtcVaultBalance = useReadContract({
     address: vaults.cbbtc.address as `0x${string}`,
-    abi: [
-      {
-        name: 'balanceOf',
-        type: 'function',
-        stateMutability: 'view',
-        inputs: [{ name: 'account', type: 'address' }],
-        outputs: [{ name: '', type: 'uint256' }],
-      },
-      {
-        name: 'convertToAssets',
-        type: 'function',
-        stateMutability: 'view',
-        inputs: [{ name: 'shares', type: 'uint256' }],
-        outputs: [{ name: '', type: 'uint256' }],
-      },
-    ],
+    abi: vaultAbi,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
     chainId: base.id,
@@ -139,22 +141,7 @@ export function useVaultBalances(vaults: Record<string, VaultConfig>, tokenPrice
 
   const ethVaultBalance = useReadContract({
     address: vaults.eth.address as `0x${string}`,
-    abi: [
-      {
-        name: 'balanceOf',
-        type: 'function',
-        stateMutability: 'view',
-        inputs: [{ name: 'account', type: 'address' }],
-        outputs: [{ name: '', type: 'uint256' }],
-      },
-      {
-        name: 'convertToAssets',
-        type: 'function',
-        stateMutability: 'view',
-        inputs: [{ name: 'shares', type: 'uint256' }],
-        outputs: [{ name: '', type: 'uint256' }],
-      },
-    ],
+    abi: vaultAbi,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
     chainId: base.id,
@@ -166,15 +153,7 @@ export function useVaultBalances(vaults: Record<string, VaultConfig>, tokenPrice
   // Get convertToAssets calls
   const usdcConvertToAssets = useReadContract({
     address: vaults.usdc.address as `0x${string}`,
-    abi: [
-      {
-        name: 'convertToAssets',
-        type: 'function',
-        stateMutability: 'view',
-        inputs: [{ name: 'shares', type: 'uint256' }],
-        outputs: [{ name: '', type: 'uint256' }],
-      },
-    ],
+    abi: vaultAbi,
     functionName: 'convertToAssets',
     args: usdcVaultBalance.data ? [usdcVaultBalance.data] : undefined,
     chainId: base.id,
@@ -185,15 +164,7 @@ export function useVaultBalances(vaults: Record<string, VaultConfig>, tokenPrice
 
   const cbbtcConvertToAssets = useReadContract({
     address: vaults.cbbtc.address as `0x${string}`,
-    abi: [
-      {
-        name: 'convertToAssets',
-        type: 'function',
-        stateMutability: 'view',
-        inputs: [{ name: 'shares', type: 'uint256' }],
-        outputs: [{ name: '', type: 'uint256' }],
-      },
-    ],
+    abi: vaultAbi,
     functionName: 'convertToAssets',
     args: cbbtcVaultBalance.data ? [cbbtcVaultBalance.data] : undefined,
     chainId: base.id,
@@ -204,15 +175,7 @@ export function useVaultBalances(vaults: Record<string, VaultConfig>, tokenPrice
 
   const ethConvertToAssets = useReadContract({
     address: vaults.eth.address as `0x${string}`,
-    abi: [
-      {
-        name: 'convertToAssets',
-        type: 'function',
-        stateMutability: 'view',
-        inputs: [{ name: 'shares', type: 'uint256' }],
-        outputs: [{ name: '', type: 'uint256' }],
-      },
-    ],
+    abi: vaultAbi,
     functionName: 'convertToAssets',
     args: ethVaultBalance.data ? [ethVaultBalance.data] : undefined,
     chainId: base.id,
@@ -221,16 +184,71 @@ export function useVaultBalances(vaults: Record<string, VaultConfig>, tokenPrice
     },
   });
 
+  // Get totalAssets and totalSupply for share price calculation
+  const usdcTotalAssets = useReadContract({
+    address: vaults.usdc.address as `0x${string}`,
+    abi: vaultAbi,
+    functionName: 'totalAssets',
+    chainId: base.id,
+    query: { enabled: isConnected }
+  });
+
+  const usdcTotalSupply = useReadContract({
+    address: vaults.usdc.address as `0x${string}`,
+    abi: vaultAbi,
+    functionName: 'totalSupply',
+    chainId: base.id,
+    query: { enabled: isConnected }
+  });
+
+  const cbbtcTotalAssets = useReadContract({
+    address: vaults.cbbtc.address as `0x${string}`,
+    abi: vaultAbi,
+    functionName: 'totalAssets',
+    chainId: base.id,
+    query: { enabled: isConnected }
+  });
+
+  const cbbtcTotalSupply = useReadContract({
+    address: vaults.cbbtc.address as `0x${string}`,
+    abi: vaultAbi,
+    functionName: 'totalSupply',
+    chainId: base.id,
+    query: { enabled: isConnected }
+  });
+
+  const ethTotalAssets = useReadContract({
+    address: vaults.eth.address as `0x${string}`,
+    abi: vaultAbi,
+    functionName: 'totalAssets',
+    chainId: base.id,
+    query: { enabled: isConnected }
+  });
+
+  const ethTotalSupply = useReadContract({
+    address: vaults.eth.address as `0x${string}`,
+    abi: vaultAbi,
+    functionName: 'totalSupply',
+    chainId: base.id,
+    query: { enabled: isConnected }
+  });
+
   // Calculate vault balances with corrected interest calculation
   const vaultBalances: VaultBalance[] = [];
 
-  if (usdcVaultBalance.data && usdcConvertToAssets.data) {
+  if (usdcVaultBalance.data && usdcConvertToAssets.data && usdcTotalAssets.data && usdcTotalSupply.data) {
     const sharesAmount = parseFloat(formatUnits(usdcVaultBalance.data, vaults.usdc.decimals));
     const currentValue = parseFloat(formatUnits(usdcConvertToAssets.data, vaults.usdc.decimals));
     const usdValue = currentValue * tokenPrices.USDC;
     
-    // Correct interest calculation: current value - original deposit (shares)
-    const actualInterest = Math.max(0, currentValue - sharesAmount);
+    // Calculate vault share price from totalAssets / totalSupply
+    const totalAssets = parseFloat(formatUnits(usdcTotalAssets.data, vaults.usdc.decimals));
+    const totalSupply = parseFloat(formatUnits(usdcTotalSupply.data, vaults.usdc.decimals));
+    const vaultSharePrice = totalSupply > 0 ? totalAssets / totalSupply : 1.0;
+    
+    // Interest = shares * (sharePrice - 1.0)
+    // This assumes user deposited when share price was ~1.0
+    const actualInterest = sharesAmount * Math.max(0, vaultSharePrice - 1.0);
     const interestUsd = actualInterest * tokenPrices.USDC;
 
     vaultBalances.push({
@@ -243,12 +261,17 @@ export function useVaultBalances(vaults: Record<string, VaultConfig>, tokenPrice
     });
   }
 
-  if (cbbtcVaultBalance.data && cbbtcConvertToAssets.data) {
+  if (cbbtcVaultBalance.data && cbbtcConvertToAssets.data && cbbtcTotalAssets.data && cbbtcTotalSupply.data) {
     const sharesAmount = parseFloat(formatUnits(cbbtcVaultBalance.data, vaults.cbbtc.decimals));
     const currentValue = parseFloat(formatUnits(cbbtcConvertToAssets.data, vaults.cbbtc.decimals));
     const usdValue = currentValue * tokenPrices.cbBTC;
     
-    const actualInterest = Math.max(0, currentValue - sharesAmount);
+    // Calculate vault share price from totalAssets / totalSupply
+    const totalAssets = parseFloat(formatUnits(cbbtcTotalAssets.data, vaults.cbbtc.decimals));
+    const totalSupply = parseFloat(formatUnits(cbbtcTotalSupply.data, vaults.cbbtc.decimals));
+    const vaultSharePrice = totalSupply > 0 ? totalAssets / totalSupply : 1.0;
+    
+    const actualInterest = sharesAmount * Math.max(0, vaultSharePrice - 1.0);
     const interestUsd = actualInterest * tokenPrices.cbBTC;
 
     vaultBalances.push({
@@ -261,12 +284,17 @@ export function useVaultBalances(vaults: Record<string, VaultConfig>, tokenPrice
     });
   }
 
-  if (ethVaultBalance.data && ethConvertToAssets.data) {
+  if (ethVaultBalance.data && ethConvertToAssets.data && ethTotalAssets.data && ethTotalSupply.data) {
     const sharesAmount = parseFloat(formatUnits(ethVaultBalance.data, vaults.eth.decimals));
     const currentValue = parseFloat(formatUnits(ethConvertToAssets.data, vaults.eth.decimals));
     const usdValue = currentValue * tokenPrices.ETH;
     
-    const actualInterest = Math.max(0, currentValue - sharesAmount);
+    // Calculate vault share price from totalAssets / totalSupply
+    const totalAssets = parseFloat(formatUnits(ethTotalAssets.data, vaults.eth.decimals));
+    const totalSupply = parseFloat(formatUnits(ethTotalSupply.data, vaults.eth.decimals));
+    const vaultSharePrice = totalSupply > 0 ? totalAssets / totalSupply : 1.0;
+    
+    const actualInterest = sharesAmount * Math.max(0, vaultSharePrice - 1.0);
     const interestUsd = actualInterest * tokenPrices.ETH;
 
     vaultBalances.push({
