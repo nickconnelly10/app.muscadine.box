@@ -1,6 +1,11 @@
 "use client";
 import React, { useState } from 'react';
 import { ConnectWallet } from '@coinbase/onchainkit/wallet';
+import { 
+  WithdrawAmountInput,
+  WithdrawBalance,
+  WithdrawButton
+} from '@coinbase/onchainkit/earn';
 import { Button, Badge, Metric, VaultIcon } from '../atoms';
 
 // Vault Card Component
@@ -124,7 +129,7 @@ interface DepositFlowProps {
   totalSteps: number;
   amount: string;
   onAmountChange: (amount: string) => void;
-  onQuickAmount: (amount: string) => void;
+  _onQuickAmount: (amount: string) => void;
   onConfirm: () => void;
   onBack: () => void;
   maxAmount: string;
@@ -140,7 +145,7 @@ export function DepositFlow({
   totalSteps,
   amount,
   onAmountChange,
-  onQuickAmount,
+  _onQuickAmount,
   onConfirm,
   onBack,
   maxAmount,
@@ -294,6 +299,61 @@ export function DepositFlow({
       >
         Confirm Deposit
       </Button>
+    </div>
+  );
+}
+
+// Withdraw Flow Component
+interface WithdrawFlowProps {
+  _vaultSymbol: string;
+  vaultName: string;
+  _vaultAddress: string;
+  onBack: () => void;
+  className?: string;
+}
+
+export function WithdrawFlow({
+  _vaultSymbol,
+  vaultName,
+  _vaultAddress,
+  onBack,
+  className = ''
+}: WithdrawFlowProps) {
+  return (
+    <div className={`withdrawFlow ${className}`}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <button 
+          onClick={onBack}
+          className="backButton"
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#6366f1',
+            cursor: 'pointer',
+            fontSize: '1rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}
+        >
+          ← Back to Portfolio
+        </button>
+        <h2 style={{ textAlign: 'center', fontSize: '1.25rem', fontWeight: '600', margin: 0 }}>
+          Withdraw {vaultName}
+        </h2>
+        <div style={{ width: '120px' }}></div> {/* Spacer for centering */}
+      </div>
+      
+      <div style={{ 
+        padding: '2rem', 
+        border: '1px solid #e2e8f0', 
+        borderRadius: '12px',
+        backgroundColor: '#f8fafc'
+      }}>
+        <WithdrawBalance />
+        <WithdrawAmountInput />
+        <WithdrawButton />
+      </div>
     </div>
   );
 }

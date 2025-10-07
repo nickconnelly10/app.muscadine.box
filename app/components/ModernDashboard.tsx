@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useAccount, useBalance, useReadContract } from 'wagmi';
 import { base } from 'wagmi/chains';
 import { formatUnits } from 'viem';
-import { ModernHeader, PortfolioOverview, DepositFlow } from '../components/molecules';
+import { ModernHeader, PortfolioOverview, DepositFlow, WithdrawFlow } from '../components/molecules';
 import { Skeleton } from '../components/atoms';
 import '../styles/design-system.css';
 
@@ -46,6 +46,7 @@ const VAULTS_CONFIG = {
 export default function ModernDashboard() {
   const { address, isConnected } = useAccount();
   const [activeDeposit, setActiveDeposit] = useState<string | null>(null);
+  const [activeWithdraw, setActiveWithdraw] = useState<string | null>(null);
   const [depositAmount, setDepositAmount] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
   const [tokenPrices, setTokenPrices] = useState({
@@ -296,7 +297,11 @@ export default function ModernDashboard() {
   const handleVaultAction = (vaultSymbol: string, action: 'deposit' | 'withdraw') => {
     if (action === 'deposit') {
       setActiveDeposit(vaultSymbol);
+      setActiveWithdraw(null);
       setCurrentStep(1);
+    } else if (action === 'withdraw') {
+      setActiveWithdraw(vaultSymbol);
+      setActiveDeposit(null);
     }
   };
 
@@ -326,6 +331,7 @@ export default function ModernDashboard() {
 
   const handleBackToPortfolio = () => {
     setActiveDeposit(null);
+    setActiveWithdraw(null);
     setDepositAmount('');
     setCurrentStep(1);
   };
@@ -414,7 +420,7 @@ export default function ModernDashboard() {
             totalSteps={3}
             amount={depositAmount}
             onAmountChange={setDepositAmount}
-            onQuickAmount={handleQuickAmount}
+            _onQuickAmount={handleQuickAmount}
             onConfirm={handleConfirmDeposit}
             onBack={handleBackToPortfolio}
             maxAmount={
@@ -431,6 +437,20 @@ export default function ModernDashboard() {
                 ? ((gasPrice * 21000) / 1e9 * tokenPrices.ETH).toFixed(2) // Convert Gwei to ETH and multiply by ETH price
                 : "2.50"
             }
+            tokenPrice={
+              activeDeposit === 'USDC' ? tokenPrices.USDC :
+              activeDeposit === 'cbBTC' ? tokenPrices.cbBTC :
+              activeDeposit === 'ETH' ? tokenPrices.ETH : 0
+            }
+          />
+        </div>
+      ) : activeWithdraw ? (
+        <div style={{ padding: '2rem', display: 'flex', justifyContent: 'center' }}>
+          <WithdrawFlow
+            _vaultSymbol={activeWithdraw}
+            vaultName={Object.values(VAULTS_CONFIG).find(v => v.symbol === activeWithdraw)?.name || ''}
+            _vaultAddress={Object.values(VAULTS_CONFIG).find(v => v.symbol === activeWithdraw)?.address || ''}
+            onBack={handleBackToPortfolio}
           />
         </div>
       ) : (
