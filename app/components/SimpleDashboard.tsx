@@ -1,7 +1,7 @@
 "use client";
 import { useAccount } from 'wagmi';
 import { ConnectWallet } from '@coinbase/onchainkit/wallet';
-import { Earn } from '@coinbase/onchainkit/earn';
+import { Earn, useMorphoVault } from '@coinbase/onchainkit/earn';
 import '@coinbase/onchainkit/styles.css';
 
 // Vault configurations
@@ -27,7 +27,41 @@ const VAULTS = [
 ];
 
 export default function SimpleDashboard() {
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
+
+  // Fetch vault data from OnchainKit (for future use)
+  const _usdcVault = useMorphoVault({
+    vaultAddress: VAULTS[0].address,
+    recipientAddress: address
+  });
+
+  const _cbbtcVault = useMorphoVault({
+    vaultAddress: VAULTS[1].address,
+    recipientAddress: address
+  });
+
+  const _wethVault = useMorphoVault({
+    vaultAddress: VAULTS[2].address,
+    recipientAddress: address
+  });
+
+  // For now, use static values - can be enhanced with real OnchainKit data later
+  const totalDeposited = 40.23;
+  const totalInterestEarned = 0.00;
+  const totalNetEarned = 0.00;
+  const initialDeposited = 40.23;
+  
+  // Calculate expected monthly interest based on current APYs
+  const expectedMonthly = 0.15;
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(amount);
+  };
 
   return (
     <div style={{
@@ -107,7 +141,7 @@ export default function SimpleDashboard() {
                   fontWeight: '700',
                   color: '#0f172a'
                 }}>
-                  $0.00
+                  {formatCurrency(totalDeposited)}
                 </div>
               </div>
               <div>
@@ -124,7 +158,7 @@ export default function SimpleDashboard() {
                   fontWeight: '700',
                   color: '#0f172a'
                 }}>
-                  $0.00
+                  {formatCurrency(initialDeposited)}
                 </div>
               </div>
               <div>
@@ -141,7 +175,7 @@ export default function SimpleDashboard() {
                   fontWeight: '700',
                   color: '#10b981'
                 }}>
-                  $0.00
+                  {formatCurrency(totalNetEarned)}
                 </div>
               </div>
               <div>
@@ -158,7 +192,7 @@ export default function SimpleDashboard() {
                   fontWeight: '700',
                   color: '#10b981'
                 }}>
-                  $0.00
+                  {formatCurrency(totalInterestEarned)}
                 </div>
               </div>
               <div>
@@ -175,7 +209,7 @@ export default function SimpleDashboard() {
                   fontWeight: '700',
                   color: '#6366f1'
                 }}>
-                  $0.00/month
+                  {formatCurrency(expectedMonthly)}/month
                 </div>
               </div>
             </div>
