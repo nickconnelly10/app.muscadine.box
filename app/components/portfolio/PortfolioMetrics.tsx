@@ -16,7 +16,7 @@ interface MetricCardProps {
 function MetricCard({ label, value, subValue, color = '#0f172a', loading, tooltip }: MetricCardProps) {
   return (
     <div style={{
-      padding: '1.5rem',
+      padding: '1rem',
       backgroundColor: '#ffffff',
       borderRadius: '12px',
       border: '1px solid #e2e8f0',
@@ -25,7 +25,7 @@ function MetricCard({ label, value, subValue, color = '#0f172a', loading, toolti
         display: 'flex',
         alignItems: 'center',
         gap: '0.5rem',
-        marginBottom: '0.75rem',
+        marginBottom: '0.5rem',
       }}>
         <div style={{
           fontSize: '0.875rem',
@@ -65,7 +65,7 @@ function MetricCard({ label, value, subValue, color = '#0f172a', loading, toolti
       ) : (
         <>
           <div style={{
-            fontSize: '2rem',
+            fontSize: '1.5rem',
             fontWeight: '700',
             color,
             lineHeight: '1.2',
@@ -175,9 +175,21 @@ export default function PortfolioMetrics() {
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-      gap: '1rem',
+      gridTemplateColumns: 'repeat(4, 1fr)',
+      gap: '0.75rem',
     }}>
+      <style jsx>{`
+        @media (max-width: 768px) {
+          div {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+        }
+        @media (max-width: 480px) {
+          div {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
       <MetricCard
         label="Total Value"
         value={formatCurrency(totalPortfolioValue)}

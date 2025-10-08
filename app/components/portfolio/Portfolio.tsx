@@ -1,6 +1,7 @@
 "use client";
 import React, { Suspense, lazy } from 'react';
-import { ConnectWallet } from '@coinbase/onchainkit/wallet';
+import { ConnectWallet, Wallet, WalletDropdown, WalletDropdownDisconnect } from '@coinbase/onchainkit/wallet';
+import { Identity, Avatar, Name, Address, EthBalance } from '@coinbase/onchainkit/identity';
 import { usePortfolio } from '../../contexts/PortfolioContext';
 import PortfolioMetrics from './PortfolioMetrics';
 import HistoricalGraph from './HistoricalGraph';
@@ -86,7 +87,21 @@ export default function Portfolio() {
               DeFi Portfolio on Base
             </p>
           </div>
-          <ConnectWallet />
+          <Wallet>
+            <ConnectWallet>
+              <Avatar style={{ width: '24px', height: '24px' }} />
+              <Name />
+            </ConnectWallet>
+            <WalletDropdown>
+              <Identity  hasCopyAddressOnClick>
+                <Avatar />
+                <Name />
+                <Address />
+                <EthBalance />
+              </Identity>
+              <WalletDropdownDisconnect />
+            </WalletDropdown>
+          </Wallet>
         </div>
       </header>
 
@@ -164,7 +179,21 @@ export default function Portfolio() {
                 display: 'flex',
                 justifyContent: 'center',
               }}>
-                <ConnectWallet />
+                <Wallet>
+                  <ConnectWallet>
+                    <Avatar style={{ width: '24px', height: '24px' }} />
+                    <Name />
+                  </ConnectWallet>
+                  <WalletDropdown>
+                    <Identity  hasCopyAddressOnClick>
+                      <Avatar />
+                      <Name />
+                      <Address />
+                      <EthBalance />
+                    </Identity>
+                    <WalletDropdownDisconnect />
+                  </WalletDropdown>
+                </Wallet>
               </div>
             </div>
 
@@ -271,7 +300,9 @@ export default function Portfolio() {
                 flexDirection: 'column',
                 gap: '1.5rem',
               }}>
-                <PortfolioMetrics />
+                <Suspense fallback={<LoadingCard />}>
+                  <TokensList />
+                </Suspense>
                 <HistoricalGraph />
               </div>
 
@@ -281,9 +312,7 @@ export default function Portfolio() {
                 flexDirection: 'column',
                 gap: '1.5rem',
               }}>
-                <Suspense fallback={<LoadingCard />}>
-                  <TokensList />
-                </Suspense>
+                <PortfolioMetrics />
                 <Suspense fallback={<LoadingCard />}>
                   <DeFiPositions />
                 </Suspense>

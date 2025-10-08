@@ -51,9 +51,6 @@ export default function DeFiPositions() {
     }).format(amount);
   };
 
-  const formatAPY = (apy: number): string => {
-    return `${apy.toFixed(2)}%`;
-  };
 
   if (!isConnected) {
     return (
@@ -145,16 +142,6 @@ export default function DeFiPositions() {
                   </div>
                 </div>
                 
-                <div style={{
-                  padding: '0.5rem 0.75rem',
-                  backgroundColor: '#dcfce7',
-                  color: '#166534',
-                  borderRadius: '6px',
-                  fontSize: '0.875rem',
-                  fontWeight: '600',
-                }}>
-                  {position ? formatAPY(position.apy) : '—'} APY
-                </div>
               </div>
 
               {/* Stats grid */}
@@ -162,7 +149,7 @@ export default function DeFiPositions() {
                 display: 'grid',
                 gridTemplateColumns: 'repeat(3, 1fr)',
                 gap: '1rem',
-                marginBottom: '1rem',
+                marginBottom: '0.75rem',
               }}>
                 <div>
                   <div style={{
@@ -227,10 +214,10 @@ export default function DeFiPositions() {
 
               {/* OnchainKit Earn component */}
               <div style={{
-                marginTop: '1rem',
                 backgroundColor: '#ffffff',
                 borderRadius: '8px',
-                padding: '0.5rem',
+                padding: '0',
+                overflow: 'hidden',
               }}>
                 <Earn
                   vaultAddress={vault.address}
