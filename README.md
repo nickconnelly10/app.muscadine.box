@@ -30,11 +30,15 @@ npm run dev
 
 ## Features
 
-- Real-time vault balances
-- Deposit/withdraw via OnchainKit
+- **Portfolio Dashboard** - Zerion-style home with comprehensive tracking
+- **Historical Performance** - Track portfolio value over time with interactive graphs
+- **Token Balances** - View all wallet assets on Base in one place
+- **Vault Positions** - Monitor DeFi deposits with earned interest calculations
+- Real-time vault balances via OnchainKit
+- Deposit/withdraw via OnchainKit Earn component
 - Interest calculations (ERC-4626)
-- Token prices (CoinGecko)
-- Farcaster auth
+- Token prices (CoinGecko with caching)
+- Farcaster authentication
 
 ## Deploy
 
