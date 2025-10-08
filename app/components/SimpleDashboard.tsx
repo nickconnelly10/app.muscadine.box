@@ -47,6 +47,13 @@ export default function SimpleDashboard() {
     recipientAddress: address
   });
 
+  // Log rewards to see if there are any claimable tokens
+  if (typeof window !== 'undefined') {
+    console.log('USDC Vault Rewards:', usdcVault.rewards);
+    console.log('cbBTC Vault Rewards:', cbbtcVault.rewards);
+    console.log('WETH Vault Rewards:', wethVault.rewards);
+  }
+
   // Helper to safely convert balance to number
   const getBalanceNumber = (balance: string | number | undefined) => {
     if (balance === undefined) return 0;
