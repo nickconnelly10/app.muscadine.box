@@ -8,7 +8,7 @@ const ROOT_URL = process.env.NEXT_PUBLIC_URL || process.env.VERCEL_URL || "https
 export const minikitConfig = {
   frame: {
     version: "1",
-    name: "app-muscadine.box",
+    name: "Muscadine Earn",
     subtitle: "DeFi Lending Platform",
     description: "Earn interest on your crypto with Morpho vaults on Base",
     screenshotUrls: [`${ROOT_URL}/screenshot.png`],

@@ -27,7 +27,7 @@ const VAULTS = [
   },
 ];
 
-export default function SimpleDashboard() {
+export default function Dashboard() {
   const { isConnected, address } = useAccount();
 
   // Fetch token prices

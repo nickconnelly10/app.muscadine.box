@@ -49,13 +49,13 @@ vi.mock('../../hooks/useVaultHistory', () => ({
   }),
 }));
 
-describe('SimpleDashboard', () => {
+describe('Dashboard', () => {
   beforeEach(() => {
     vi.resetModules();
   });
   it('renders totals based on mocked balances and prices', async () => {
-    const { default: SimpleDashboard } = await import('../SimpleDashboard');
-    render(<SimpleDashboard />);
+    const { default: Dashboard } = await import('../Dashboard');
+    render(<Dashboard />);
 
     // Balances in USD: USDC(100*1)=100, cbBTC(1*70000)=70000, WETH(2*3000)=6000
     // Total: 76100
@@ -76,7 +76,7 @@ describe('SimpleDashboard', () => {
 
   it('hides portfolio when not connected', async () => {
     vi.doMock('wagmi', () => ({ useAccount: () => ({ isConnected: false, address: undefined }) }));
-    const { default: DisconnectedDashboard } = await import('../SimpleDashboard');
+    const { default: DisconnectedDashboard } = await import('../Dashboard');
     render(<DisconnectedDashboard />);
     expect(screen.queryByText('Portfolio Overview')).toBeNull();
   });
