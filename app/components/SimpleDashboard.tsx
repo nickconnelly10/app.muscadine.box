@@ -3,6 +3,7 @@ import { useAccount } from 'wagmi';
 import { ConnectWallet } from '@coinbase/onchainkit/wallet';
 import { Earn, useMorphoVault } from '@coinbase/onchainkit/earn';
 import { useVaultHistory } from '../hooks/useVaultHistory';
+import { useTokenPrices } from '../hooks/useTokenPrices';
 import '@coinbase/onchainkit/styles.css';
 
 // Vault configurations - using verified addresses
@@ -27,6 +28,9 @@ const VAULTS = [
 export default function SimpleDashboard() {
   const { isConnected, address } = useAccount();
 
+  // Fetch token prices
+  const tokenPrices = useTokenPrices();
+
   // Fetch vault data from OnchainKit
   const usdcVault = useMorphoVault({
     vaultAddress: VAULTS[0].address,
@@ -43,39 +47,57 @@ export default function SimpleDashboard() {
     recipientAddress: address
   });
 
-  // Debug: Log asset information to verify OnchainKit is fetching correctly
-  if (typeof window !== 'undefined') {
-    console.log('USDC Vault Asset:', usdcVault.asset);
-    console.log('cbBTC Vault Asset:', cbbtcVault.asset);
-    console.log('WETH Vault Asset:', wethVault.asset);
-  }
-
   // Helper to safely convert balance to number
   const getBalanceNumber = (balance: string | number | undefined) => {
     if (balance === undefined) return 0;
     return typeof balance === 'string' ? parseFloat(balance) : balance;
   };
 
-  // Fetch historical deposit/withdraw data for each vault
+  // Helper to convert token balance to USD value
+  const getUSDValue = (tokenBalance: string | number | undefined, tokenSymbol: string) => {
+    const balance = getBalanceNumber(tokenBalance);
+    if (balance === 0) return 0;
+
+    switch (tokenSymbol) {
+      case 'USDC':
+        return balance * tokenPrices.usdc;
+      case 'cbBTC':
+        return balance * tokenPrices.cbbtc;
+      case 'WETH':
+        return balance * tokenPrices.weth;
+      default:
+        return 0;
+    }
+  };
+
+  // Convert vault balances to USD
+  const usdcBalanceUSD = getUSDValue(usdcVault.balance, 'USDC');
+  const cbbtcBalanceUSD = getUSDValue(cbbtcVault.balance, 'cbBTC');
+  const wethBalanceUSD = getUSDValue(wethVault.balance, 'WETH');
+
+  // Fetch historical deposit/withdraw data for each vault (using USD values)
   const usdcHistory = useVaultHistory(
     VAULTS[0].address,
     address,
-    getBalanceNumber(usdcVault.balance),
-    usdcVault.asset.decimals || 6
+    usdcBalanceUSD,
+    usdcVault.asset.decimals || 6,
+    tokenPrices.usdc
   );
 
   const cbbtcHistory = useVaultHistory(
     VAULTS[1].address,
     address,
-    getBalanceNumber(cbbtcVault.balance),
-    cbbtcVault.asset.decimals || 8
+    cbbtcBalanceUSD,
+    cbbtcVault.asset.decimals || 8,
+    tokenPrices.cbbtc
   );
 
   const wethHistory = useVaultHistory(
     VAULTS[2].address,
     address,
-    getBalanceNumber(wethVault.balance),
-    wethVault.asset.decimals || 18
+    wethBalanceUSD,
+    wethVault.asset.decimals || 18,
+    tokenPrices.weth
   );
 
   // Helper function to get vault data by address
@@ -94,18 +116,26 @@ export default function SimpleDashboard() {
     return null;
   };
 
+  // Helper function to get USD balance by vault address
+  const getVaultBalanceUSD = (vaultAddress: string) => {
+    if (vaultAddress === VAULTS[0].address) return usdcBalanceUSD;
+    if (vaultAddress === VAULTS[1].address) return cbbtcBalanceUSD;
+    if (vaultAddress === VAULTS[2].address) return wethBalanceUSD;
+    return 0;
+  };
+
   // Calculate portfolio totals using real historical data
-  // Initial Deposited: net deposits (deposits - withdrawals) across all vaults
+  // Initial Deposited: net deposits (deposits - withdrawals) across all vaults in USD
   const initialDeposited = 
     usdcHistory.netDeposits + 
     cbbtcHistory.netDeposits + 
     wethHistory.netDeposits;
 
-  // Current Balance: total value across all vaults
+  // Current Balance: total value across all vaults in USD
   const currentBalance = 
-    getBalanceNumber(usdcVault.balance) + 
-    getBalanceNumber(cbbtcVault.balance) + 
-    getBalanceNumber(wethVault.balance);
+    usdcBalanceUSD + 
+    cbbtcBalanceUSD + 
+    wethBalanceUSD;
   
   // Total Interest Earned: actual interest earned to date
   const totalInterestEarned = 
@@ -114,17 +144,16 @@ export default function SimpleDashboard() {
     wethHistory.interestEarned;
 
   // Calculate projected annual return for each vault (without fees)
-  const getVaultProjectedYield = (vault: typeof usdcVault) => {
-    const balance = getBalanceNumber(vault.balance);
+  const getVaultProjectedYield = (vault: typeof usdcVault, balanceUSD: number) => {
     const apy = vault.totalApy || 0;
-    return balance * (apy / 100);
+    return balanceUSD * (apy / 100);
   };
   
   // Projected Annual Return: based on current balances and APYs
   const projectedAnnualReturn = 
-    getVaultProjectedYield(usdcVault) + 
-    getVaultProjectedYield(cbbtcVault) + 
-    getVaultProjectedYield(wethVault);
+    getVaultProjectedYield(usdcVault, usdcBalanceUSD) + 
+    getVaultProjectedYield(cbbtcVault, cbbtcBalanceUSD) + 
+    getVaultProjectedYield(wethVault, wethBalanceUSD);
   
   // Expected Monthly Interest
   const expectedMonthlyInterest = projectedAnnualReturn / 12;
@@ -357,10 +386,7 @@ export default function SimpleDashboard() {
                       fontWeight: '600',
                       color: '#0f172a'
                     }}>
-                      {(() => {
-                        const vaultData = getVaultData(vault.address);
-                        return formatCurrency(getBalanceNumber(vaultData?.balance));
-                      })()}
+                      {formatCurrency(getVaultBalanceUSD(vault.address))}
                     </div>
                   </div>
                   <div>

@@ -15,7 +15,8 @@ export function useVaultHistory(
   vaultAddress: Address,
   userAddress: Address | undefined,
   currentBalance: number,
-  decimals: number
+  decimals: number,
+  tokenPriceUSD: number = 1
 ): VaultHistory {
   const publicClient = usePublicClient();
   const [history, setHistory] = useState<VaultHistory>({
@@ -62,16 +63,24 @@ export function useVaultHistory(
           toBlock: 'latest',
         });
 
-        // Calculate total deposited
+        console.log(`[VaultHistory] ${vaultAddress} - Found ${depositLogs.length} deposits, ${withdrawLogs.length} withdrawals`);
+
+        // Calculate total deposited (in USD)
         const totalDeposited = depositLogs.reduce((sum, log) => {
           const assets = log.args.assets as bigint;
-          return sum + Number(formatUnits(assets, decimals));
+          const tokenAmount = Number(formatUnits(assets, decimals));
+          const usdAmount = tokenAmount * tokenPriceUSD;
+          console.log(`[VaultHistory] Deposit: ${assets.toString()} raw -> ${tokenAmount} tokens -> $${usdAmount.toFixed(2)} USD`);
+          return sum + usdAmount;
         }, 0);
 
-        // Calculate total withdrawn
+        // Calculate total withdrawn (in USD)
         const totalWithdrawn = withdrawLogs.reduce((sum, log) => {
           const assets = log.args.assets as bigint;
-          return sum + Number(formatUnits(assets, decimals));
+          const tokenAmount = Number(formatUnits(assets, decimals));
+          const usdAmount = tokenAmount * tokenPriceUSD;
+          console.log(`[VaultHistory] Withdraw: ${assets.toString()} raw -> ${tokenAmount} tokens -> $${usdAmount.toFixed(2)} USD`);
+          return sum + usdAmount;
         }, 0);
 
         // Net deposits = deposits - withdrawals
@@ -79,6 +88,8 @@ export function useVaultHistory(
 
         // Interest earned = current balance - net deposits
         const interestEarned = Math.max(0, currentBalance - netDeposits);
+
+        console.log(`[VaultHistory] ${vaultAddress} - Total Deposited: ${totalDeposited}, Total Withdrawn: ${totalWithdrawn}, Net: ${netDeposits}, Current Balance: ${currentBalance}, Interest: ${interestEarned}`);
 
         setHistory({
           totalDeposited,
@@ -100,7 +111,7 @@ export function useVaultHistory(
     }
 
     fetchHistory();
-  }, [publicClient, vaultAddress, userAddress, currentBalance, decimals]);
+  }, [publicClient, vaultAddress, userAddress, currentBalance, decimals, tokenPriceUSD]);
 
   return history;
 }
