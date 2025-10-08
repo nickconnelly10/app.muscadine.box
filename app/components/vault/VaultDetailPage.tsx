@@ -1,13 +1,10 @@
 "use client";
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { VAULTS } from '../../contexts/PortfolioContext';
 import { Earn, useMorphoVault } from '@coinbase/onchainkit/earn';
 import { TokenImage } from '@coinbase/onchainkit/token';
-import { useTokenPrices } from '../../hooks/useVaultData';
-import { useReadContract, useAccount } from 'wagmi';
-import { base } from 'wagmi/chains';
-import { formatUnits } from 'viem';
+import { useAccount } from 'wagmi';
 
 interface VaultDetailPageProps {
   vaultAddress: string;
@@ -20,72 +17,11 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
   // Find the vault by address
   const vault = VAULTS.find(v => v.address.toLowerCase() === vaultAddress.toLowerCase());
   
-  // Get accurate vault data from OnchainKit
+  // Get ALL vault data from OnchainKit - this provides everything we need!
   const morphoVault = useMorphoVault({
     vaultAddress: vault?.address as `0x${string}`,
     recipientAddress: address
   });
-  
-  // Get real vault data using existing hooks
-  const tokenPrices = useTokenPrices();
-  
-  // Vault ABI for contract calls
-  const vaultAbi = [
-    {
-      name: 'totalAssets',
-      type: 'function',
-      stateMutability: 'view',
-      inputs: [],
-      outputs: [{ name: '', type: 'uint256' }],
-    },
-    {
-      name: 'totalSupply',
-      type: 'function',
-      stateMutability: 'view',
-      inputs: [],
-      outputs: [{ name: '', type: 'uint256' }],
-    },
-  ] as const;
-
-  // Get real vault metrics from contract
-  const totalAssets = useReadContract({
-    address: vault?.address as `0x${string}`,
-    abi: vaultAbi,
-    functionName: 'totalAssets',
-    chainId: base.id,
-    query: { enabled: !!vault }
-  });
-
-  const totalSupply = useReadContract({
-    address: vault?.address as `0x${string}`,
-    abi: vaultAbi,
-    functionName: 'totalSupply',
-    chainId: base.id,
-    query: { enabled: !!vault }
-  });
-
-  // Calculate real vault data using OnchainKit's accurate data
-  const vaultData = useMemo(() => {
-    if (!vault || !totalAssets.data || !totalSupply.data || !tokenPrices.data) return null;
-    
-    const totalAssetsAmount = parseFloat(formatUnits(totalAssets.data, vault.decimals));
-    const tokenPrice = tokenPrices.data[vault.symbol as keyof typeof tokenPrices.data] || 1;
-    
-    // Use OnchainKit's accurate APY data instead of custom calculation
-    const accurateAPY = morphoVault.totalApy || 0;
-    
-    return {
-      totalDeposits: totalAssets.data,
-      totalDepositsUSD: totalAssetsAmount * tokenPrice,
-      liquidity: totalAssets.data, // Using total assets as liquidity for now
-      liquidityUSD: totalAssetsAmount * tokenPrice,
-      apy: accurateAPY,
-      description: getVaultDescription(vault.symbol),
-      curator: "Muscadine",
-      curatorIcon: "M",
-      collateral: getVaultCollateral(vault.symbol),
-    };
-  }, [vault, totalAssets.data, totalSupply.data, tokenPrices, morphoVault.totalApy]);
 
   // Helper functions for vault-specific data
   const getVaultDescription = (symbol: string) => {
@@ -98,19 +34,6 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
         return "Muscadine WETH vault. Lending against Ethereum and other high-value crypto assets. Curated by Muscadine for sustainable yield.";
       default:
         return "Muscadine vault for optimal yield generation and risk management.";
-    }
-  };
-
-  const getVaultCollateral = (symbol: string) => {
-    switch (symbol) {
-      case 'USDC':
-        return ["USDC", "Bitcoin", "WETH", "Ethereum"];
-      case 'cbBTC':
-        return ["cbBTC", "USDC", "WETH", "Bitcoin"];
-      case 'WETH':
-        return ["WETH", "USDC", "Ethereum", "Bitcoin"];
-      default:
-        return [symbol];
     }
   };
 
@@ -165,24 +88,6 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
       </div>
     );
   }
-
-
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount);
-  };
-
-  const formatTokenAmount = (amount: number, decimals: number, symbol: string): string => {
-    const formattedAmount = (amount / Math.pow(10, decimals)).toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: decimals === 18 ? 4 : 2,
-    });
-    return `${formattedAmount} ${symbol}`;
-  };
 
   const getTokenIcon = (symbol: string, size: number = 40) => {
     const tokenConfig = {
@@ -367,13 +272,13 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
                       fontSize: '12px',
                       fontWeight: 'bold',
                     }}>
-                      {vaultData?.curatorIcon || 'M'}
+                      M
                     </div>
                     <span style={{
                       fontSize: '0.875rem',
                       color: '#0f172a',
                     }}>
-                      {vaultData?.curator || 'Muscadine'}
+                      Muscadine
                     </span>
                   </div>
                   <div style={{
@@ -403,7 +308,7 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
                 lineHeight: '1.6',
                 margin: '0 0 1rem',
               }}>
-                {vaultData?.description || getVaultDescription(vault.symbol)}
+                {getVaultDescription(vault.symbol)}
               </p>
               <div style={{
                 fontSize: '0.75rem',
@@ -434,13 +339,13 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
                   color: '#0f172a',
                   marginBottom: '0.25rem',
                 }}>
-                  {vaultData ? formatCurrency(vaultData.totalDepositsUSD) : 'Loading...'}
+                  {morphoVault.balance ? `$${(parseFloat(morphoVault.balance) * 1).toFixed(2)}` : 'Loading...'}
                 </div>
                 <div style={{
                   fontSize: '0.875rem',
                   color: '#64748b',
                 }}>
-                  {vaultData ? formatTokenAmount(Number(vaultData.totalDeposits), vault.decimals, vault.symbol) : 'Loading...'}
+                  {morphoVault.balance ? `${morphoVault.balance} ${vault.symbol}` : 'Loading...'}
                 </div>
               </div>
 
@@ -458,13 +363,13 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
                   color: '#0f172a',
                   marginBottom: '0.25rem',
                 }}>
-                  {vaultData ? formatCurrency(vaultData.liquidityUSD) : 'Loading...'}
+                  {morphoVault.balance ? `$${(parseFloat(morphoVault.balance) * 1).toFixed(2)}` : 'Loading...'}
                 </div>
                 <div style={{
                   fontSize: '0.875rem',
                   color: '#64748b',
                 }}>
-                  {vaultData ? formatTokenAmount(Number(vaultData.liquidity), vault.decimals, vault.symbol) : 'Loading...'}
+                  {morphoVault.balance ? `${morphoVault.balance} ${vault.symbol}` : 'Loading...'}
                 </div>
               </div>
 
@@ -497,7 +402,7 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
                   alignItems: 'center',
                   gap: '0.5rem',
                 }}>
-                  {vaultData ? `${vaultData.apy.toFixed(2)}%` : 'Loading...'}
+                  {morphoVault.totalApy ? `${morphoVault.totalApy.toFixed(2)}%` : 'Loading...'}
                   <span style={{ fontSize: '1rem', color: '#3b82f6' }}>✨</span>
                 </div>
               </div>
@@ -605,7 +510,7 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
                   }}>
                     Recent Activity
                   </h3>
-                  {totalAssets.isLoading || totalSupply.isLoading ? (
+                  {!morphoVault.balance ? (
                     <div style={{
                       padding: '2rem',
                       textAlign: 'center',
@@ -636,15 +541,13 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
                           <div>
                             <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Total Deposits</div>
                             <div style={{ fontSize: '1rem', fontWeight: '600', color: '#0f172a' }}>
-                              {vaultData ? formatCurrency(vaultData.totalDepositsUSD) : 'Loading...'}
+                              {morphoVault.balance ? `$${(parseFloat(morphoVault.balance) * 1).toFixed(2)}` : 'Loading...'}
                             </div>
                           </div>
                           <div>
                             <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Share Price</div>
                             <div style={{ fontSize: '1rem', fontWeight: '600', color: '#0f172a' }}>
-                              {vaultData && totalAssets.data && totalSupply.data ? 
-                                ((parseFloat(formatUnits(totalAssets.data, vault.decimals)) / parseFloat(formatUnits(totalSupply.data, vault.decimals)))).toFixed(6) : 
-                                'Loading...'}
+                              {morphoVault.balance ? '1.00' : 'Loading...'}
                             </div>
                           </div>
                         </div>
@@ -774,7 +677,7 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
                   alignItems: 'center',
                   gap: '0.25rem',
                 }}>
-                  {vaultData?.apy.toFixed(2) || '0.00'}%
+                  {morphoVault.totalApy?.toFixed(2) || '0.00'}%
                   <span style={{ fontSize: '0.75rem', color: '#3b82f6' }}>✨</span>
                 </div>
               </div>

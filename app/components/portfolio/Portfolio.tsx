@@ -1,12 +1,11 @@
 "use client";
-import React, { Suspense, lazy, useState } from 'react';
+import React, { Suspense, lazy } from 'react';
 import { ConnectWallet, Wallet, WalletDropdown, WalletDropdownDisconnect } from '@coinbase/onchainkit/wallet';
 import { Identity, Avatar, Name, Address, EthBalance } from '@coinbase/onchainkit/identity';
 import { usePortfolio } from '../../contexts/PortfolioContext';
 import PortfolioMetrics from './PortfolioMetrics';
 import HistoricalGraph from './HistoricalGraph';
 import ErrorBanner from './ErrorBanner';
-import WalletConnectModal from './WalletConnectModal';
 import { base } from 'wagmi/chains';
 
 // Lazy load lower priority components for better performance
@@ -35,7 +34,6 @@ function LoadingCard() {
 
 export default function Portfolio() {
   const { isConnected, chainId, pricesError } = usePortfolio();
-  const [showWalletModal, setShowWalletModal] = useState(!isConnected);
 
   const isWrongChain = isConnected && chainId !== base.id; // Used in JSX below
 
@@ -142,11 +140,6 @@ export default function Portfolio() {
             dismissible={true}
           />
         )}
-        {/* Wallet Connect Modal */}
-        <WalletConnectModal 
-          isOpen={showWalletModal && !isConnected}
-          onClose={() => setShowWalletModal(false)}
-        />
 
         {/* Always show the dashboard */}
         {/* Desktop: Two column layout */}
