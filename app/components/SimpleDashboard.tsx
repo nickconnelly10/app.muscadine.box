@@ -4,6 +4,7 @@ import { ConnectWallet } from '@coinbase/onchainkit/wallet';
 import { Earn, useMorphoVault } from '@coinbase/onchainkit/earn';
 import { useVaultHistory } from '../hooks/useVaultHistory';
 import { useTokenPrices } from '../hooks/useTokenPrices';
+import ClaimRewardsButton from './ClaimRewardsButton';
 import '@coinbase/onchainkit/styles.css';
 
 // Vault configurations - using verified addresses
@@ -46,13 +47,6 @@ export default function SimpleDashboard() {
     vaultAddress: VAULTS[2].address,
     recipientAddress: address
   });
-
-  // Log rewards to see if there are any claimable tokens
-  if (typeof window !== 'undefined') {
-    console.log('USDC Vault Rewards:', usdcVault.rewards);
-    console.log('cbBTC Vault Rewards:', cbbtcVault.rewards);
-    console.log('WETH Vault Rewards:', wethVault.rewards);
-  }
 
   // Helper to safely convert balance to number
   const getBalanceNumber = (balance: string | number | undefined) => {
@@ -221,6 +215,9 @@ export default function SimpleDashboard() {
         maxWidth: '1200px',
         margin: '0 auto'
       }}>
+        {/* Claim Rewards Button */}
+        {isConnected && <ClaimRewardsButton />}
+
         {/* Portfolio Overview */}
         {isConnected && (
           <div style={{
