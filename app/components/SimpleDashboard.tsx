@@ -100,14 +100,6 @@ export default function SimpleDashboard() {
     tokenPrices.weth
   );
 
-  // Helper function to get vault data by address
-  const getVaultData = (vaultAddress: string) => {
-    if (vaultAddress === VAULTS[0].address) return usdcVault;
-    if (vaultAddress === VAULTS[1].address) return cbbtcVault;
-    if (vaultAddress === VAULTS[2].address) return wethVault;
-    return null;
-  };
-
   // Helper function to get vault history by address
   const getVaultHistory = (vaultAddress: string) => {
     if (vaultAddress === VAULTS[0].address) return usdcHistory;
