@@ -41,6 +41,9 @@ export function useVaultHistory(
 
     async function fetchHistory() {
       try {
+        console.log(`[VaultHistory] Fetching history for vault ${vaultAddress}, user ${userAddress}`);
+        console.log(`[VaultHistory] Token price: $${tokenPriceUSD}, Decimals: ${decimals}, Current balance: $${currentBalance}`);
+
         // Deposit event: event Deposit(address indexed sender, address indexed owner, uint256 assets, uint256 shares)
         const depositLogs = await publicClient!.getLogs({
           address: vaultAddress,
@@ -59,11 +62,13 @@ export function useVaultHistory(
           args: {
             owner: userAddress,
           },
-          fromBlock: 0n,
+          fromBlock: 'earliest' as any,
           toBlock: 'latest',
         });
 
         console.log(`[VaultHistory] ${vaultAddress} - Found ${depositLogs.length} deposits, ${withdrawLogs.length} withdrawals`);
+        console.log(`[VaultHistory] Deposit logs:`, depositLogs);
+        console.log(`[VaultHistory] Withdraw logs:`, withdrawLogs);
 
         // Calculate total deposited (in USD)
         const totalDeposited = depositLogs.reduce((sum, log) => {

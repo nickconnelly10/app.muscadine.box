@@ -32,6 +32,11 @@ export default function SimpleDashboard() {
   // Fetch token prices
   const tokenPrices = useTokenPrices();
 
+  // Debug: Log token prices
+  if (typeof window !== 'undefined' && isConnected) {
+    console.log('[Dashboard] Token Prices:', tokenPrices);
+  }
+
   // Fetch vault data from OnchainKit
   const usdcVault = useMorphoVault({
     vaultAddress: VAULTS[0].address,
@@ -75,6 +80,13 @@ export default function SimpleDashboard() {
   const usdcBalanceUSD = getUSDValue(usdcVault.balance, 'USDC');
   const cbbtcBalanceUSD = getUSDValue(cbbtcVault.balance, 'cbBTC');
   const wethBalanceUSD = getUSDValue(wethVault.balance, 'WETH');
+
+  // Debug: Log USD balances
+  if (typeof window !== 'undefined' && isConnected) {
+    console.log('[Dashboard] USDC Balance:', usdcVault.balance, '→ USD:', usdcBalanceUSD);
+    console.log('[Dashboard] cbBTC Balance:', cbbtcVault.balance, '→ USD:', cbbtcBalanceUSD);
+    console.log('[Dashboard] WETH Balance:', wethVault.balance, '→ USD:', wethBalanceUSD);
+  }
 
   // Fetch historical deposit/withdraw data for each vault (using USD values)
   const usdcHistory = useVaultHistory(
@@ -135,6 +147,17 @@ export default function SimpleDashboard() {
     usdcHistory.interestEarned + 
     cbbtcHistory.interestEarned + 
     wethHistory.interestEarned;
+
+  // Debug: Log final calculations
+  if (typeof window !== 'undefined' && isConnected) {
+    console.log('[Dashboard] ========== PORTFOLIO TOTALS ==========');
+    console.log('[Dashboard] USDC History:', { netDeposits: usdcHistory.netDeposits, interestEarned: usdcHistory.interestEarned });
+    console.log('[Dashboard] cbBTC History:', { netDeposits: cbbtcHistory.netDeposits, interestEarned: cbbtcHistory.interestEarned });
+    console.log('[Dashboard] WETH History:', { netDeposits: wethHistory.netDeposits, interestEarned: wethHistory.interestEarned });
+    console.log('[Dashboard] Initial Deposited:', initialDeposited);
+    console.log('[Dashboard] Current Balance:', currentBalance);
+    console.log('[Dashboard] Total Interest Earned:', totalInterestEarned);
+  }
 
   // Calculate projected annual return for each vault (without fees)
   const getVaultProjectedYield = (vault: typeof usdcVault, balanceUSD: number) => {
