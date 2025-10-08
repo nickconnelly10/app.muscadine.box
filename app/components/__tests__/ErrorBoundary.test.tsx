@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { ErrorBoundary } from '../ErrorBoundary';
+import { vi } from 'vitest';
 
 const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {
   if (shouldThrow) throw new Error('Test error');
@@ -14,7 +15,8 @@ describe('ErrorBoundary', () => {
   });
 
   afterAll(() => {
-    (console.error as vi.MockedFunction<typeof console.error>).mockRestore();
+    const mockError = console.error as { mockRestore?: () => void };
+    mockError.mockRestore?.();
   });
 
   it('renders children when no error', () => {

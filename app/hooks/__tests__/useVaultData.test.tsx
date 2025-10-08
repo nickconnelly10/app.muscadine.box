@@ -3,6 +3,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useTokenPrices, useVaultBalances } from '../useVaultData';
 import type { Address } from 'viem';
+import { vi } from 'vitest';
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -56,7 +57,7 @@ describe('useVaultData hooks', () => {
     // balanceOf usdc, cbbtc, eth
     // convertToAssets usdc, cbbtc, eth
     // totalAssets/totalSupply for each
-    (useReadContract as unknown as vi.Mock).mockReturnValueOnce({ data: 1_500_000n, isLoading: false }) // usdc shares: 1.5
+    (useReadContract as ReturnType<typeof vi.fn>).mockReturnValueOnce({ data: 1_500_000n, isLoading: false }) // usdc shares: 1.5
       .mockReturnValueOnce({ data: 100_000_000n, isLoading: false }) // cbbtc shares: 1
       .mockReturnValueOnce({ data: 2_000_000_000_000_000_000n, isLoading: false }) // eth shares: 2
       .mockReturnValueOnce({ data: 1_500_000n, isLoading: false }) // usdc convertToAssets -> 1.5 assets

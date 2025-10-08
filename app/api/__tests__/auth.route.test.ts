@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import * as authRoute from '../auth/route';
+import { vi } from 'vitest';
 
 vi.mock('@farcaster/quick-auth', () => {
   const verifyMock = vi.fn(async ({ token, domain }: { token: string; domain: string }) => ({ sub: 123, token, domain }));
@@ -30,8 +31,9 @@ describe('api/auth GET', () => {
   });
 
   it('returns 401 on invalid token', async () => {
-    const { __mocks, Errors } = await import('@farcaster/quick-auth');
-    (__mocks.verifyMock as vi.MockedFunction<unknown>).mockRejectedValueOnce(new (Errors as { InvalidTokenError: typeof Error }).InvalidTokenError('bad'));
+    const { createClient, Errors } = await import('@farcaster/quick-auth');
+    const mockClient = createClient();
+    vi.mocked(mockClient.verifyJwt).mockRejectedValueOnce(new Errors.InvalidTokenError('bad'));
     const req = makeRequest({ Authorization: 'Bearer invalid' });
     const res = await authRoute.GET(req as NextRequest);
     expect(res.status).toBe(401);

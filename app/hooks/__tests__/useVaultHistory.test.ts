@@ -1,14 +1,14 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import type { Address } from 'viem';
 import { useVaultHistory } from '../useVaultHistory';
+import { usePublicClient } from 'wagmi';
+import { vi } from 'vitest';
 
 vi.mock('wagmi', () => ({
   usePublicClient: vi.fn(),
 }));
 
 type MockLog = { args: { assets: bigint } };
-
-import { usePublicClient } from 'wagmi';
 
 describe('useVaultHistory', () => {
 
@@ -25,7 +25,7 @@ describe('useVaultHistory', () => {
       { args: { assets: 200000n } },  // 0.2 tokens
     ];
 
-    (usePublicClient as vi.MockedFunction<typeof usePublicClient>).mockReturnValue({
+    (usePublicClient as ReturnType<typeof vi.fn>).mockReturnValue({
       getLogs: vi
         .fn()
         // first call deposits
@@ -58,7 +58,7 @@ describe('useVaultHistory', () => {
   });
 
   it('returns zeros when no public client or user', async () => {
-    (usePublicClient as vi.MockedFunction<typeof usePublicClient>).mockReturnValue(null);
+    (usePublicClient as ReturnType<typeof vi.fn>).mockReturnValue(null);
 
     const { result } = renderHook(() =>
       useVaultHistory('0xdead' as Address, undefined, 0, 6, 1)

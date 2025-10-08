@@ -1,5 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { useTokenPrices } from '../useTokenPrices';
+import { vi } from 'vitest';
 
 describe('useTokenPrices', () => {
   const originalFetch = global.fetch;
@@ -29,7 +30,7 @@ describe('useTokenPrices', () => {
   });
 
   it('handles fetch error gracefully', async () => {
-    global.fetch = vi.fn().mockRejectedValue(new Error('network error')) as vi.MockedFunction<typeof fetch>;
+    global.fetch = vi.fn().mockRejectedValue(new Error('network error')) as ReturnType<typeof vi.fn>;
     const { result } = renderHook(() => useTokenPrices());
 
     await waitFor(() => {
