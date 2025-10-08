@@ -2,11 +2,30 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import ClaimRewardsButton from '../ClaimRewardsButton';
 import type { Address } from 'viem';
+import { vi } from 'vitest';
+
+// Ensure React is available globally for JSX
+global.React = React;
+
+// Mock window object for browser environment
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(), // deprecated
+    removeListener: vi.fn(), // deprecated
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+});
 
 const mockWriteContract = vi.fn();
 
 vi.mock('wagmi', () => ({
-  useAccount: () => ({ address: '0xuser' as Address }),
+  useAccount: () => ({ address: '0xuser' as Address, isConnected: true }),
   useWriteContract: () => ({ writeContract: mockWriteContract, data: null, isPending: false }),
   useWaitForTransactionReceipt: () => ({ isLoading: false, isSuccess: false }),
 }));
@@ -26,9 +45,25 @@ vi.mock('../../hooks/useMorphoRewards', () => ({
 
 vi.mock('../../lib/urdAbi', () => ({ URD_ABI: [] }));
 
+// Mock viem utilities
+vi.mock('viem', () => ({
+  parseUnits: (value: string, decimals: number) => {
+    // Convert decimal string to BigInt properly
+    const [integer, decimal = ''] = value.split('.');
+    const paddedDecimal = decimal.padEnd(decimals, '0').slice(0, decimals);
+    return BigInt(integer + paddedDecimal);
+  },
+}));
+
 describe('ClaimRewardsButton', () => {
-  afterEach(() => {
+  beforeEach(() => {
     vi.clearAllMocks();
+    // Ensure clean DOM
+    document.body.innerHTML = '';
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('renders when rewards are claimable', () => {

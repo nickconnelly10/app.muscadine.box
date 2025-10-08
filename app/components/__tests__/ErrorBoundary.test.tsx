@@ -3,6 +3,24 @@ import { render, screen } from '@testing-library/react';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { vi } from 'vitest';
 
+// Ensure React is available globally for JSX
+global.React = React;
+
+// Mock window object for browser environment
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(), // deprecated
+    removeListener: vi.fn(), // deprecated
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+});
+
 const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {
   if (shouldThrow) throw new Error('Test error');
   return <div>Child content</div>;
@@ -10,13 +28,12 @@ const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {
 
 describe('ErrorBoundary', () => {
   // Suppress console.error for cleaner test output
-  beforeAll(() => {
+  beforeEach(() => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
-  afterAll(() => {
-    const mockError = console.error as { mockRestore?: () => void };
-    mockError.mockRestore?.();
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('renders children when no error', () => {
