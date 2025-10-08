@@ -37,7 +37,7 @@ export default function Portfolio() {
   const { isConnected, chainId, pricesError } = usePortfolio();
   const [showWalletModal, setShowWalletModal] = useState(!isConnected);
 
-  const isWrongChain = isConnected && chainId !== base.id;
+  const isWrongChain = isConnected && chainId !== base.id; // Used in JSX below
 
   return (
     <div style={{

@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import Link from 'next/link';
 
 export default function LendBorrowCTA() {
   return (
@@ -37,7 +38,7 @@ export default function LendBorrowCTA() {
           gap: '1rem',
         }}>
           {/* Lend CTA */}
-          <a
+          <Link
             href="/lending"
             style={{
               padding: '1.25rem',
@@ -79,7 +80,7 @@ export default function LendBorrowCTA() {
             }}>
               Earn up to 8.5% APY on your assets
             </div>
-          </a>
+          </Link>
 
           {/* Borrow CTA */}
           <a
