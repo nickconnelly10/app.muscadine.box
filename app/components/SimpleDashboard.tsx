@@ -78,13 +78,6 @@ export default function SimpleDashboard() {
   
   // Expected Monthly Interest
   const expectedMonthlyInterest = totalReturn / 12;
-  
-  // Calculate weighted average APY
-  const averageApy = totalDeposited > 0 
-    ? ((getBalanceNumber(usdcVault.balance) * (usdcVault.totalApy || 0) +
-        getBalanceNumber(cbbtcVault.balance) * (cbbtcVault.totalApy || 0) +
-        getBalanceNumber(wethVault.balance) * (wethVault.totalApy || 0)) / totalDeposited)
-    : 0;
 
 
   const formatCurrency = (amount: number) => {
