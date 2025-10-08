@@ -91,7 +91,6 @@ export default function PortfolioMetrics() {
   const { 
     totalPortfolioValue, 
     vaultPositions,
-    isConnected,
     address,
     prices,
     pricesLoading,
@@ -156,7 +155,6 @@ export default function PortfolioMetrics() {
   ]);
 
   const formatCurrency = (amount: number): string => {
-    if (amount === 0 && !isConnected) return '—';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',

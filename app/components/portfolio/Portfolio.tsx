@@ -1,11 +1,12 @@
 "use client";
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { ConnectWallet, Wallet, WalletDropdown, WalletDropdownDisconnect } from '@coinbase/onchainkit/wallet';
 import { Identity, Avatar, Name, Address, EthBalance } from '@coinbase/onchainkit/identity';
 import { usePortfolio } from '../../contexts/PortfolioContext';
 import PortfolioMetrics from './PortfolioMetrics';
 import HistoricalGraph from './HistoricalGraph';
 import ErrorBanner from './ErrorBanner';
+import WalletConnectModal from './WalletConnectModal';
 import { base } from 'wagmi/chains';
 
 // Lazy load lower priority components for better performance
@@ -34,6 +35,7 @@ function LoadingCard() {
 
 export default function Portfolio() {
   const { isConnected, chainId, pricesError } = usePortfolio();
+  const [showWalletModal, setShowWalletModal] = useState(!isConnected);
 
   const isWrongChain = isConnected && chainId !== base.id;
 
@@ -140,149 +142,14 @@ export default function Portfolio() {
             dismissible={true}
           />
         )}
-        {!isConnected ? (
-          // Not connected state
-          <div style={{
-            textAlign: 'center',
-            padding: '4rem 2rem',
-          }}>
-            <div style={{
-              maxWidth: '500px',
-              margin: '0 auto',
-              padding: '3rem',
-              backgroundColor: '#ffffff',
-              borderRadius: '16px',
-              border: '1px solid #e2e8f0',
-            }}>
-              <div style={{
-                fontSize: '3rem',
-                marginBottom: '1rem',
-              }}>
-                🏦
-              </div>
-              <h2 style={{
-                fontSize: '1.5rem',
-                fontWeight: '700',
-                color: '#0f172a',
-                margin: '0 0 0.75rem',
-              }}>
-                Connect Your Wallet
-              </h2>
-              <p style={{
-                fontSize: '0.875rem',
-                color: '#64748b',
-                marginBottom: '2rem',
-              }}>
-                Connect your wallet to view your DeFi portfolio, track your positions, and earn yield on Base
-              </p>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-              }}>
-                <Wallet>
-                  <ConnectWallet>
-                    <Avatar style={{ width: '24px', height: '24px' }} />
-                    <Name />
-                  </ConnectWallet>
-                  <WalletDropdown>
-                    <Identity  hasCopyAddressOnClick>
-                      <Avatar />
-                      <Name />
-                      <Address />
-                      <EthBalance />
-                    </Identity>
-                    <WalletDropdownDisconnect />
-                  </WalletDropdown>
-                </Wallet>
-              </div>
-            </div>
+        {/* Wallet Connect Modal */}
+        <WalletConnectModal 
+          isOpen={showWalletModal && !isConnected}
+          onClose={() => setShowWalletModal(false)}
+        />
 
-            {/* Demo features */}
-            <div style={{
-              marginTop: '3rem',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: '1.5rem',
-              maxWidth: '900px',
-              margin: '3rem auto 0',
-            }}>
-              <div style={{
-                padding: '1.5rem',
-                backgroundColor: '#ffffff',
-                borderRadius: '12px',
-                border: '1px solid #e2e8f0',
-              }}>
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📊</div>
-                <h3 style={{
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  color: '#0f172a',
-                  margin: '0 0 0.5rem',
-                }}>
-                  Portfolio Tracking
-                </h3>
-                <p style={{
-                  fontSize: '0.875rem',
-                  color: '#64748b',
-                  margin: 0,
-                }}>
-                  See all your tokens and vault positions in one clean dashboard
-                </p>
-              </div>
-
-              <div style={{
-                padding: '1.5rem',
-                backgroundColor: '#ffffff',
-                borderRadius: '12px',
-                border: '1px solid #e2e8f0',
-              }}>
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📈</div>
-                <h3 style={{
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  color: '#0f172a',
-                  margin: '0 0 0.5rem',
-                }}>
-                  Historical Performance
-                </h3>
-                <p style={{
-                  fontSize: '0.875rem',
-                  color: '#64748b',
-                  margin: 0,
-                }}>
-                  Track your portfolio value over time with interactive graphs
-                </p>
-              </div>
-
-              <div style={{
-                padding: '1.5rem',
-                backgroundColor: '#ffffff',
-                borderRadius: '12px',
-                border: '1px solid #e2e8f0',
-              }}>
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>💰</div>
-                <h3 style={{
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  color: '#0f172a',
-                  margin: '0 0 0.5rem',
-                }}>
-                  Earn Interest
-                </h3>
-                <p style={{
-                  fontSize: '0.875rem',
-                  color: '#64748b',
-                  margin: 0,
-                }}>
-                  Deposit into vaults and earn up to 8.5% APY on your crypto
-                </p>
-              </div>
-            </div>
-          </div>
-        ) : (
-          // Connected state - Responsive two column layout
-          <>
-            {/* Desktop: Two column layout */}
+        {/* Always show the dashboard */}
+        {/* Desktop: Two column layout */}
             <div 
               className="portfolio-desktop"
               style={{
@@ -344,18 +211,16 @@ export default function Portfolio() {
               </Suspense>
             </div>
 
-            <style jsx>{`
-              @media (max-width: 1024px) {
-                .portfolio-desktop {
-                  display: none !important;
-                }
-                .portfolio-mobile {
-                  display: flex !important;
-                }
-              }
-            `}</style>
-          </>
-        )}
+        <style jsx>{`
+          @media (max-width: 1024px) {
+            .portfolio-desktop {
+              display: none !important;
+            }
+            .portfolio-mobile {
+              display: flex !important;
+            }
+          }
+        `}</style>
       </main>
 
       {/* Footer */}
