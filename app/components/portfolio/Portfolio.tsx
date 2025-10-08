@@ -160,6 +160,7 @@ export default function Portfolio() {
                 flexDirection: 'column',
                 gap: '1.5rem',
               }}>
+                <PortfolioMetrics />
                 <Suspense fallback={<LoadingCard />}>
                   <TokensList />
                 </Suspense>
@@ -172,7 +173,6 @@ export default function Portfolio() {
                 flexDirection: 'column',
                 gap: '1.5rem',
               }}>
-                <PortfolioMetrics />
                 <Suspense fallback={<LoadingCard />}>
                   <DeFiPositions />
                 </Suspense>
