@@ -1,8 +1,14 @@
 import '@testing-library/jest-dom';
 import React from 'react';
+import { createRoot } from 'react-dom/client';
 
 // Ensure React is available globally for JSX and class components
 global.React = React;
+
+// Ensure React DOM is available (critical for CI)
+if (typeof (global as any).createRoot === 'undefined') {
+  (global as any).createRoot = createRoot;
+}
 
 // Mock window.matchMedia for tests
 Object.defineProperty(window, 'matchMedia', {
@@ -27,21 +33,31 @@ Object.defineProperty(process, 'env', {
   writable: true,
 });
 
-// Ensure document.body and documentElement always exist (critical for CI)
-if (!document.body) {
-  document.body = document.createElement('body');
-  document.documentElement?.appendChild(document.body);
-}
-
+// Ensure document structure exists (critical for CI where JSDOM may not be fully initialized)
 if (!document.documentElement) {
   const html = document.createElement('html');
-  if (document.body) {
-    html.appendChild(document.body);
-  }
+  const body = document.createElement('body');
+  html.appendChild(body);
+  
   Object.defineProperty(document, 'documentElement', {
     value: html,
     writable: false,
-    configurable: false
+    configurable: true
+  });
+  
+  Object.defineProperty(document, 'body', {
+    value: body,
+    writable: false,
+    configurable: true
+  });
+} else if (!document.body) {
+  const body = document.createElement('body');
+  document.documentElement.appendChild(body);
+  
+  Object.defineProperty(document, 'body', {
+    value: body,
+    writable: false,
+    configurable: true
   });
 }
 

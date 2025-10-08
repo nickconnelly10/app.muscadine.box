@@ -27,11 +27,19 @@ describe('ErrorBoundary', () => {
   });
 
   it('renders children when no error', () => {
-    render(
+    const { container } = render(
       <ErrorBoundary>
         <div>Child content</div>
       </ErrorBoundary>
     );
+    
+    // Debug logging for CI
+    if (process.env.CI) {
+      console.log('[CI DEBUG] document.body exists:', !!document.body);
+      console.log('[CI DEBUG] container:', container.innerHTML);
+      console.log('[CI DEBUG] body innerHTML:', document.body.innerHTML);
+    }
+    
     expect(screen.getByText('Child content')).toBeInTheDocument();
   });
 
