@@ -8,9 +8,11 @@ const createWrapper = () => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
-  return ({ children }: { children: React.ReactNode }) => (
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
+  Wrapper.displayName = 'TestWrapper';
+  return Wrapper;
 };
 
 vi.mock('wagmi', () => ({
@@ -43,9 +45,9 @@ describe('useVaultData hooks', () => {
 
     // Vault configs
     const vaults = {
-      usdc: { address: '0xusdc' as any, name: 'USDC', symbol: 'USDC', description: '', decimals: 6, price: 1, tokenAddress: '', tokenName: 'USDC', tokenSymbol: 'USDC' },
-      cbbtc: { address: '0xcbbtc' as any, name: 'cbBTC', symbol: 'cbBTC', description: '', decimals: 8, price: 70000, tokenAddress: '', tokenName: 'cbBTC', tokenSymbol: 'cbBTC' },
-      eth: { address: '0xeth' as any, name: 'ETH', symbol: 'ETH', description: '', decimals: 18, price: 3000, tokenAddress: '', tokenName: 'ETH', tokenSymbol: 'ETH' },
+      usdc: { address: '0xusdc' as Address, name: 'USDC', symbol: 'USDC', description: '', decimals: 6, price: 1, tokenAddress: '', tokenName: 'USDC', tokenSymbol: 'USDC' },
+      cbbtc: { address: '0xcbbtc' as Address, name: 'cbBTC', symbol: 'cbBTC', description: '', decimals: 8, price: 70000, tokenAddress: '', tokenName: 'cbBTC', tokenSymbol: 'cbBTC' },
+      eth: { address: '0xeth' as Address, name: 'ETH', symbol: 'ETH', description: '', decimals: 18, price: 3000, tokenAddress: '', tokenName: 'ETH', tokenSymbol: 'ETH' },
     } as const;
 
     const tokenPrices = { USDC: 1, cbBTC: 70000, ETH: 3000 };
@@ -67,7 +69,7 @@ describe('useVaultData hooks', () => {
       .mockReturnValueOnce({ data: 2_200_000_000_000_000_000n, isLoading: false }) // eth totalAssets
       .mockReturnValueOnce({ data: 2_000_000_000_000_000_000n, isLoading: false }); // eth totalSupply -> share price 1.1
 
-    const { result } = renderHook(() => useVaultBalances(vaults as any, tokenPrices), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useVaultBalances(vaults as typeof vaults, tokenPrices), { wrapper: createWrapper() });
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 

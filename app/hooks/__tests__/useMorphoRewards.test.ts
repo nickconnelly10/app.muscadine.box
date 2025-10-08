@@ -43,7 +43,7 @@ describe('useMorphoRewards', () => {
   });
 
   it('handles non-ok responses as errors', async () => {
-    global.fetch = vi.fn().mockResolvedValue({ ok: false }) as any;
+    global.fetch = vi.fn().mockResolvedValue({ ok: false } as Response);
 
     const { result } = renderHook(() => useMorphoRewards('0x1234' as Address));
 

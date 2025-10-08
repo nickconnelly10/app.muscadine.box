@@ -29,7 +29,7 @@ describe('useTokenPrices', () => {
   });
 
   it('handles fetch error gracefully', async () => {
-    global.fetch = vi.fn().mockRejectedValue(new Error('network error')) as any;
+    global.fetch = vi.fn().mockRejectedValue(new Error('network error')) as vi.MockedFunction<typeof fetch>;
     const { result } = renderHook(() => useTokenPrices());
 
     await waitFor(() => {

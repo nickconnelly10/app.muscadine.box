@@ -14,7 +14,7 @@ describe('ErrorBoundary', () => {
   });
 
   afterAll(() => {
-    (console.error as any).mockRestore();
+    (console.error as vi.MockedFunction<typeof console.error>).mockRestore();
   });
 
   it('renders children when no error', () => {

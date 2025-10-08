@@ -17,7 +17,7 @@ vi.mock('@coinbase/onchainkit/wallet', () => ({
 vi.mock('@coinbase/onchainkit', () => ({ default: {} }));
 
 // Stub CSS import explicitly to avoid any plugin/path resolution
-vi.mock('@coinbase/onchainkit/styles.css', () => ({} as any));
+vi.mock('@coinbase/onchainkit/styles.css', () => ({}));
 
 // Stub ClaimRewardsButton to avoid pulling wagmi write/receipt hooks
 vi.mock('../ClaimRewardsButton', () => ({ default: () => null }));
@@ -58,7 +58,7 @@ describe('SimpleDashboard', () => {
     render(<SimpleDashboard />);
 
     // Balances in USD: USDC(100*1)=100, cbBTC(1*70000)=70000, WETH(2*3000)=6000
-    const currentBalanceUSD = 100 + 70000 + 6000; // 76100
+    // Total: 76100
 
     // Portfolio cards: we check presence and a couple key formatted values
     expect(screen.getByText('Portfolio Overview')).toBeInTheDocument();
@@ -66,7 +66,6 @@ describe('SimpleDashboard', () => {
     expect(screen.getAllByText('$76,100.00')[0]).toBeInTheDocument();
 
     // Total Interest Earned is 20% of each vault's USD via mocked hook
-    const totalInterest = currentBalanceUSD * 0.2; // 15220
     expect(screen.getByText('$15,220.00')).toBeInTheDocument();
 
     // Expected Monthly Interest = projectedAnnualReturn/12 using totalApy per vault

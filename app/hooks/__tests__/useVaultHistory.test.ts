@@ -25,7 +25,7 @@ describe('useVaultHistory', () => {
       { args: { assets: 200000n } },  // 0.2 tokens
     ];
 
-    (usePublicClient as any).mockReturnValue({
+    (usePublicClient as vi.MockedFunction<typeof usePublicClient>).mockReturnValue({
       getLogs: vi
         .fn()
         // first call deposits
@@ -58,7 +58,7 @@ describe('useVaultHistory', () => {
   });
 
   it('returns zeros when no public client or user', async () => {
-    (usePublicClient as any).mockReturnValue(null);
+    (usePublicClient as vi.MockedFunction<typeof usePublicClient>).mockReturnValue(null);
 
     const { result } = renderHook(() =>
       useVaultHistory('0xdead' as Address, undefined, 0, 6, 1)
