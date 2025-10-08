@@ -2,6 +2,7 @@
 import { useAccount } from 'wagmi';
 import { ConnectWallet } from '@coinbase/onchainkit/wallet';
 import { Earn, useMorphoVault } from '@coinbase/onchainkit/earn';
+import { useVaultHistory } from '../hooks/useVaultHistory';
 import '@coinbase/onchainkit/styles.css';
 
 // Vault configurations - using verified addresses
@@ -42,6 +43,34 @@ export default function SimpleDashboard() {
     recipientAddress: address
   });
 
+  // Helper to safely convert balance to number
+  const getBalanceNumber = (balance: string | number | undefined) => {
+    if (balance === undefined) return 0;
+    return typeof balance === 'string' ? parseFloat(balance) : balance;
+  };
+
+  // Fetch historical deposit/withdraw data for each vault
+  const usdcHistory = useVaultHistory(
+    VAULTS[0].address,
+    address,
+    getBalanceNumber(usdcVault.balance),
+    usdcVault.asset.decimals || 6
+  );
+
+  const cbbtcHistory = useVaultHistory(
+    VAULTS[1].address,
+    address,
+    getBalanceNumber(cbbtcVault.balance),
+    cbbtcVault.asset.decimals || 8
+  );
+
+  const wethHistory = useVaultHistory(
+    VAULTS[2].address,
+    address,
+    getBalanceNumber(wethVault.balance),
+    wethVault.asset.decimals || 18
+  );
+
   // Helper function to get vault data by address
   const getVaultData = (vaultAddress: string) => {
     if (vaultAddress === VAULTS[0].address) return usdcVault;
@@ -50,19 +79,33 @@ export default function SimpleDashboard() {
     return null;
   };
 
-  // Calculate portfolio totals using OnchainKit data
-  // Helper to safely convert balance to number
-  const getBalanceNumber = (balance: string | number | undefined) => {
-    if (balance === undefined) return 0;
-    return typeof balance === 'string' ? parseFloat(balance) : balance;
+  // Helper function to get vault history by address
+  const getVaultHistory = (vaultAddress: string) => {
+    if (vaultAddress === VAULTS[0].address) return usdcHistory;
+    if (vaultAddress === VAULTS[1].address) return cbbtcHistory;
+    if (vaultAddress === VAULTS[2].address) return wethHistory;
+    return null;
   };
 
-  // Total Deposited: current balance in USD across all vaults
-  const totalDeposited = 
+  // Calculate portfolio totals using real historical data
+  // Initial Deposited: net deposits (deposits - withdrawals) across all vaults
+  const initialDeposited = 
+    usdcHistory.netDeposits + 
+    cbbtcHistory.netDeposits + 
+    wethHistory.netDeposits;
+
+  // Current Balance: total value across all vaults
+  const currentBalance = 
     getBalanceNumber(usdcVault.balance) + 
     getBalanceNumber(cbbtcVault.balance) + 
     getBalanceNumber(wethVault.balance);
   
+  // Total Interest Earned: actual interest earned to date
+  const totalInterestEarned = 
+    usdcHistory.interestEarned + 
+    cbbtcHistory.interestEarned + 
+    wethHistory.interestEarned;
+
   // Calculate projected annual return for each vault (without fees)
   const getVaultProjectedYield = (vault: typeof usdcVault) => {
     const balance = getBalanceNumber(vault.balance);
@@ -70,14 +113,14 @@ export default function SimpleDashboard() {
     return balance * (apy / 100);
   };
   
-  // Total Return: projected annual interest across all vaults
-  const totalReturn = 
+  // Projected Annual Return: based on current balances and APYs
+  const projectedAnnualReturn = 
     getVaultProjectedYield(usdcVault) + 
     getVaultProjectedYield(cbbtcVault) + 
     getVaultProjectedYield(wethVault);
   
   // Expected Monthly Interest
-  const expectedMonthlyInterest = totalReturn / 12;
+  const expectedMonthlyInterest = projectedAnnualReturn / 12;
 
 
   const formatCurrency = (amount: number) => {
@@ -179,7 +222,7 @@ export default function SimpleDashboard() {
                   fontWeight: '700',
                   color: '#0f172a'
                 }}>
-                  {formatCurrency(totalDeposited)}
+                  {formatCurrency(currentBalance)}
                 </div>
               </div>
               <div>
@@ -196,7 +239,7 @@ export default function SimpleDashboard() {
                   fontWeight: '700',
                   color: '#0f172a'
                 }}>
-                  {formatCurrency(totalDeposited)}
+                  {formatCurrency(initialDeposited)}
                 </div>
               </div>
               <div>
@@ -213,7 +256,7 @@ export default function SimpleDashboard() {
                   fontWeight: '700',
                   color: '#10b981'
                 }}>
-                  {formatCurrency(totalDeposited)}
+                  {formatCurrency(currentBalance)}
                 </div>
               </div>
               <div>
@@ -230,7 +273,7 @@ export default function SimpleDashboard() {
                   fontWeight: '700',
                   color: '#10b981'
                 }}>
-                  {formatCurrency(totalReturn)}
+                  {formatCurrency(totalInterestEarned)}
                 </div>
               </div>
               <div>
@@ -320,7 +363,7 @@ export default function SimpleDashboard() {
                       fontWeight: '500',
                       marginBottom: '0.25rem'
                     }}>
-                      Interest Earned (Annual)
+                      Interest Earned
                     </div>
                     <div style={{
                       fontSize: '1rem',
@@ -328,8 +371,8 @@ export default function SimpleDashboard() {
                       color: '#10b981'
                     }}>
                       {(() => {
-                        const vaultData = getVaultData(vault.address);
-                        return vaultData ? formatCurrency(getVaultProjectedYield(vaultData)) : '$0.00';
+                        const vaultHistory = getVaultHistory(vault.address);
+                        return formatCurrency(vaultHistory?.interestEarned || 0);
                       })()}
                     </div>
                   </div>
