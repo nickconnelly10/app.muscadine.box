@@ -2,10 +2,10 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { VAULTS } from '../../contexts/PortfolioContext';
-import { Earn } from '@coinbase/onchainkit/earn';
+import { Earn, useMorphoVault } from '@coinbase/onchainkit/earn';
 import { TokenImage } from '@coinbase/onchainkit/token';
 import { useTokenPrices } from '../../hooks/useVaultData';
-import { useReadContract } from 'wagmi';
+import { useReadContract, useAccount } from 'wagmi';
 import { base } from 'wagmi/chains';
 import { formatUnits } from 'viem';
 
@@ -15,9 +15,16 @@ interface VaultDetailPageProps {
 
 export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) {
   const [activeTab, setActiveTab] = useState('Overview');
+  const { address } = useAccount();
 
   // Find the vault by address
   const vault = VAULTS.find(v => v.address.toLowerCase() === vaultAddress.toLowerCase());
+  
+  // Get accurate vault data from OnchainKit
+  const morphoVault = useMorphoVault({
+    vaultAddress: vault?.address as `0x${string}`,
+    recipientAddress: address
+  });
   
   // Get real vault data using existing hooks
   const tokenPrices = useTokenPrices();
@@ -57,30 +64,28 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
     query: { enabled: !!vault }
   });
 
-  // Calculate real vault data
+  // Calculate real vault data using OnchainKit's accurate data
   const vaultData = useMemo(() => {
     if (!vault || !totalAssets.data || !totalSupply.data || !tokenPrices.data) return null;
     
     const totalAssetsAmount = parseFloat(formatUnits(totalAssets.data, vault.decimals));
-    const totalSupplyAmount = parseFloat(formatUnits(totalSupply.data, vault.decimals));
     const tokenPrice = tokenPrices.data[vault.symbol as keyof typeof tokenPrices.data] || 1;
     
-    // Calculate APY based on share price growth (simplified calculation)
-    const sharePrice = totalSupplyAmount > 0 ? totalAssetsAmount / totalSupplyAmount : 1.0;
-    const estimatedAPY = ((sharePrice - 1.0) * 100).toFixed(2);
+    // Use OnchainKit's accurate APY data instead of custom calculation
+    const accurateAPY = morphoVault.totalApy || 0;
     
     return {
       totalDeposits: totalAssets.data,
       totalDepositsUSD: totalAssetsAmount * tokenPrice,
       liquidity: totalAssets.data, // Using total assets as liquidity for now
       liquidityUSD: totalAssetsAmount * tokenPrice,
-      apy: parseFloat(estimatedAPY),
+      apy: accurateAPY,
       description: getVaultDescription(vault.symbol),
       curator: "Muscadine",
       curatorIcon: "M",
       collateral: getVaultCollateral(vault.symbol),
     };
-  }, [vault, totalAssets.data, totalSupply.data, tokenPrices]);
+  }, [vault, totalAssets.data, totalSupply.data, tokenPrices, morphoVault.totalApy]);
 
   // Helper functions for vault-specific data
   const getVaultDescription = (symbol: string) => {

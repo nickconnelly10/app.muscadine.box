@@ -4,121 +4,51 @@ import Link from 'next/link';
 import { usePortfolio } from '../../contexts/PortfolioContext';
 import { VAULTS } from '../../contexts/PortfolioContext';
 import { TokenImage } from '@coinbase/onchainkit/token';
-import { useReadContract } from 'wagmi';
-import { base } from 'wagmi/chains';
-import { formatUnits } from 'viem';
+import { useMorphoVault } from '@coinbase/onchainkit/earn';
+import { useAccount } from 'wagmi';
 
 export default function DeFiPositions() {
   const { vaultPositions, isConnected } = usePortfolio();
-
-  // Vault ABI for contract calls
-  const vaultAbi = [
-    {
-      name: 'totalAssets',
-      type: 'function',
-      stateMutability: 'view',
-      inputs: [],
-      outputs: [{ name: '', type: 'uint256' }],
-    },
-    {
-      name: 'totalSupply',
-      type: 'function',
-      stateMutability: 'view',
-      inputs: [],
-      outputs: [{ name: '', type: 'uint256' }],
-    },
-  ] as const;
+  const { address } = useAccount();
 
   // Get vault by symbol
   const getVaultBySymbol = (symbol: string) => {
     return VAULTS.find(vault => vault.symbol === symbol);
   };
 
-  // Get real vault metrics from contracts
-  const usdcVault = getVaultBySymbol('USDC');
-  const cbbtcVault = getVaultBySymbol('cbBTC');
-  const ethVault = getVaultBySymbol('WETH');
+  // Get vault configs
+  const usdcVaultConfig = getVaultBySymbol('USDC');
+  const cbbtcVaultConfig = getVaultBySymbol('cbBTC');
+  const ethVaultConfig = getVaultBySymbol('WETH');
 
-  const usdcTotalAssets = useReadContract({
-    address: usdcVault?.address as `0x${string}`,
-    abi: vaultAbi,
-    functionName: 'totalAssets',
-    chainId: base.id,
-    query: { enabled: !!usdcVault }
+  // Get accurate vault data from OnchainKit
+  const usdcVault = useMorphoVault({
+    vaultAddress: usdcVaultConfig?.address as `0x${string}`,
+    recipientAddress: address
   });
 
-  const usdcTotalSupply = useReadContract({
-    address: usdcVault?.address as `0x${string}`,
-    abi: vaultAbi,
-    functionName: 'totalSupply',
-    chainId: base.id,
-    query: { enabled: !!usdcVault }
+  const cbbtcVault = useMorphoVault({
+    vaultAddress: cbbtcVaultConfig?.address as `0x${string}`,
+    recipientAddress: address
   });
 
-  const cbbtcTotalAssets = useReadContract({
-    address: cbbtcVault?.address as `0x${string}`,
-    abi: vaultAbi,
-    functionName: 'totalAssets',
-    chainId: base.id,
-    query: { enabled: !!cbbtcVault }
+  const ethVault = useMorphoVault({
+    vaultAddress: ethVaultConfig?.address as `0x${string}`,
+    recipientAddress: address
   });
 
-  const cbbtcTotalSupply = useReadContract({
-    address: cbbtcVault?.address as `0x${string}`,
-    abi: vaultAbi,
-    functionName: 'totalSupply',
-    chainId: base.id,
-    query: { enabled: !!cbbtcVault }
-  });
-
-  const ethTotalAssets = useReadContract({
-    address: ethVault?.address as `0x${string}`,
-    abi: vaultAbi,
-    functionName: 'totalAssets',
-    chainId: base.id,
-    query: { enabled: !!ethVault }
-  });
-
-  const ethTotalSupply = useReadContract({
-    address: ethVault?.address as `0x${string}`,
-    abi: vaultAbi,
-    functionName: 'totalSupply',
-    chainId: base.id,
-    query: { enabled: !!ethVault }
-  });
-
-  // Calculate real APY data
-  const getRealAPY = (symbol: string) => {
-    let totalAssets, totalSupply, decimals;
-    
+  // Get accurate APY data from OnchainKit
+  const getAccurateAPY = (symbol: string) => {
     switch (symbol) {
       case 'USDC':
-        totalAssets = usdcTotalAssets.data;
-        totalSupply = usdcTotalSupply.data;
-        decimals = usdcVault?.decimals || 6;
-        break;
+        return usdcVault?.totalApy || 0;
       case 'cbBTC':
-        totalAssets = cbbtcTotalAssets.data;
-        totalSupply = cbbtcTotalSupply.data;
-        decimals = cbbtcVault?.decimals || 8;
-        break;
+        return cbbtcVault?.totalApy || 0;
       case 'WETH':
-        totalAssets = ethTotalAssets.data;
-        totalSupply = ethTotalSupply.data;
-        decimals = ethVault?.decimals || 18;
-        break;
+        return ethVault?.totalApy || 0;
       default:
         return 0;
     }
-
-    if (!totalAssets || !totalSupply) return 0;
-    
-    const totalAssetsAmount = parseFloat(formatUnits(totalAssets, decimals));
-    const totalSupplyAmount = parseFloat(formatUnits(totalSupply, decimals));
-    const sharePrice = totalSupplyAmount > 0 ? totalAssetsAmount / totalSupplyAmount : 1.0;
-    
-    // Calculate APY based on share price growth (simplified calculation)
-    return ((sharePrice - 1.0) * 100);
   };
 
   const formatCurrency = (amount: number): string => {
@@ -274,8 +204,8 @@ export default function DeFiPositions() {
           const userDepositAmount = hasBalance ? position.balance : 0;
           const userDepositUSD = hasBalance ? position.usdValue : 0;
 
-          // Get real APY data from vault contracts
-          const realAPY = getRealAPY(vault.symbol);
+          // Get accurate APY data from OnchainKit
+          const accurateAPY = getAccurateAPY(vault.symbol);
 
           return (
             <Link
@@ -396,7 +326,7 @@ export default function DeFiPositions() {
                   fontWeight: '600',
                   color: '#0f172a',
                 }}>
-                  {realAPY > 0 ? `${realAPY.toFixed(2)}%` : 'Loading...'}
+                  {accurateAPY > 0 ? `${accurateAPY.toFixed(2)}%` : 'Loading...'}
                 </div>
                 <div style={{
                   fontSize: '0.75rem',

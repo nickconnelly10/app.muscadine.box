@@ -64,7 +64,6 @@ export default function LendBorrowCTA() {
               fontSize: '1.5rem',
               marginBottom: '0.5rem',
             }}>
-              🏦
             </div>
             <div style={{
               fontSize: '1rem',
@@ -111,7 +110,6 @@ export default function LendBorrowCTA() {
               fontSize: '1.5rem',
               marginBottom: '0.5rem',
             }}>
-              💰
             </div>
             <div style={{
               fontSize: '1rem',
@@ -128,29 +126,6 @@ export default function LendBorrowCTA() {
               Access competitive borrowing rates
             </div>
           </a>
-        </div>
-
-        <div style={{
-          marginTop: '1.5rem',
-          padding: '1rem',
-          backgroundColor: '#eff6ff',
-          borderRadius: '8px',
-          border: '1px solid #dbeafe',
-        }}>
-          <div style={{
-            fontSize: '0.875rem',
-            color: '#1e40af',
-            fontWeight: '500',
-          }}>
-            💡 Pro Tip
-          </div>
-          <div style={{
-            fontSize: '0.875rem',
-            color: '#1e40af',
-            marginTop: '0.25rem',
-          }}>
-            Deposit assets in Muscadine vaults to earn yield, then use those positions as collateral to borrow on Morpho
-          </div>
         </div>
       </div>
     </div>
