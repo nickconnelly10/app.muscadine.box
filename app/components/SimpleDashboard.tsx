@@ -169,7 +169,7 @@ export default function SimpleDashboard() {
             </h2>
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
               gap: '1.5rem'
             }}>
               <div>
@@ -196,7 +196,41 @@ export default function SimpleDashboard() {
                   fontWeight: '500',
                   marginBottom: '0.5rem'
                 }}>
-                  Total Return (Annual)
+                  Initial Deposited
+                </div>
+                <div style={{
+                  fontSize: '1.875rem',
+                  fontWeight: '700',
+                  color: '#0f172a'
+                }}>
+                  {formatCurrency(totalDeposited)}
+                </div>
+              </div>
+              <div>
+                <div style={{
+                  fontSize: '0.875rem',
+                  color: '#64748b',
+                  fontWeight: '500',
+                  marginBottom: '0.5rem'
+                }}>
+                  Total Return
+                </div>
+                <div style={{
+                  fontSize: '1.875rem',
+                  fontWeight: '700',
+                  color: '#10b981'
+                }}>
+                  {formatCurrency(totalDeposited)}
+                </div>
+              </div>
+              <div>
+                <div style={{
+                  fontSize: '0.875rem',
+                  color: '#64748b',
+                  fontWeight: '500',
+                  marginBottom: '0.5rem'
+                }}>
+                  Total Interest Earned
                 </div>
                 <div style={{
                   fontSize: '1.875rem',
@@ -218,26 +252,9 @@ export default function SimpleDashboard() {
                 <div style={{
                   fontSize: '1.875rem',
                   fontWeight: '700',
-                  color: '#10b981'
-                }}>
-                  {formatCurrency(expectedMonthlyInterest)}
-                </div>
-              </div>
-              <div>
-                <div style={{
-                  fontSize: '0.875rem',
-                  color: '#64748b',
-                  fontWeight: '500',
-                  marginBottom: '0.5rem'
-                }}>
-                  Average APY
-                </div>
-                <div style={{
-                  fontSize: '1.875rem',
-                  fontWeight: '700',
                   color: '#6366f1'
                 }}>
-                  {averageApy.toFixed(2)}%
+                  {formatCurrency(expectedMonthlyInterest)}
                 </div>
               </div>
             </div>
@@ -310,7 +327,7 @@ export default function SimpleDashboard() {
                       fontWeight: '500',
                       marginBottom: '0.25rem'
                     }}>
-                      Projected Annual
+                      Interest Earned (Annual)
                     </div>
                     <div style={{
                       fontSize: '1rem',
