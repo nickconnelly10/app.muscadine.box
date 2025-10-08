@@ -36,8 +36,6 @@ export function RootProvider({ children }: { children: ReactNode }) {
               privacyUrl: 'https://app.muscadine.box/privacy',
               supportedWallets: {
                 rabby: true,
-                trust: true,
-                frame: true,
               },
             },
           }}
