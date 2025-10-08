@@ -43,6 +43,13 @@ export default function SimpleDashboard() {
     recipientAddress: address
   });
 
+  // Debug: Log asset information to verify OnchainKit is fetching correctly
+  if (typeof window !== 'undefined') {
+    console.log('USDC Vault Asset:', usdcVault.asset);
+    console.log('cbBTC Vault Asset:', cbbtcVault.asset);
+    console.log('WETH Vault Asset:', wethVault.asset);
+  }
+
   // Helper to safely convert balance to number
   const getBalanceNumber = (balance: string | number | undefined) => {
     if (balance === undefined) return 0;
