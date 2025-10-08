@@ -13,18 +13,21 @@ export const VAULTS = [
     name: 'Muscadine USDC Vault',
     symbol: 'USDC',
     underlying: 'USDC',
+    decimals: 6,
   },
   {
     address: '0xAeCc8113a7bD0CFAF7000EA7A31afFD4691ff3E9' as `0x${string}`,
     name: 'Muscadine cbBTC Vault',
     symbol: 'cbBTC',
     underlying: 'cbBTC',
+    decimals: 8,
   },
   {
     address: '0x21e0d366272798da3A977FEBA699FCB91959d120' as `0x${string}`,
     name: 'Muscadine WETH Vault',
     symbol: 'WETH',
     underlying: 'WETH',
+    decimals: 18,
   },
 ] as const;
 
