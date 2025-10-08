@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { VAULTS } from '../../contexts/PortfolioContext';
 import { Earn } from '@coinbase/onchainkit/earn';
 import { TokenImage } from '@coinbase/onchainkit/token';
-import { useVaultBalances, useTokenPrices } from '../../hooks/useVaultData';
+import { useTokenPrices } from '../../hooks/useVaultData';
 import { useReadContract } from 'wagmi';
 import { base } from 'wagmi/chains';
 import { formatUnits } from 'viem';
@@ -21,7 +21,6 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
   
   // Get real vault data using existing hooks
   const tokenPrices = useTokenPrices();
-  const vaultBalances = useVaultBalances(VAULTS, tokenPrices.data || { USDC: 1, cbBTC: 65000, ETH: 3500 });
   
   // Vault ABI for contract calls
   const vaultAbi = [
@@ -81,7 +80,7 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
       curatorIcon: "M",
       collateral: getVaultCollateral(vault.symbol),
     };
-  }, [vault, totalAssets.data, totalSupply.data, tokenPrices.data]);
+  }, [vault, totalAssets.data, totalSupply.data, tokenPrices]);
 
   // Helper functions for vault-specific data
   const getVaultDescription = (symbol: string) => {
@@ -184,23 +183,26 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
       USDC: {
         name: 'USD Coin',
         symbol: 'USDC',
-        address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+        address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913' as `0x${string}`,
         decimals: 6,
         chainId: 8453,
+        image: null,
       },
       cbBTC: {
         name: 'Coinbase Wrapped Staked ETH',
         symbol: 'cbBTC',
-        address: '0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22',
+        address: '0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22' as `0x${string}`,
         decimals: 18,
         chainId: 8453,
+        image: null,
       },
       WETH: {
         name: 'Wrapped Ether',
         symbol: 'WETH',
-        address: '0x4200000000000000000000000000000000000006',
+        address: '0x4200000000000000000000000000000000000006' as `0x${string}`,
         decimals: 18,
         chainId: 8453,
+        image: null,
       },
     };
 
@@ -238,25 +240,58 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
           justifyContent: 'space-between',
           alignItems: 'center',
         }}>
-          <div>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+          }}>
             <Link
               href="/"
               style={{
-                fontSize: '1.25rem',
-                fontWeight: '700',
-                color: '#0f172a',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.5rem 1rem',
+                backgroundColor: '#f8fafc',
+                borderRadius: '8px',
+                border: '1px solid #e2e8f0',
                 textDecoration: 'none',
+                color: '#64748b',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f1f5f9';
+                e.currentTarget.style.borderColor = '#cbd5e1';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#f8fafc';
+                e.currentTarget.style.borderColor = '#e2e8f0';
               }}
             >
-              Muscadine
+              ← Back to Portfolio
             </Link>
-            <p style={{
-              fontSize: '0.875rem',
-              color: '#64748b',
-              margin: '0.25rem 0 0',
-            }}>
-              DeFi Portfolio on Base
-            </p>
+            <div>
+              <Link
+                href="/"
+                style={{
+                  fontSize: '1.25rem',
+                  fontWeight: '700',
+                  color: '#0f172a',
+                  textDecoration: 'none',
+                }}
+              >
+                Muscadine
+              </Link>
+              <p style={{
+                fontSize: '0.875rem',
+                color: '#64748b',
+                margin: '0.25rem 0 0',
+              }}>
+                DeFi Portfolio on Base
+              </p>
+            </div>
           </div>
           <div style={{
             display: 'flex',
@@ -399,7 +434,7 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
                   fontSize: '0.875rem',
                   color: '#64748b',
                 }}>
-                  {vaultData ? formatTokenAmount(vaultData.totalDeposits, vault.decimals, vault.symbol) : 'Loading...'}
+                  {vaultData ? formatTokenAmount(Number(vaultData.totalDeposits), vault.decimals, vault.symbol) : 'Loading...'}
                 </div>
               </div>
 
@@ -423,7 +458,7 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
                   fontSize: '0.875rem',
                   color: '#64748b',
                 }}>
-                  {vaultData ? formatTokenAmount(vaultData.liquidity, vault.decimals, vault.symbol) : 'Loading...'}
+                  {vaultData ? formatTokenAmount(Number(vaultData.liquidity), vault.decimals, vault.symbol) : 'Loading...'}
                 </div>
               </div>
 
@@ -564,7 +599,7 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
                   }}>
                     Recent Activity
                   </h3>
-                  {vaultBalances.isLoading ? (
+                  {totalAssets.isLoading || totalSupply.isLoading ? (
                     <div style={{
                       padding: '2rem',
                       textAlign: 'center',

@@ -3,9 +3,123 @@ import React from 'react';
 import Link from 'next/link';
 import { usePortfolio } from '../../contexts/PortfolioContext';
 import { VAULTS } from '../../contexts/PortfolioContext';
+import { TokenImage } from '@coinbase/onchainkit/token';
+import { useReadContract } from 'wagmi';
+import { base } from 'wagmi/chains';
+import { formatUnits } from 'viem';
 
 export default function DeFiPositions() {
   const { vaultPositions, isConnected } = usePortfolio();
+
+  // Vault ABI for contract calls
+  const vaultAbi = [
+    {
+      name: 'totalAssets',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ name: '', type: 'uint256' }],
+    },
+    {
+      name: 'totalSupply',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ name: '', type: 'uint256' }],
+    },
+  ] as const;
+
+  // Get vault by symbol
+  const getVaultBySymbol = (symbol: string) => {
+    return VAULTS.find(vault => vault.symbol === symbol);
+  };
+
+  // Get real vault metrics from contracts
+  const usdcVault = getVaultBySymbol('USDC');
+  const cbbtcVault = getVaultBySymbol('cbBTC');
+  const ethVault = getVaultBySymbol('WETH');
+
+  const usdcTotalAssets = useReadContract({
+    address: usdcVault?.address as `0x${string}`,
+    abi: vaultAbi,
+    functionName: 'totalAssets',
+    chainId: base.id,
+    query: { enabled: !!usdcVault }
+  });
+
+  const usdcTotalSupply = useReadContract({
+    address: usdcVault?.address as `0x${string}`,
+    abi: vaultAbi,
+    functionName: 'totalSupply',
+    chainId: base.id,
+    query: { enabled: !!usdcVault }
+  });
+
+  const cbbtcTotalAssets = useReadContract({
+    address: cbbtcVault?.address as `0x${string}`,
+    abi: vaultAbi,
+    functionName: 'totalAssets',
+    chainId: base.id,
+    query: { enabled: !!cbbtcVault }
+  });
+
+  const cbbtcTotalSupply = useReadContract({
+    address: cbbtcVault?.address as `0x${string}`,
+    abi: vaultAbi,
+    functionName: 'totalSupply',
+    chainId: base.id,
+    query: { enabled: !!cbbtcVault }
+  });
+
+  const ethTotalAssets = useReadContract({
+    address: ethVault?.address as `0x${string}`,
+    abi: vaultAbi,
+    functionName: 'totalAssets',
+    chainId: base.id,
+    query: { enabled: !!ethVault }
+  });
+
+  const ethTotalSupply = useReadContract({
+    address: ethVault?.address as `0x${string}`,
+    abi: vaultAbi,
+    functionName: 'totalSupply',
+    chainId: base.id,
+    query: { enabled: !!ethVault }
+  });
+
+  // Calculate real APY data
+  const getRealAPY = (symbol: string) => {
+    let totalAssets, totalSupply, decimals;
+    
+    switch (symbol) {
+      case 'USDC':
+        totalAssets = usdcTotalAssets.data;
+        totalSupply = usdcTotalSupply.data;
+        decimals = usdcVault?.decimals || 6;
+        break;
+      case 'cbBTC':
+        totalAssets = cbbtcTotalAssets.data;
+        totalSupply = cbbtcTotalSupply.data;
+        decimals = cbbtcVault?.decimals || 8;
+        break;
+      case 'WETH':
+        totalAssets = ethTotalAssets.data;
+        totalSupply = ethTotalSupply.data;
+        decimals = ethVault?.decimals || 18;
+        break;
+      default:
+        return 0;
+    }
+
+    if (!totalAssets || !totalSupply) return 0;
+    
+    const totalAssetsAmount = parseFloat(formatUnits(totalAssets, decimals));
+    const totalSupplyAmount = parseFloat(formatUnits(totalSupply, decimals));
+    const sharePrice = totalSupplyAmount > 0 ? totalAssetsAmount / totalSupplyAmount : 1.0;
+    
+    // Calculate APY based on share price growth (simplified calculation)
+    return ((sharePrice - 1.0) * 100);
+  };
 
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('en-US', {
@@ -25,76 +139,42 @@ export default function DeFiPositions() {
   };
 
   const getTokenIcon = (symbol: string) => {
-    switch (symbol) {
-      case 'USDC':
-        return (
-          <div style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '50%',
-            backgroundColor: '#2775ca',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontSize: '14px',
-            fontWeight: 'bold',
-          }}>
-            $
-          </div>
-        );
-      case 'cbBTC':
-        return (
-          <div style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '50%',
-            backgroundColor: '#f7931a',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontSize: '14px',
-            fontWeight: 'bold',
-          }}>
-            ₿
-          </div>
-        );
-      case 'WETH':
-        return (
-          <div style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '50%',
-            backgroundColor: '#627eea',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontSize: '12px',
-            fontWeight: 'bold',
-          }}>
-            Ξ
-          </div>
-        );
-      default:
-        return (
-          <div style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '50%',
-            backgroundColor: '#64748b',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontSize: '12px',
-            fontWeight: 'bold',
-          }}>
-            ?
-          </div>
-        );
-    }
+    const tokenConfig = {
+      USDC: {
+        name: 'USD Coin',
+        symbol: 'USDC',
+        address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913' as `0x${string}`,
+        decimals: 6,
+        chainId: 8453,
+        image: null,
+      },
+      cbBTC: {
+        name: 'Coinbase Wrapped Staked ETH',
+        symbol: 'cbBTC',
+        address: '0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22' as `0x${string}`,
+        decimals: 18,
+        chainId: 8453,
+        image: null,
+      },
+      WETH: {
+        name: 'Wrapped Ether',
+        symbol: 'WETH',
+        address: '0x4200000000000000000000000000000000000006' as `0x${string}`,
+        decimals: 18,
+        chainId: 8453,
+        image: null,
+      },
+    };
+
+    const token = tokenConfig[symbol as keyof typeof tokenConfig];
+    if (!token) return null;
+
+    return (
+      <TokenImage
+        token={token}
+        size={32}
+      />
+    );
   };
 
   const getCollateralIcons = (symbol: string) => {
@@ -194,12 +274,8 @@ export default function DeFiPositions() {
           const userDepositAmount = hasBalance ? position.balance : 0;
           const userDepositUSD = hasBalance ? position.usdValue : 0;
 
-          // Mock APY data - in real implementation, this would come from the vault
-          const apyData = {
-            USDC: 6.66,
-            cbBTC: 4.78,
-            WETH: 2.58,
-          };
+          // Get real APY data from vault contracts
+          const realAPY = getRealAPY(vault.symbol);
 
           return (
             <Link
@@ -320,7 +396,7 @@ export default function DeFiPositions() {
                   fontWeight: '600',
                   color: '#0f172a',
                 }}>
-                  {apyData[vault.symbol as keyof typeof apyData]}%
+                  {realAPY > 0 ? `${realAPY.toFixed(2)}%` : 'Loading...'}
                 </div>
                 <div style={{
                   fontSize: '0.75rem',
