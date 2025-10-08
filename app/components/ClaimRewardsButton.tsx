@@ -12,6 +12,13 @@ export default function ClaimRewardsButton() {
     hash,
   });
 
+  // Debug logging
+  if (typeof window !== 'undefined' && address) {
+    console.log('[ClaimRewards] Address:', address);
+    console.log('[ClaimRewards] Rewards state:', rewards);
+    console.log('[ClaimRewards] Has claimable:', rewards.claimable.length);
+  }
+
   const handleClaimAll = async () => {
     if (!address || rewards.claimable.length === 0) return;
 
@@ -35,9 +42,43 @@ export default function ClaimRewardsButton() {
     }
   };
 
-  // Don't show button if no rewards or not connected
-  if (!address || rewards.isLoading || rewards.claimable.length === 0) {
+  // Don't show button if not connected
+  if (!address) {
     return null;
+  }
+
+  // Show loading state
+  if (rewards.isLoading) {
+    return (
+      <div style={{
+        padding: '1rem',
+        backgroundColor: '#f8fafc',
+        borderRadius: '8px',
+        marginBottom: '1rem',
+        textAlign: 'center',
+        color: '#64748b',
+        fontSize: '0.875rem'
+      }}>
+        Checking for claimable rewards...
+      </div>
+    );
+  }
+
+  // Show "no rewards" message temporarily for debugging
+  if (rewards.claimable.length === 0) {
+    return (
+      <div style={{
+        padding: '1rem',
+        backgroundColor: '#f8fafc',
+        borderRadius: '8px',
+        marginBottom: '1rem',
+        textAlign: 'center',
+        color: '#64748b',
+        fontSize: '0.875rem'
+      }}>
+        No MORPHO rewards available to claim yet. Keep earning! 🎯
+      </div>
+    );
   }
 
   const formatAmount = (amount: string) => {

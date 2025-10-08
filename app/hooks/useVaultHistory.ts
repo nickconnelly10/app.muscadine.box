@@ -62,7 +62,7 @@ export function useVaultHistory(
           args: {
             owner: userAddress,
           },
-          fromBlock: 'earliest' as any,
+          fromBlock: 0n,
           toBlock: 'latest',
         });
 
