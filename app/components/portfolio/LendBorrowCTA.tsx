@@ -1,6 +1,5 @@
 "use client";
 import React from 'react';
-import Link from 'next/link';
 
 export default function LendBorrowCTA() {
   return (
@@ -22,14 +21,14 @@ export default function LendBorrowCTA() {
           color: '#0f172a',
           margin: '0 0 0.5rem',
         }}>
-          Lend & Borrow on Base
+          Borrow and Swap on Base
         </h3>
         <p style={{
           fontSize: '0.875rem',
           color: '#64748b',
           margin: '0 0 2rem',
         }}>
-          Maximize your DeFi strategy with Muscadine vaults and Morpho borrowing
+          Maximize your DeFi strategy with Morpho borrowing and Aerodrome swaps
         </p>
 
         <div style={{
@@ -37,50 +36,6 @@ export default function LendBorrowCTA() {
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
           gap: '1rem',
         }}>
-          {/* Lend CTA */}
-          <Link
-            href="/lending"
-            style={{
-              padding: '1.25rem',
-              backgroundColor: '#ffffff',
-              border: '2px solid #4f46e5',
-              borderRadius: '12px',
-              textDecoration: 'none',
-              transition: 'all 0.2s',
-              display: 'block',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#4f46e5';
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 10px 15px -3px rgb(0 0 0 / 0.1)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#ffffff';
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          >
-            <div style={{
-              fontSize: '1.5rem',
-              marginBottom: '0.5rem',
-            }}>
-            </div>
-            <div style={{
-              fontSize: '1rem',
-              fontWeight: '600',
-              color: '#0f172a',
-              marginBottom: '0.25rem',
-            }}>
-              Lend in Muscadine Vaults
-            </div>
-            <div style={{
-              fontSize: '0.875rem',
-              color: '#64748b',
-            }}>
-              Earn up to 8.5% APY on your assets
-            </div>
-          </Link>
-
           {/* Borrow CTA */}
           <a
             href="https://morpho.org"
@@ -110,6 +65,7 @@ export default function LendBorrowCTA() {
               fontSize: '1.5rem',
               marginBottom: '0.5rem',
             }}>
+              💰
             </div>
             <div style={{
               fontSize: '1rem',
@@ -124,6 +80,53 @@ export default function LendBorrowCTA() {
               color: '#64748b',
             }}>
               Access competitive borrowing rates
+            </div>
+          </a>
+
+          {/* Swap CTA */}
+          <a
+            href="https://aerodrome.finance/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              padding: '1.25rem',
+              backgroundColor: '#ffffff',
+              border: '2px solid #3b82f6',
+              borderRadius: '12px',
+              textDecoration: 'none',
+              transition: 'all 0.2s',
+              display: 'block',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#3b82f6';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 10px 15px -3px rgb(0 0 0 / 0.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#ffffff';
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+          >
+            <div style={{
+              fontSize: '1.5rem',
+              marginBottom: '0.5rem',
+            }}>
+              🔄
+            </div>
+            <div style={{
+              fontSize: '1rem',
+              fontWeight: '600',
+              color: '#0f172a',
+              marginBottom: '0.25rem',
+            }}>
+              Swap on Aerodrome
+            </div>
+            <div style={{
+              fontSize: '0.875rem',
+              color: '#64748b',
+            }}>
+              Best rates on Base DEX
             </div>
           </a>
         </div>
