@@ -114,7 +114,8 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
     }
   };
 
-  if (!vault || !vaultData) {
+  // Show error only if vault is not found (not just loading)
+  if (!vault) {
     return (
       <div style={{
         minHeight: '100vh',
@@ -366,13 +367,13 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
                       fontSize: '12px',
                       fontWeight: 'bold',
                     }}>
-                      {vaultData.curatorIcon}
+                      {vaultData?.curatorIcon || 'M'}
                     </div>
                     <span style={{
                       fontSize: '0.875rem',
                       color: '#0f172a',
                     }}>
-                      {vaultData.curator}
+                      {vaultData?.curator || 'Muscadine'}
                     </span>
                   </div>
                   <div style={{
@@ -402,7 +403,7 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
                 lineHeight: '1.6',
                 margin: '0 0 1rem',
               }}>
-                {vaultData.description}
+                {vaultData?.description || getVaultDescription(vault.symbol)}
               </p>
               <div style={{
                 fontSize: '0.75rem',
@@ -773,7 +774,7 @@ export default function VaultDetailPage({ vaultAddress }: VaultDetailPageProps) 
                   alignItems: 'center',
                   gap: '0.25rem',
                 }}>
-                  {vaultData.apy}%
+                  {vaultData?.apy.toFixed(2) || '0.00'}%
                   <span style={{ fontSize: '0.75rem', color: '#3b82f6' }}>✨</span>
                 </div>
               </div>
