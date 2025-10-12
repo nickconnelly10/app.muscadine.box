@@ -1,10 +1,15 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
 import axios from 'axios';
 import DEXService from '../dexService';
 
 // Mock axios
 vi.mock('axios');
-const mockedAxios = vi.mocked(axios);
+const mockedAxios = axios as unknown as {
+  get: Mock;
+};
+
+// Setup axios.get as a mock
+mockedAxios.get = vi.fn();
 
 describe('DEXService', () => {
   let dexService: DEXService;
