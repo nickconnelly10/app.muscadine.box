@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import axios from 'axios';
-import DEXService, { SwapQuote, SwapTransaction } from '../dexService';
+import DEXService from '../dexService';
 
 // Mock axios
 vi.mock('axios');
