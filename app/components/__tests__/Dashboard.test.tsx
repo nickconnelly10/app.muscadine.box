@@ -60,11 +60,10 @@ vi.mock('../../hooks/useVaultHistory', () => ({
   }),
 }));
 
-// Import Dashboard after all mocks are set up
-import Dashboard from '../Dashboard';
-
 describe('Dashboard', () => {
-  it('renders totals based on mocked balances and prices', () => {
+  it('renders totals based on mocked balances and prices', async () => {
+    // Import Dashboard dynamically after all mocks are set up
+    const { default: Dashboard } = await import('../Dashboard');
     render(<Dashboard />);
 
     // Balances in USD: USDC(100*1)=100, cbBTC(1*70000)=70000, WETH(2*3000)=6000
