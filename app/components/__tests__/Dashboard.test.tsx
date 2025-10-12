@@ -11,6 +11,9 @@ vi.mock('@farcaster/miniapp-sdk', () => ({ default: {} }));
 // Mock OnchainKit wallet module to avoid pulling transitive Farcaster deps
 vi.mock('@coinbase/onchainkit/wallet', () => ({
   ConnectWallet: () => null,
+  Wallet: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  WalletDropdown: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  WalletDropdownDisconnect: () => <button>Disconnect</button>,
 }));
 
 // Fully stub the base OnchainKit package in case subpaths re-export from the root
@@ -19,8 +22,15 @@ vi.mock('@coinbase/onchainkit', () => ({ default: {} }));
 // Stub CSS import explicitly to avoid any plugin/path resolution
 vi.mock('@coinbase/onchainkit/styles.css', () => ({}));
 
-// Stub ClaimRewardsButton to avoid pulling wagmi write/receipt hooks
-vi.mock('../ClaimRewardsButton', () => ({ default: () => null }));
+// ClaimRewardsButton removed - no longer using Morpho rewards
+
+// Mock OnchainKit identity components
+vi.mock('@coinbase/onchainkit/identity', () => ({
+  Avatar: () => <div>Avatar</div>,
+  Name: () => <div>Wallet Name</div>,
+  Identity: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Address: ({ className }: { className?: string }) => <div className={className}>0x1234...</div>,
+}));
 
 // Mock Earn and useMorphoVault with stable returns keyed by vault address
 vi.mock('@coinbase/onchainkit/earn', () => {

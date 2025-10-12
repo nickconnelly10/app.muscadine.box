@@ -1,11 +1,23 @@
 "use client";
 import React from 'react';
 import { useAccount } from 'wagmi';
-import { ConnectWallet } from '@coinbase/onchainkit/wallet';
+import { 
+  ConnectWallet, 
+  Wallet, 
+  WalletDropdown, 
+  WalletDropdownDisconnect 
+} from '@coinbase/onchainkit/wallet';
+import { 
+  Address, 
+  Avatar, 
+  Name, 
+  Identity 
+} from '@coinbase/onchainkit/identity';
+// Removed color import - using CSS classes instead
 import { Earn, useMorphoVault } from '@coinbase/onchainkit/earn';
 import { useVaultHistory } from '../hooks/useVaultHistory';
 import { useTokenPrices } from '../hooks/useTokenPrices';
-import ClaimRewardsButton from './ClaimRewardsButton';
+// ClaimRewardsButton removed - no longer using Morpho rewards
 import '@coinbase/onchainkit/styles.css';
 
 // Vault configurations - using verified addresses
@@ -232,15 +244,27 @@ export default function Dashboard() {
             DeFi Lending on Base
           </p>
         </div>
-        <ConnectWallet />
+        <Wallet>
+          <ConnectWallet>
+            <Avatar className="h-6 w-6" />
+            <Name />
+          </ConnectWallet>
+          <WalletDropdown>
+            <Identity className="px-4 pt-3 pb-2" hasCopyAddressOnClick>
+              <Avatar />
+              <Name />
+              <Address className="text-gray-500" />
+            </Identity>
+            <WalletDropdownDisconnect />
+          </WalletDropdown>
+        </Wallet>
       </header>
 
       <div style={{
         maxWidth: '1200px',
         margin: '0 auto'
       }}>
-        {/* Claim Rewards Button */}
-        {isConnected && <ClaimRewardsButton />}
+        {/* Claim Rewards Button removed - no longer using Morpho rewards */}
 
         {/* Portfolio Overview */}
         {isConnected && (
