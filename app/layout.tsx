@@ -47,6 +47,7 @@ export default function RootLayout({
         <head>
           <meta name="color-scheme" content="light" />
           <meta name="theme-color" content="#ffffff" />
+          <link rel="icon" href="/favicon.ico" type="image/x-icon" sizes="any" />
         </head>
         <body className={`${inter.variable} ${sourceCodePro.variable}`}>
           <ErrorBoundary>

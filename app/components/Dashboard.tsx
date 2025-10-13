@@ -1,4 +1,5 @@
 "use client";
+import React from 'react';
 import { useAccount } from 'wagmi';
 import { ConnectWallet } from '@coinbase/onchainkit/wallet';
 import { Earn, useMorphoVault } from '@coinbase/onchainkit/earn';
@@ -26,7 +27,7 @@ const VAULTS = [
   },
 ];
 
-export default function SimpleDashboard() {
+export default function Dashboard() {
   const { isConnected, address } = useAccount();
 
   // Fetch token prices
