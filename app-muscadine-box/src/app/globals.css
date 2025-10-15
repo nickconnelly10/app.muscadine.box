@@ -1,8 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #dedede;
+  --background-inverted: #282828;
+  --foreground: #3c3c3c;
+  --foreground-inverted: #e1e1e1;
+  --secondary: #f0f0f0;
+  --secondary-inverted: #515151;
+  --nav-bar-height: 60px;
+  
+}
+
+* {
+  --nav-bar-height: 60px;
 }
 
 @theme inline {
@@ -10,12 +20,30 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-secondary: var(--secondary);
+  --color-secondary-inverted: var(--secondary-inverted);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-background-inverted: var(--background-inverted);
+  --color-foreground-inverted: var(--foreground-inverted);
+  --color-secondary-inverted: var(--secondary-inverted);
+  --color-text-primary-inverted: var(--text-primary-inverted);
+  --color-text-secondary-inverted: var(--text-secondary-inverted);
 }
+
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #71747b;
+    --foreground: #e1e1e1;
+    --secondary: #513f3f;
+    --text-primary: #e1e1e1;
+    --text-secondary: #f0efef;
+    --background-inverted: #dedede;
+    --foreground-inverted: #71747b;
+    --secondary-inverted: #f0efef;
+    --text-primary-inverted: #3c3c3c;
+    --text-secondary-inverted: #f0efef;
   }
 }
 
