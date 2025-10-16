@@ -1,54 +1,43 @@
 @import "tailwindcss";
 
 :root {
-  --background: #dedede;
-  --background-inverted: #282828;
-  --foreground: #3c3c3c;
-  --foreground-inverted: #e1e1e1;
-  --secondary: #f0f0f0;
-  --secondary-inverted: #515151;
-  --nav-bar-height: 60px;
-  
+  color-scheme: light dark;
+
+  --background: #f6f8fa;          /* rgb(246, 248, 250) */
+  --surface: #ffffff;             /* rgb(255, 255, 255) */
+  --border: #d0d7de;              /* rgb(208, 215, 222) */
+  --foreground: #1f2328;          /* rgb(31, 35, 40) */
+  --foreground-secondary: #57606a;/* rgb(87, 96, 106) */
+  --primary: #0969da;             /* rgb(9, 105, 218) */
+  --primary-hover: #0550ae;       /* rgb(5, 80, 174) */
+  --accent: #8250df;              /* rgb(130, 80, 223) */
+  --success: #1a7f37;             /* rgb(26, 127, 55) */
+  --danger: #cf222e;              /* rgb(207, 34, 46) */
 }
 
 * {
   --nav-bar-height: 60px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-secondary: var(--secondary);
-  --color-secondary-inverted: var(--secondary-inverted);
-  --color-text-primary: var(--text-primary);
-  --color-text-secondary: var(--text-secondary);
-  --color-background-inverted: var(--background-inverted);
-  --color-foreground-inverted: var(--foreground-inverted);
-  --color-secondary-inverted: var(--secondary-inverted);
-  --color-text-primary-inverted: var(--text-primary-inverted);
-  --color-text-secondary-inverted: var(--text-secondary-inverted);
-}
-
-
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #71747b;
-    --foreground: #e1e1e1;
-    --secondary: #513f3f;
-    --text-primary: #e1e1e1;
-    --text-secondary: #f0efef;
-    --background-inverted: #dedede;
-    --foreground-inverted: #71747b;
-    --secondary-inverted: #f0efef;
-    --text-primary-inverted: #3c3c3c;
-    --text-secondary-inverted: #f0efef;
+    --background: #0d1117;           /* rgb(13, 17, 23) */
+    --surface: #161b22;              /* rgb(22, 27, 34) */
+    --border: #30363d;               /* rgb(48, 54, 61) */
+    --foreground: #e6edf3;           /* rgb(230, 237, 243) */
+    --foreground-secondary: #8b949e; /* rgb(139, 148, 158) */
+    --primary: #58a6ff;              /* rgb(88, 166, 255) */
+    --primary-hover: #79b8ff;        /* rgb(121, 184, 255) */
+    --accent: #bc8cff;               /* rgb(188, 140, 255) */
+    --success: #56d364;              /* rgb(86, 211, 100) */
+    --danger: #f85149;               /* rgb(248, 81, 73) */
   }
 }
 
+/*
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+*/

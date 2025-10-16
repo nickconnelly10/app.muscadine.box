@@ -1,6 +1,6 @@
 import ConnectButton from "./ConnectButton";
 import Image from "next/image";
-
+import { ThemeToggler } from "./ThemeButton";
 
 export function NavBar() {
     return (
@@ -10,6 +10,7 @@ export function NavBar() {
                     <Image src="/favicon.png" alt="Muscadine" width={32} height={32} className="rounded-full"/>
                     <h1 className="text-2xl">Muscadine</h1>
                 </div>
+
                 <ConnectButton />
             </div>
         </header>

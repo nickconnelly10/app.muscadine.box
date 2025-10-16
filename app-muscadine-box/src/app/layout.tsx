@@ -1,44 +1,37 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import './globals.css'
+import { AppLayout } from '@/components/AppLayout'
 import { headers } from 'next/headers'
-import { AppLayout } from "@/components/AppLayout";
-import { Providers } from "./Providers";
+import { cookieToInitialState } from 'wagmi'
+import { Providers } from './providers'
+import { config } from './config'
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: "Muscadine app",
-  description: "Muscadine app",
-};
+  title: 'Muscadine Vault',
+  description: 'Powered by Muscadine Labs',
+}
 
 export default async function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  
+}: {
+  children: React.ReactNode
+}) {
+  const cookie = (await headers()).get('cookie')
 
-  const headersObj = await headers();
-  const cookies = headersObj.get('cookie')
+  // Only restore cookie state in production
+  const initialState = cookieToInitialState(config, cookie)
+      
 
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased scroll-auto`}
-      >
-        <Providers cookies={cookies}>
+      <body className={inter.className}>
+        <Providers initialState={initialState}>
           <AppLayout>{children}</AppLayout>
-          </Providers>
+        </Providers>
       </body>
     </html>
-  );
+  )
 }

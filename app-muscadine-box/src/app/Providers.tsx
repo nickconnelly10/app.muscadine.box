@@ -1,19 +1,26 @@
-'use client';
+'use client'
 
-import { wagmiAdapter } from '@/lib/appkit'; // Import the configured adapter
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { type ReactNode } from 'react';
-import { cookieToInitialState, WagmiProvider, type Config } from 'wagmi';
+import { ReactNode, useState } from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { WagmiProvider } from 'wagmi'
+import { config } from './config'
 
-const queryClient = new QueryClient();
+type Props = {
+  children: ReactNode
+  initialState?: Parameters<typeof WagmiProvider>[0]['initialState']
+}
 
-export function Providers({ children, cookies }: { children: ReactNode; cookies: string | null }) {
-    // This correctly uses the cookies passed down from the Server Component (RootLayout)
-    const initialState = cookieToInitialState(wagmiAdapter.wagmiConfig as Config, cookies);
-  
-    return (
-        <WagmiProvider config={wagmiAdapter.wagmiConfig as Config} initialState={initialState}>
-          <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-        </WagmiProvider>
-    );
+export function Providers({ children, initialState }: Props) {
+  const [queryClient] = useState(() => new QueryClient())
+
+  return (
+    <WagmiProvider
+      config={config}
+      initialState={initialState} // undefined in dev is fine
+    >
+      <QueryClientProvider client={queryClient}>
+        {children}
+      </QueryClientProvider>
+    </WagmiProvider>
+  )
 }
