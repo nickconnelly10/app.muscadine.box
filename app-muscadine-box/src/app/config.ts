@@ -17,6 +17,10 @@ const metadata = {
 
 // Create adapter
 export const wagmiAdapter = new WagmiAdapter({
+    storage: createStorage({
+        storage: cookieStorage
+      }),
+      ssr: true,
   projectId,
   networks: [mainnet, sepolia, base],
 })
